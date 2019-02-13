@@ -36,14 +36,13 @@ def test_connect():
 def test_disconnect():
     print('Client disconnected')
 
-# @socketio.on('receive')
-# def handle_message(data):
-#     print('received {} at {}'.format(data, time.time()))
-#     time.sleep(1)
-#     response = {}
-#     response['message'] = 'Count is {}'.format(data['cnt'])
-#     response['cnt'] = data['cnt']
-#     emit('response', response)
+@socketio.on('receive')
+def handle_message(data):
+    print('received {} at {}'.format(data, time.time()))
+    response = {}
+    response['message'] = 'Count is {}'.format(data['cnt'])
+    response['cnt'] = data['cnt']
+    emit('response', response)
 
 
 @socketio.on('emit_key')
