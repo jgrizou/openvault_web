@@ -44,14 +44,17 @@ def handle_message(data):
     response['cnt'] = data['cnt']
     emit('response', response)
 
-
 @socketio.on('emit_key')
-def handle_it(data):
+def handle_key(data):
     print('##### KEY: {}'.format(data))
 
 @socketio.on('emit_click')
-def handle_it(data):
+def handle_click(data):
     print('##### CLICK: {}'.format(data))
+
+@socketio.on('input_value')
+def handle_input(data):
+    print('Received: {}'.format(data))
 
 if __name__ == '__main__':
     socketio.run(app)

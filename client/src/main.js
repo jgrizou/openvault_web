@@ -1,11 +1,9 @@
-import Vue from 'vue'
-import App from './App.vue'
-import VueSocketIO from 'vue-socket.io'
+import 'bootstrap/dist/css/bootstrap.css'
 import BootstrapVue from 'bootstrap-vue'
-
-import './../node_modules/jquery/dist/jquery.min.js'
-import './../node_modules/bootstrap/dist/css/bootstrap.min.css'
-import './../node_modules/bootstrap/dist/js/bootstrap.min.js'
+import Vue from 'vue'
+import VueSocketIO from 'vue-socket.io'
+import App from './App.vue'
+import router from './router'
 
 Vue.use(new VueSocketIO({
   debug: true,
@@ -17,5 +15,8 @@ Vue.use(BootstrapVue)
 // eslint-disable-next-line no-new
 new Vue({
   el: '#app',
+  router,
+  components: { App },
+  template: '<App/>',
   render: h => h(App)
 })
