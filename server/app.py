@@ -56,5 +56,9 @@ def handle_click(data):
 def handle_input(data):
     print('Received: {}'.format(data))
 
+@socketio.on('emit_hello')
+def handle_hello(data):
+    print('##### HELLO: {}'.format(data))
+
 if __name__ == '__main__':
     socketio.run(app)
