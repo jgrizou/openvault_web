@@ -13,7 +13,10 @@
 export default {
   name: 'Tile',
   props: {
-    index: String,
+    index: {
+      type: String,
+      required: true
+    },
     fontSize: {
       type: String,
       default: "50px"
@@ -73,6 +76,7 @@ export default {
 /* global styles */
 
 .square {
+  border: 1px solid black;
   width: 100%;
   position: relative;
   background-size: 100% 100%;
