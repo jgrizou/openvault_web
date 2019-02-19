@@ -11,7 +11,13 @@ export default {
 </script>
 
 <style>
+
+body {
+  background-color: rgba(255, 255, 255, 1);
+  background-size: 100% 100%;
+}
+
 #app {
-  margin-top: 60px
+  margin-top: 60px;
 }
 </style>

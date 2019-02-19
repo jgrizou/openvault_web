@@ -10,11 +10,6 @@ export default new Router({
       path: '/',
       name: 'V1',
       component: V1
-    },
-    {
-      path: '/test',
-      name: 'V2',
-      component: V1
     }
   ]
 })

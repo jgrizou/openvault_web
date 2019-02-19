@@ -7,9 +7,10 @@
 
           <tile
             v-if="data.index"
-            :ref="data.ref"
+            :ref="data.index"
             :index="data.index"
             :message="data.message"
+            :fontSize="data.fontSize"
             :callback="tile_callback"
           >
           </tile>
@@ -36,7 +37,7 @@ export default {
   },
   data: function () {
       return {
-        grid: []
+        grid: undefined
       }
   },
   methods: {
@@ -50,21 +51,25 @@ export default {
       }
     },
     set_background_colors: function (colors) {
-      for (var i = 0; i < colors.length; i++) {
-        for (var j = 0; j < colors[i].length; j++) {
-          if (this.grid[i][j].ref) {
-            var child = this.$refs[this.grid[i][j].ref][0]
-            child.set_background_color(colors[i][j])
+      if (this.grid) {
+        for (var i = 0; i < colors.length; i++) {
+          for (var j = 0; j < colors[i].length; j++) {
+            if (this.grid[i][j].index) {
+              var child = this.$refs[this.grid[i][j].index][0]
+              child.set_background_color(colors[i][j])
+            }
           }
         }
       }
     },
     set_background_images: function (images) {
-      for (var i = 0; i < images.length; i++) {
-        for (var j = 0; j < images[i].length; j++) {
-          if (this.grid[i][j].ref) {
-            var child = this.$refs[this.grid[i][j].ref][0]
-            child.set_background_image(images[i][j])
+      if (this.grid) {
+        for (var i = 0; i < images.length; i++) {
+          for (var j = 0; j < images[i].length; j++) {
+            if (this.grid[i][j].index) {
+              var child = this.$refs[this.grid[i][j].index][0]
+              child.set_background_image(images[i][j])
+            }
           }
         }
       }

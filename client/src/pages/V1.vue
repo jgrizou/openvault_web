@@ -1,5 +1,5 @@
 <template lang="html">
-  <div id="app">
+  <div>
 
     <panel ref="display" index="display" ></panel>
     <br>
@@ -35,6 +35,16 @@ export default {
     colors: function (data) {
       var child = this.$refs[data.panel_index]
       child.set_background_colors(data.colors)
+    },
+    ready: function (data) {
+      var response = {}
+      response.panel_index = data.panel_index
+      if (this.$refs[data.panel_index].grid) {
+        response.status = true
+      } else {
+        response.status = false
+      }
+      this.$socket.emit('status', response)
     }
   },
   methods: {

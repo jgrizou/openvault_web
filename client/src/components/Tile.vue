@@ -29,7 +29,7 @@ export default {
   },
   data: function () {
       return {
-          background: "rgba(220, 0, 0, 0.5)",
+          background: "rgba(200, 200, 200, 1)",
           isBackgroundImage: false
       }
   },
