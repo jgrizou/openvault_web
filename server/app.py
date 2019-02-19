@@ -9,7 +9,7 @@ import random
 import string
 
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room
 
 client_files=os.path.join(HERE_PATH, '../client/dist')
 client_files=os.path.normpath(client_files)
@@ -26,6 +26,7 @@ from tinyrecord import transaction
 database = TinyDB('db.json').table('database')
 database.purge()
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -36,26 +37,17 @@ def serve_static(path):
 
 @socketio.on('connect')
 def on_connect():
-
+    print('Client {} connected'.format(request.sid))
+    join_room(request.sid)
     with transaction(database) as tr:
-        join_room(request.sid)
         tr.insert({'room': request.sid})
-
-    grid = [
-        [{}, {"index": "3", "ref": "3", "message": "Hello"}, {"index": "4", "ref": "4"}, {}]
-    ]
-
-    emit('grid', {"grid": grid})
-
-    print('Client connected')
 
 @socketio.on('disconnect')
 def on_disconnect():
+    print('Client {} disconnected'.format(request.sid))
+    leave_room(request.sid)
     with transaction(database) as tr:
-        join_room(request.sid)
         tr.remove(where('room') == request.sid)
-
-    print('Client disconnected')
 
 @socketio.on('key')
 def on_key(data):
@@ -63,7 +55,6 @@ def on_key(data):
 
 @socketio.on('click')
 def on_click(data):
-    print(request.sid)
     print('##### CLICK: {}'.format(data))
 
 
@@ -72,25 +63,37 @@ if __name__ == '__main__':
 
     import eventlet
 
+
+    def random_hex_color():
+        r = lambda: random.randint(0,255)
+        return '#{:02x}{:02x}{:02x}'.format(r(), r(), r())
+
     ## from https://github.com/miguelgrinberg/python-socketio/issues/16
-    def bg_emit():
+    def background_emit():
 
         for items in database:
 
             room_name = items['room']
 
-            grid = [
-                [{}, {"index": "3", "ref": "3", "message": random.choice(string.ascii_letters)}, {"index": "4", "ref": "4", "message": str(random.randint(0, 9))}, {}]
+            for panel_index in ["display", "code", "pad"]:
+
+                grid = [
+                    [{}, {"index": "3", "ref": "3", "message": random.choice(string.ascii_letters)}, {"index": "4", "ref": "4", "message": str(random.randint(0, 9))}, {}]
+                ]
+
+                socketio.emit('grid', {"panel_index": panel_index, "grid": grid}, room=room_name)
+
+            colors = [
+                [{}, random_hex_color(), random_hex_color(), {}]
             ]
 
-            socketio.emit('grid', {"grid": grid}, room=room_name)
+            socketio.emit('colors', {"panel_index": "pad", "colors": colors}, room=room_name)
 
-            socketio.emit('newnumber', {"number": np.random.rand()}, room=room_name)
 
 
     def listen():
         while True:
-            bg_emit()
+            background_emit()
             eventlet.sleep(1)
 
     eventlet.monkey_patch(time=True)

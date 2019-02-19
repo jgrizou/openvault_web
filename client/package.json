@@ -4,9 +4,11 @@
   "description": "Interface for vault challenge",
   "main": "src/index.html",
   "scripts": {
+    "prestart": "rm -rf dist",
     "start": "parcel src/index.html --open",
     "prebuild": "rm -rf dist",
     "build": "parcel build src/index.html",
+    "predev": "rm -rf dist",
     "dev": "parcel src/index.html"
   },
   "author": "Jonathan Grizou",

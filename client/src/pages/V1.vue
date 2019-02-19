@@ -1,28 +1,22 @@
 <template lang="html">
   <div id="app">
 
-    <b-container fluid>
-      <b-row>
-        <b-col></b-col>
-        <b-col><tile ref="tile1" index="1" message="1" :callback="tileCallback"></tile></b-col>
-        <b-col><tile ref="tile2" index="2" message="2" :callback="tileCallback"></tile></b-col>
-        <b-col></b-col>
-      </b-row>
-    </b-container>
-
-    <numberPanel ref="numberpanel"></numberPanel>
+    <panel ref="display" index="display" ></panel>
+    <br>
+    <panel ref="code" index="code"></panel>
+    <br>
+    <panel ref="pad" index="pad" :callback="pad_callback"></panel>
 
   </div>
 </template>
 
 
 <script>
-import Tile from './../components/Tile.vue'
-import NumberPanel from './../components/NumberPanel.vue'
+import Panel from './../components/Panel.vue'
 
 export default {
   name: 'V1',
-  components: { Tile, NumberPanel },
+  components: { Panel },
   data() {
     return {
     };
@@ -35,24 +29,23 @@ export default {
       console.log('## Socket disconnected')
     },
     grid: function (data) {
-      console.log(data)
-      var child = this.$refs.numberpanel
+      var child = this.$refs[data.panel_index]
       child.grid = data.grid
     },
-    newnumber: function (data) {
-      console.log(data)
+    colors: function (data) {
+      var child = this.$refs[data.panel_index]
+      child.set_background_colors(data.colors)
     }
   },
   methods: {
-    tileCallback: function (data) {
-      console.log(data)
-      data.component.set_background_color("rgba(0, 0, 0, 0.5)")
-      var child = this.$refs.tile2
-      child.set_background_color("rgba(220, 0, 0, 0.5)")
+    pad_callback: function (data) {
+      // data.tile_component.set_background_color("rgba(0, 0, 0, 0.5)")
+      // data.tile_component.set_background_image("url(" + require('./../assets/sprite.png') + ")")
 
       var click_info = {}
-      click_info.index = data.component.index
-      click_info.click = data.click
+      click_info.panel_index = data.panel_component.index
+      click_info.tile_index = data.tile_component.index
+      click_info.relative_click = data.relative_click
       this.$socket.emit('click', click_info)
     }
   },

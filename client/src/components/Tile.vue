@@ -3,7 +3,7 @@
     class="square"
     v-bind:style="styleObject"
     v-bind:ref="'tile_' + index"
-    v-on:click="onClick('tile_' + index, $event)"
+    v-on:click="on_click('tile_' + index, $event)"
   >
     <div class="content">{{ message }}</div>
   </div>
@@ -54,18 +54,18 @@ export default {
       this.isBackgroundImage = true
       this.background = newImageLocation
     },
-    onClick: function (ref, event) {
+    on_click: function (ref, event) {
       if (this.callback) {
         // get position of pad
         var elem_data = this.$refs[ref].getBoundingClientRect()
 
         // compute relative position of click in pad
-        var rel_click = {}
-        rel_click.x = (event.clientX - elem_data.x) / elem_data.width
-        rel_click.y = (event.clientY - elem_data.y) / elem_data.height
+        var relative_click = {}
+        relative_click.x = (event.clientX - elem_data.x) / elem_data.width
+        relative_click.y = (event.clientY - elem_data.y) / elem_data.height
 
         // send info to callback
-        this.callback({component: this, click: rel_click})
+        this.callback({tile_component: this, relative_click: relative_click})
       }
     }
   }

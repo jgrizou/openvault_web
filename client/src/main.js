@@ -6,7 +6,7 @@ import App from './App.vue'
 import router from './router'
 
 Vue.use(new VueSocketIO({
-  debug: true,
+  debug: false,
   connection: 'http://localhost:5000'
 }))
 
