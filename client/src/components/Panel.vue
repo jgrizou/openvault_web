@@ -37,8 +37,15 @@ export default {
   },
   data: function () {
       return {
-        grid: undefined
+        grid: undefined,
+        colors: undefined,
+        images: undefined
       }
+  },
+  computed: {
+    status: function () {
+      return !(this.grid === undefined)
+    }
   },
   methods: {
     tile_callback: function (data) {
@@ -52,9 +59,10 @@ export default {
     },
     set_background_colors: function (colors) {
       if (this.grid) {
+        this.colors = colors
         for (var i = 0; i < colors.length; i++) {
           for (var j = 0; j < colors[i].length; j++) {
-            if (this.grid[i][j].index) {
+            if (this.$refs[this.grid[i][j].index]) {
               var child = this.$refs[this.grid[i][j].index][0]
               child.set_background_color(colors[i][j])
             }
@@ -64,9 +72,10 @@ export default {
     },
     set_background_images: function (images) {
       if (this.grid) {
+        this.images = images
         for (var i = 0; i < images.length; i++) {
           for (var j = 0; j < images[i].length; j++) {
-            if (this.grid[i][j].index) {
+            if (this.$refs[this.grid[i][j].index]) {
               var child = this.$refs[this.grid[i][j].index][0]
               child.set_background_image(images[i][j])
             }

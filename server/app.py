@@ -4,48 +4,47 @@ import os
 import inspect
 HERE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
+
+# we will keep a simple database of rooms used
+# 1 room == 1 user
+from tinydb import TinyDB, where
+from tinyrecord import transaction
+
+database = TinyDB('rooms.json')
+database.purge()
+
+# we initialize the web server
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room
 
-client_files=os.path.join(HERE_PATH, '../client/dist')
-client_files=os.path.normpath(client_files)
+# say the server where to serve the static files
+server_folder=os.path.normpath(os.path.join(HERE_PATH, '../client/dist'))
+app = Flask(__name__, static_folder=server_folder, template_folder=server_folder, static_url_path='')
 
-app = Flask(__name__, static_folder=client_files, template_folder=client_files, static_url_path='')
 app.config['SECRET_KEY'] = 'secret!'
 
 socketio = SocketIO(app)
 
+# we initialise the learner and pass the instance of socketio
+import learner_tools
+learner_manager = learner_tools.LearnerManager(socketio)
 
-from tinydb import TinyDB, Query, where
-from tinyrecord import transaction
-
-database = TinyDB('db.json').table('database')
-database.purge()
-
-
-# adding openvault directory to path
-import sys
-openvault_path = os.path.join(HERE_PATH, '..', '..', 'openvault')
-sys.path.append(openvault_path)
-
-from discrete import DiscreteLearner
-
-learners = {}
-flash_patterns = {}
-
-FLASH_COLORS = {}
-FLASH_COLORS[True] = 'rgba(220, 0, 0, 0.5)'
-FLASH_COLORS[False] = 'rgba(255, 255, 255, 1)'
+# create and add the handlers specific to our learning task
+learner_namespace = learner_tools.LearnerNamespace('/', learner_manager)
+socketio.on_namespace(learner_namespace)
 
 
+# when opening the root, we server index.html
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# if the page need to load files, this allow the server to server them for all urls
 @app.route('/<path:path>')
 def serve_static(path):
     return app.send_from_directory('', path)
 
+# on connect, join room, update database, start a learner for this room
 @socketio.on('connect')
 def on_connect():
     room_id = request.sid
@@ -53,80 +52,9 @@ def on_connect():
     join_room(room_id)
     with transaction(database) as tr:
         tr.insert({'room_id': room_id})
+    learner_manager.init(room_id)
 
-    learners[room_id] = DiscreteLearner(4)
-
-    display_grid = [
-        [
-            {"index": "n1", "message": "1"},
-            {"index": "n2", "message": "2"},
-            {"index": "n3", "message": "3"},
-            {"index": "n4", "message": "4"}
-        ]
-    ]
-    emit('grid', {"panel_index": "display", "grid": display_grid})
-
-
-    code_grid = [
-        [
-            {"index": "c1", "message": "#", "fontSize": "100px"},
-            {"index": "c2", "message": "#", "fontSize": "100px"},
-            {"index": "c3", "message": "#", "fontSize": "100px"},
-            {"index": "c4", "message": "", "fontSize": "100px"}
-        ]
-    ]
-    emit('grid', {"panel_index": "code", "grid": code_grid})
-
-
-    pad_grid = [
-        [
-            {"index": "p1", "message": ""},
-            {"index": "p2", "message": ""},
-            {"index": "p3", "message": ""},
-            {"index": "p4", "message": ""}
-        ]
-    ]
-    emit('grid', {"panel_index": "pad", "grid": pad_grid})
-
-    emit('ready', {"panel_index": "display"})
-
-
-def update_learner(room_id, feedback_symbol):
-    print('##### Updating {} for {} with {}'.format(room_id, flash_patterns[room_id], feedback_symbol))
-    learners[room_id].update(flash_patterns[room_id], feedback_symbol)
-
-def send_flash_pattern(room_id):
-
-    flash_patterns[room_id] = learners[room_id].get_next_flash_pattern()
-
-    colors = [
-        [
-            FLASH_COLORS[flash_patterns[room_id][0]],
-            FLASH_COLORS[flash_patterns[room_id][1]],
-            FLASH_COLORS[flash_patterns[room_id][2]],
-            FLASH_COLORS[flash_patterns[room_id][3]]
-        ]
-    ]
-
-    socketio.emit('colors', {"panel_index": "display", "colors": colors}, room=room_id)
-
-    # print(learners[room_id].is_inconsistent())
-    # print(learners[room_id].is_solved())
-    if learners[room_id].is_solved():
-        print('###########')
-        print('###########')
-        solution_index = learners[room_id].get_solution_index()
-        updated_known_symbols = learners[room_id].compute_symbols_belief_for_hypothesis(solution_index)
-        reset_learner(room_id, updated_known_symbols)
-
-        print(solution_index + 1)
-        print(updated_known_symbols)
-        print('###########')
-        print('###########')
-
-def reset_learner(room_id, updated_known_symbols):
-    learners[room_id] = DiscreteLearner(4, updated_known_symbols)
-
+# on disconnect, leave room, update database, delete the learner for this room
 @socketio.on('disconnect')
 def on_disconnect():
     room_id = request.sid
@@ -134,86 +62,23 @@ def on_disconnect():
     leave_room(room_id)
     with transaction(database) as tr:
         tr.remove(where('room_id') == room_id)
-    del(learners[room_id])
-
-@socketio.on('status')
-def on_status(data):
-    room_id = request.sid
-    if data['status']:
-        send_flash_pattern(room_id)
-    else:
-        eventlet.sleep(1)
-        emit('ready', {"panel_index": "display"})
-
-@socketio.on('key')
-def on_key(data):
-    room_id = request.sid
-    print('##### KEY: {}'.format(data))
-    update_learner(room_id, data['key'])
-    send_flash_pattern(room_id)
-
-@socketio.on('click')
-def on_click(data):
-    room_id = request.sid
-    print('##### CLICK: {}'.format(data))
-    update_learner(room_id, data['tile_index'])
-    send_flash_pattern(room_id)
+    learner_manager.delete(room_id)
 
 
 if __name__ == '__main__':
 
-    import eventlet
-
-    import numpy as np
-    import random
-    import string
-
-
-    def random_hex_color():
-        r = lambda: random.randint(0,255)
-        return '#{:02x}{:02x}{:02x}'.format(r(), r(), r())
-
-    ## from https://github.com/miguelgrinberg/python-socketio/issues/16
-    def background_emit():
-
-        for items in database:
-
-            room_name = items['room']
-
-            for panel_index in ["code", "pad"]:
-
-                grid = [
-                    [{}, {"index": "3", "message": random.choice(string.ascii_letters)}, {"index": "4", "message": str(random.randint(0, 9))}, {}]
-                ]
-
-                socketio.emit('grid', {"panel_index": panel_index, "grid": grid}, room=room_name)
-
-
-            flash_pattern = learners[room_name].get_next_flash_pattern()
-
-            print(room_name, flash_pattern)
-
-            flash_colors = {}
-            flash_colors[True] = 'red'
-            flash_colors[False] = 'white'
-
-            colors = [
-                [
-                    flash_colors[flash_pattern[0]],
-                    flash_colors[flash_pattern[1]]
-                ]
-            ]
-
-            socketio.emit('colors', {"panel_index": "display", "colors": colors}, room=room_name)
-
-
-
-    def listen():
-        while True:
-            background_emit()
-            eventlet.sleep(1)
-
-    eventlet.monkey_patch(time=True)
-    # eventlet.spawn(listen)
+    # import eventlet
+    # import numpy as np
+    #
+    # ## from https://github.com/miguelgrinberg/python-socketio/issues/16
+    # def background_emit():
+    #     while True:
+    #         for items in database:
+    #             room_name = items['room_id']
+    #             socketio.emit('watchdog', np.random.rand(), room=room_name)
+    #         eventlet.sleep(1)
+    #
+    # eventlet.monkey_patch(time=True)
+    # eventlet.spawn(background_emit)
 
     socketio.run(app)

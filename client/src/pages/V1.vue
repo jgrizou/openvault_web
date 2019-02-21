@@ -36,15 +36,12 @@ export default {
       var child = this.$refs[data.panel_index]
       child.set_background_colors(data.colors)
     },
-    ready: function (data) {
-      var response = {}
-      response.panel_index = data.panel_index
-      if (this.$refs[data.panel_index].grid) {
-        response.status = true
-      } else {
-        response.status = false
-      }
-      this.$socket.emit('status', response)
+    status: function () {
+      var status = true
+      status = this.$refs.display.status
+      status = this.$refs.code.status
+      status = this.$refs.pad.status
+      this.$socket.emit('status', status)
     }
   },
   methods: {
@@ -56,13 +53,16 @@ export default {
       click_info.panel_index = data.panel_component.index
       click_info.tile_index = data.tile_component.index
       click_info.relative_click = data.relative_click
+      click_info.display_colors = this.$refs.display.colors
       this.$socket.emit('click', click_info)
     }
   },
   mounted() {
     window.addEventListener('keypress', (event) => {
-      const key = String.fromCharCode(event.keyCode)
-      this.$socket.emit('key', {'key': key})
+      var key_info = {}
+      key_info.key = String.fromCharCode(event.keyCode)
+      key_info.display_colors = this.$refs.display.colors
+      this.$socket.emit('key', key_info)
     });
   }
 }
