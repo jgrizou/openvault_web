@@ -28,11 +28,7 @@ socketio = SocketIO(app)
 # we initialise the learner and pass the instance of socketio
 import learner_tools
 learner_manager = learner_tools.LearnerManager(socketio)
-
-# create and add the handlers specific to our learning task
-learner_namespace = learner_tools.LearnerNamespace('/', learner_manager)
-socketio.on_namespace(learner_namespace)
-
+socketio.on_namespace(learner_manager)
 
 # when opening the root, we server index.html
 @app.route('/')
@@ -52,7 +48,9 @@ def on_connect():
     join_room(room_id)
     with transaction(database) as tr:
         tr.insert({'room_id': room_id})
-    learner_manager.init(room_id)
+
+    config_filename = os.path.join(HERE_PATH, 'configs', 'level_1.json')
+    learner_manager.spawn(room_id, config_filename)
 
 # on disconnect, leave room, update database, delete the learner for this room
 @socketio.on('disconnect')
@@ -62,7 +60,7 @@ def on_disconnect():
     leave_room(room_id)
     with transaction(database) as tr:
         tr.remove(where('room_id') == room_id)
-    learner_manager.delete(room_id)
+    learner_manager.kill(room_id)
 
 
 if __name__ == '__main__':

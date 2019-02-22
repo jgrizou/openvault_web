@@ -14,19 +14,11 @@ CODE_FONTSIZE = "100px"
 def push_grid_to_panel(socketio, room_id, grid, panel_index):
     socketio.emit('grid', {"panel_index": panel_index, "grid": grid}, room=room_id)
 
-def push_code(socketio, room_id, code_list, fontSize=CODE_FONTSIZE):
-    code_row = []
-    for i, letter in enumerate(code_list):
-        tile_info = {}
-        tile_info['index'] = 'code_{}'.format(i)
-        tile_info['message'] = letter
-        tile_info['fontSize'] = fontSize
-        code_row.append(tile_info)
-    code_grid = [code_row]
-    push_grid_to_panel(socketio, room_id, code_grid, 'code')
-    return code_grid
+def push_colors_to_panel(socketio, room_id, colors, panel_index):
+    socketio.emit('colors', {"panel_index": panel_index, "colors": colors}, room=room_id)
 
-def push_display(socketio, room_id, n_row, n_column, fontSize=DISPLAY_FONTSIZE):
+
+def build_display_grid(n_row, n_column, indexes=None, fontSize=DISPLAY_FONTSIZE):
     i_number = 0
     display_grid = []
     for i_row in range(n_row):
@@ -34,40 +26,48 @@ def push_display(socketio, room_id, n_row, n_column, fontSize=DISPLAY_FONTSIZE):
         for i_column in range(n_column):
 
             tile_info = {}
-            tile_info['index'] = 'display_{}'.format(i_number)
+            if indexes is not None:
+                tile_info['index'] = indexes[i_row][i_column]
+            else:
+                tile_info['index'] = 'display_{}'.format(i_number)
             tile_info['message'] = str(i_number)
             tile_info['fontSize'] = fontSize
 
             display_grid[i_row].append(tile_info)
             i_number += 1
 
-    push_grid_to_panel(socketio, room_id, display_grid, 'display')
-
     return display_grid
 
 
-def push_pad(socketio, room_id, n_row, n_column):
+def build_code_grid(code_list, indexes=None, fontSize=CODE_FONTSIZE):
+    code_row = []
+    for i_number, number in enumerate(code_list):
+        tile_info = {}
+        if indexes is not None:
+            tile_info['index'] = indexes[i_number]
+        else:
+            tile_info['index'] = 'code_{}'.format(i_number)
+        tile_info['message'] = str(number)
+        tile_info['fontSize'] = fontSize
+        code_row.append(tile_info)
+    code_grid = [code_row]
+    return code_grid
+
+
+def build_pad_grid(n_row, n_column, indexes=None):
     i_number = 0
     pad_grid = []
     for i_row in range(n_row):
         pad_grid.append([])
         for i_column in range(n_column):
             tile_info = {}
-            tile_info['index'] = 'pad_{}'.format(i_number)
+            if indexes is not None:
+                tile_info['index'] = indexes[i_row][i_column]
+            else:
+                tile_info['index'] = 'pad_{}'.format(i_number)
             pad_grid[i_row].append(tile_info)
             i_number += 1
-    push_grid_to_panel(socketio, room_id, pad_grid, 'pad')
     return pad_grid
-
-
-
-def push_colors_to_panel(socketio, room_id, colors, panel_index):
-    socketio.emit('colors', {"panel_index": panel_index, "colors": colors}, room=room_id)
-
-def push_flash_patterns(socketio, room_id, display_grid, flash_patterns):
-    display_colors = display_colors_from_flash_patterns(display_grid, flash_patterns)
-    push_colors_to_panel(socketio, room_id, display_colors, 'display')
-
 
 
 def display_colors_from_flash_patterns(display_grid, flash_patterns, flash_to_colors=FLASH_TO_COLORS):

@@ -15,114 +15,181 @@ from flask_socketio import Namespace, emit
 from openvault.discrete import DiscreteLearner
 
 import ui_tools
+from config_tools import build_config_from_file
 
 import random
 import string
 
-def randomString(stringLength=10):
-    """Generate a random string of fixed length """
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(stringLength))
 
+class LearnerManager(Namespace):
 
-class LearnerManager(object):
-
-    def __init__(self, socketio):
+    def __init__(self, socketio, namespace='/', ):
+        super().__init__(namespace)
         self.socketio = socketio
-        self.n_hypothesis = 10
         self.learners = {}
 
-        self.code_length = 4
-        self.code_list = ['' for _ in range(self.code_length)]
-        self.code_tmp = ['' for _ in range(self.code_length)]
-        self.code_index = 0
+    def spawn(self, room_id, config_filename):
+        config = build_config_from_file(config_filename)
+        self.learners[room_id] = Learner(self.socketio, room_id, config)
 
-    def init(self, room_id):
-        self.reset_learner(room_id)
-        self.display_grid = ui_tools.push_display(self.socketio, room_id, 2, 5)
-        self.code_grid = ui_tools.push_code(self.socketio, room_id, self.code_list)
-        self.pad_grid = ui_tools.push_pad(self.socketio, room_id, 3, 3)
-
-        # ask the page if readay to accept flash_patterns
-        self.socketio.emit('status', room=room_id)
-
-    def delete(self, room_id):
+    def kill(self, room_id):
         del(self.learners[room_id])
-
-    def step(self, room_id, feedback_info=None):
-        print(feedback_info)
-        if feedback_info is not None:
-
-            displayed_colors = feedback_info['display_colors']
-            displayed_flash_patterns = ui_tools.flash_patterns_from_display_colors(displayed_colors)
-
-            if 'key' in feedback_info:
-                feedback_symbol = feedback_info['key']
-            else:
-                feedback_symbol = feedback_info['tile_index']
-
-            self.update_learner(room_id, displayed_flash_patterns, feedback_symbol)
-
-        self.update_flash_pattern(room_id)
-
-        if self.learners[room_id].is_inconsistent():
-            print('INCONSISTENT')
-        if self.learners[room_id].is_solved():
-            print('###########')
-            print('###########')
-            solution_index = self.learners[room_id].get_solution_index()
-            updated_known_symbols = self.learners[room_id].compute_symbols_belief_for_hypothesis(solution_index)
-            self.reset_learner(room_id, updated_known_symbols)
-
-            self.code_tmp[self.code_index] = str(solution_index)
-            self.code_list[self.code_index] = '#'
-            self.code_index += 1
-
-            print(self.code_tmp)
-
-            if self.code_index >= self.code_length:
-                self.code_list = ['' for _ in range(self.code_length)]
-                self.code_tmp = ['' for _ in range(self.code_length)]
-                self.code_index = 0
-                self.reset_learner(room_id)
-
-            self.code_grid = ui_tools.push_code(self.socketio, room_id, self.code_list)
-
-            # print(solution_index)
-            # print(updated_known_symbols)
-            print('###########')
-            print('###########')
-
-    def reset_learner(self, room_id, known_symbols={}):
-        self.learners[room_id] = DiscreteLearner(self.n_hypothesis, known_symbols)
-
-    def update_learner(self, room_id, flash_patterns, feedback_symbol):
-        print('##### Updating {} for {} with {}'.format(room_id, flash_patterns, feedback_symbol))
-        self.learners[room_id].update(flash_patterns, feedback_symbol)
-
-    def update_flash_pattern(self, room_id):
-        new_flash_pattern = self.learners[room_id].get_next_flash_pattern()
-        ui_tools.push_flash_patterns(self.socketio, room_id, self.display_grid, new_flash_pattern)
-
-
-
-class LearnerNamespace(Namespace):
-
-    def __init__(self, namespace, learner_manager):
-        super().__init__(namespace)
-        self.learner_manager = learner_manager
 
     def on_status(self, status):
         room_id = request.sid
         if status:
-            self.learner_manager.step(room_id)
+            self.learners[room_id].start()
         else:
             emit('status')
 
     def on_key(self, feedback_info):
         room_id = request.sid
-        self.learner_manager.step(room_id, feedback_info)
+        self.learners[room_id].step(feedback_info)
 
     def on_click(self, feedback_info):
         room_id = request.sid
-        self.learner_manager.step(room_id, feedback_info)
+        self.learners[room_id].step(feedback_info)
+
+
+class Learner(object):
+
+    def __init__(self, socketio, room_id, config):
+        self.socketio = socketio
+        self.room_id = room_id
+        self.config = config
+        self.reset()
+
+    def reset(self):
+        self.init_learner()
+        self.code_manager = CodeManager(self.config['code'])
+
+        # init grid
+        ui_tools.push_grid_to_panel(self.socketio, self.room_id,
+                                    self.config['display_grid'], 'display')
+        ui_tools.push_grid_to_panel(self.socketio, self.room_id,
+                                    self.code_manager.code_grid, 'code')
+        ui_tools.push_grid_to_panel(self.socketio, self.room_id,
+                                    self.config['pad_grid'], 'pad')
+
+        # ask the page if ready to accept flash_patterns
+        self.socketio.emit('status', room=self.room_id)
+
+    def init_learner(self):
+        learner_info = self.config['learner']
+        if learner_info['type'] == 'discrete':
+            self.learner = DiscreteLearner(
+                learner_info['n_hypothesis'],
+                learner_info['known_symbols'])
+        else:
+            raise Exception('Learner of type {} not handled'. format(learner_info['type']))
+
+    def start(self):
+        # starts set the first flash patterns on the display
+        self.update_flash_pattern()
+
+        # and other colors if required
+        if 'pad_colors' in self.config:
+            ui_tools.push_colors_to_panel(
+                self.socketio, self.room_id,
+                self.config['pad_colors'], 'pad')
+
+    def step(self, feedback_info):
+        if self.code_manager.is_code_decoded():
+            print('NOT PROCESSING!')
+        else:
+            self.update_learner(feedback_info)
+
+            if self.learner.is_inconsistent():
+                print('!!!!! INCONSISTENT !!!!!')
+
+            if self.learner.is_solved():
+                self.update_code()
+                print(self.config['learner']['known_symbols'])
+                print(self.code_manager.decoded_code)
+
+            if self.code_manager.is_code_decoded():
+                print(self.code_manager.secret_code)
+                print(self.code_manager.decoded_code)
+                if self.code_manager.is_code_valid():
+                    print('Amazing!!')
+                else:
+                    print('Code invalid!!')
+            else:
+                self.update_flash_pattern()
+
+    def update_flash_pattern(self):
+        new_flash_pattern = self.learner.get_next_flash_pattern()
+
+        display_colors = ui_tools.display_colors_from_flash_patterns(self.config['display_grid'], new_flash_pattern)
+
+        ui_tools.push_colors_to_panel(self.socketio, self.room_id, display_colors, 'display')
+
+    def update_learner(self, feedback_info):
+
+        displayed_colors = feedback_info['display_colors']
+        displayed_flash_patterns = ui_tools.flash_patterns_from_display_colors(displayed_colors)
+
+        if 'key' in feedback_info:
+            feedback_symbol = feedback_info['key']
+        else:
+            feedback_symbol = feedback_info['tile_index']
+
+        # print('##### Updating {} for {} with {}'.format(self.room_id, displayed_flash_patterns, feedback_symbol))
+
+        self.learner.update(displayed_flash_patterns, feedback_symbol)
+
+    def update_code(self):
+        # get new number decoded, add and display resulting code
+        # here solution_index is directly the new number
+        solution_index = self.learner.get_solution_index()
+        self.code_manager.add_new_digit(solution_index)
+        ui_tools.push_grid_to_panel(self.socketio, self.room_id,
+                                    self.code_manager.code_grid, 'code')
+
+        # update the known_symbols if needed
+        learner_info = self.config['learner']
+        if not learner_info['accumulate_known_symbols_between_numbers']:
+            learner_info['known_symbols'] = self.learner.compute_symbols_belief_for_hypothesis(solution_index)
+
+        # restart the learner
+        self.init_learner()
+
+
+class CodeManager(object):
+
+    def __init__(self, code_config):
+        self.secret_code = code_config['value']
+        self.show_code = code_config['show']
+        self.reset()
+
+    def reset(self):
+        self.decoded_code = [None for _ in self.secret_code]
+        self.ongoing_digit_index = 0
+
+    def add_new_digit(self, digit):
+        self.decoded_code[self.ongoing_digit_index] = digit
+        self.ongoing_digit_index += 1
+
+    def is_code_decoded(self):
+        return not None in self.decoded_code
+
+    def is_code_valid(self):
+        return self.secret_code == self.decoded_code
+
+    @property
+    def code_grid(self):
+        return ui_tools.build_code_grid(self.displayed_code)
+
+    @property
+    def displayed_code(self):
+        code_list_to_display = []
+        for digit in self.decoded_code:
+            if digit is None:
+                code_list_to_display.append('')
+            else:
+                if self.show_code:
+                    code_list_to_display.append(str(digit))
+                else:
+                    code_list_to_display.append('#')
+
+        return code_list_to_display
