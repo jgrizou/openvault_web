@@ -49,7 +49,7 @@ def on_connect():
     with transaction(database) as tr:
         tr.insert({'room_id': room_id})
 
-    config_filename = os.path.join(HERE_PATH, 'configs', 'level_1.json')
+    config_filename = os.path.join(HERE_PATH, 'configs', 'level_4.json')
     learner_manager.spawn(room_id, config_filename)
 
 # on disconnect, leave room, update database, delete the learner for this room

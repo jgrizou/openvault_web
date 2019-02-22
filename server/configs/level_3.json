@@ -1,0 +1,21 @@
+{
+  "display": {
+    "row": 2,
+    "column": 5
+  },
+  "pad": {
+    "row": 3,
+    "column": 3
+  },
+  "code": {
+    "value": [0, 0, 0, 0],
+    "show": true
+  },
+  "learner": {
+    "type": "discrete",
+    "n_hypothesis": 10,
+    "known_symbols": {},
+    "accumulate_known_symbols_between_numbers": true,
+    "show_learning_progress": false
+  }
+}

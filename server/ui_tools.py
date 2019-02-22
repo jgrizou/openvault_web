@@ -10,7 +10,6 @@ DISPLAY_FONTSIZE = "50px"
 CODE_FONTSIZE = "100px"
 
 
-
 def push_grid_to_panel(socketio, room_id, grid, panel_index):
     socketio.emit('grid', {"panel_index": panel_index, "grid": grid}, room=room_id)
 
@@ -83,7 +82,7 @@ def display_colors_from_flash_patterns(display_grid, flash_patterns, flash_to_co
                 display_colors[i][j] = flash_to_colors[flash_patterns[flash_index]]
                 flash_index += 1
             else:
-                display_colors[i][j] = '' # erase the copy
+                display_colors[i][j] = '' # to erase the copy values
 
     return display_colors
 
@@ -99,3 +98,22 @@ def flash_patterns_from_display_colors(display_colors, colors_to_flash=COLORS_TO
                 flash_patterns.append(flash_value)
 
     return flash_patterns
+
+
+def colors_from_index_flash_values(grid, index_to_flash_values_dict, flash_to_colors=FLASH_TO_COLORS):
+
+    # deep copy to keep same structure [i][j] but not alter content
+    colors = copy.deepcopy(grid)
+
+    for i, row in enumerate(grid):
+        for j, column in enumerate(row):
+            color_value = '' # to erase the copy values if nothing to do
+            if grid[i][j]:
+                if grid[i][j]['index'] in index_to_flash_values_dict:
+                    # replace with color
+                    flash_value = index_to_flash_values_dict[grid[i][j]['index']]
+                    color_value = flash_to_colors[flash_value]
+
+            colors[i][j] = color_value
+
+    return colors

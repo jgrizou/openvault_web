@@ -86,12 +86,7 @@ class Learner(object):
     def start(self):
         # starts set the first flash patterns on the display
         self.update_flash_pattern()
-
-        # and other colors if required
-        if 'pad_colors' in self.config:
-            ui_tools.push_colors_to_panel(
-                self.socketio, self.room_id,
-                self.config['pad_colors'], 'pad')
+        self.update_pad_colors()
 
     def step(self, feedback_info):
         if self.code_manager.is_code_decoded():
@@ -104,6 +99,11 @@ class Learner(object):
 
             if self.learner.is_solved():
                 self.update_code()
+                self.update_known_symbols()
+                self.update_pad_colors()
+                # restart the learner for next number
+                self.init_learner()
+
                 print(self.config['learner']['known_symbols'])
                 print(self.code_manager.decoded_code)
 
@@ -146,13 +146,21 @@ class Learner(object):
         ui_tools.push_grid_to_panel(self.socketio, self.room_id,
                                     self.code_manager.code_grid, 'code')
 
+    def update_known_symbols(self):
         # update the known_symbols if needed
         learner_info = self.config['learner']
-        if not learner_info['accumulate_known_symbols_between_numbers']:
+        if learner_info['accumulate_known_symbols_between_numbers']:
+            solution_index = self.learner.get_solution_index()
             learner_info['known_symbols'] = self.learner.compute_symbols_belief_for_hypothesis(solution_index)
 
-        # restart the learner
-        self.init_learner()
+    def update_pad_colors(self):
+        if self.config['learner']['show_learning_progress']:
+            pad_colors = ui_tools.colors_from_index_flash_values(
+                self.config['pad_grid'], self.config['learner']['known_symbols'])
+
+            ui_tools.push_colors_to_panel(
+                self.socketio, self.room_id,
+                pad_colors, 'pad')
 
 
 class CodeManager(object):

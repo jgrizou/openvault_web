@@ -63,8 +63,10 @@ export default {
         for (var i = 0; i < colors.length; i++) {
           for (var j = 0; j < colors[i].length; j++) {
             if (this.$refs[this.grid[i][j].index]) {
-              var child = this.$refs[this.grid[i][j].index][0]
-              child.set_background_color(colors[i][j])
+              if (colors[i][j]) {
+                var child = this.$refs[this.grid[i][j].index][0]
+                child.set_background_color(colors[i][j])
+              }
             }
           }
         }
@@ -76,8 +78,10 @@ export default {
         for (var i = 0; i < images.length; i++) {
           for (var j = 0; j < images[i].length; j++) {
             if (this.$refs[this.grid[i][j].index]) {
-              var child = this.$refs[this.grid[i][j].index][0]
-              child.set_background_image(images[i][j])
+              if (images[i][j]) {
+                var child = this.$refs[this.grid[i][j].index][0]
+                child.set_background_image(images[i][j])
+              }
             }
           }
         }

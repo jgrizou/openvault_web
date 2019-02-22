@@ -4,9 +4,8 @@
     "column": 5
   },
   "pad": {
-    "row": 1,
-    "column": 2,
-    "indexes": [["no_flash", "flash"]]
+    "row": 3,
+    "column": 3
   },
   "code": {
     "value": [0, 0, 0, 0],
@@ -15,11 +14,8 @@
   "learner": {
     "type": "discrete",
     "n_hypothesis": 10,
-    "known_symbols": {
-      "flash": true,
-      "no_flash": false
-    },
-    "accumulate_known_symbols_between_numbers": false,
+    "known_symbols": {},
+    "accumulate_known_symbols_between_numbers": true,
     "show_learning_progress": true
   }
 }
