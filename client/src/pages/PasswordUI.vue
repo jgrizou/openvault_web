@@ -1,24 +1,26 @@
 <template>
-  <div>
+  <div class="text-center">
+    <b-container class="passwordui" fluid>
 
-    <panel ref="display" index="display" ></panel>
-    <br>
-    <panel ref="code" index="code"></panel>
-    <br>
-    <panel ref="pad" index="pad" :callback="pad_callback"></panel>
-    <br>
+      <panel ref="display" index="display" ></panel>
+      <br>
+      <panel ref="code" index="code"></panel>
+      <br>
+      <panel ref="pad" index="pad" :callback="pad_callback"></panel>
+      <br>
 
-    <b-container class="text-center" fluid>
-      <b-row>
-        <b-col>
-            <b-button v-on:click="reset">Reset</b-button>
-            <router-link :to="{ name: 'LevelSelection'}">
-              <b-button>Back to selection</b-button>
-            </router-link>
-        </b-col>
-      </b-row>
+      <b-container class="text-center" fluid>
+        <b-row>
+          <b-col>
+              <b-button v-on:click="reset">Reset</b-button>
+              <router-link :to="{ name: 'LevelSelection'}">
+                <b-button>Back to selection</b-button>
+              </router-link>
+          </b-col>
+        </b-row>
+      </b-container>
+
     </b-container>
-
   </div>
 </template>
 
@@ -107,6 +109,10 @@ export default {
   outline: none;
   margin: 0;
   padding: 0;
+}
+
+.passwordui {
+  max-width: 30rem;
 }
 
 </style>

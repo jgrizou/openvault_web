@@ -6,8 +6,8 @@ FLASH_TO_COLORS[False] = 'rgba(255, 255, 255, 1)'
 
 COLORS_TO_FLASH = {v: k for k, v in FLASH_TO_COLORS.items()}
 
-DISPLAY_FONTSIZE = "50px"
-CODE_FONTSIZE = "100px"
+DISPLAY_FONTSIZE = "10vw"
+CODE_FONTSIZE = "20vw"
 
 
 def push_grid_to_panel(socketio, room_id, grid, panel_index):

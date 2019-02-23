@@ -2,8 +2,8 @@
   <div
     class="square"
     v-bind:style="styleObject"
-    v-bind:ref="'tile_' + index"
-    v-on:click="on_click('tile_' + index, $event)"
+    v-bind:ref="reference"
+    v-on:click="on_click"
   >
     <div class="content">{{ message }}</div>
   </div>
@@ -19,18 +19,27 @@ export default {
     },
     fontSize: {
       type: String,
-      default: "50px"
+      default: "10vw"
     },
     message: {
       type: String,
       default: ""
     },
-    callback: undefined
+    callback: {
+      type: Function,
+      default: undefined
+    },
+    background: {
+      type: String,
+      default: "rgba(200, 200, 200, 1)"
+    },
+    isBackgroundImage: {
+      type: Boolean,
+      default: false
+    }
   },
   data: function () {
       return {
-          background: "rgba(200, 200, 200, 1)",
-          isBackgroundImage: false
       }
   },
   computed: {
@@ -43,6 +52,9 @@ export default {
         styleDict.background = this.background
       }
       return styleDict
+    },
+    reference: function () {
+      return this.index
     }
   },
   methods: {
@@ -54,10 +66,10 @@ export default {
       this.isBackgroundImage = true
       this.background = newImageLocation
     },
-    on_click: function (ref, event) {
+    on_click: function (event) {
       if (this.callback) {
         // get position of pad
-        var elem_data = this.$refs[ref].getBoundingClientRect()
+        var elem_data = this.$refs[this.reference].getBoundingClientRect()
 
         // compute relative position of click in pad
         var relative_click = {}

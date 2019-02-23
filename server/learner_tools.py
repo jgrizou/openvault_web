@@ -40,7 +40,8 @@ class LearnerManager(Namespace):
 
     def on_reset(self):
         room_id = request.sid
-        self.learners[room_id].reset()
+        if room_id in self.learners:
+            self.learners[room_id].reset()
 
     def on_status(self, status):
         room_id = request.sid
@@ -96,6 +97,7 @@ class Learner(object):
         self.update_pad_colors()
 
     def step(self, feedback_info):
+        print(feedback_info)
         if self.code_manager.is_code_decoded():
             print('NOT PROCESSING!')
         else:

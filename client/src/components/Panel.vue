@@ -1,5 +1,4 @@
 <template>
-
   <div>
     <b-container fluid>
       <b-row v-for="(row, i) of grid" :key="i">
@@ -7,11 +6,11 @@
 
           <tile
             v-if="data.index"
-            :ref="data.index"
-            :index="data.index"
-            :message="data.message"
-            :fontSize="data.fontSize"
-            :callback="tile_callback"
+            v-bind:ref="data.index"
+            v-bind:index="data.index"
+            v-bind:message="data.message"
+            v-bind:fontSize="data.fontSize"
+            v-bind:callback="tile_callback"
           >
           </tile>
 
@@ -19,7 +18,6 @@
       </b-row>
     </b-container>
   </div>
-
 </template>
 
 <script>
