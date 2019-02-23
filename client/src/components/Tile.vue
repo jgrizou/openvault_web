@@ -80,11 +80,12 @@ export default {
   width: 100%;
   position: relative;
   background-size: 100% 100%;
+  display: flex;
 }
 
 .square:after {
   content: "";
-  display: block;
+  display: flex;
   padding-bottom: 100%;
 }
 

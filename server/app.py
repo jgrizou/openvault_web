@@ -26,9 +26,11 @@ app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
 # we initialise the learner and pass the instance of socketio
-import learner_tools
-learner_manager = learner_tools.LearnerManager(socketio)
+from learner_tools import LearnerManager
+learner_manager = LearnerManager(socketio)
 socketio.on_namespace(learner_manager)
+
+from config_tools import CONFIG_FOLDER, get_configs
 
 # when opening the root, we server index.html
 @app.route('/')
@@ -40,7 +42,7 @@ def index():
 def serve_static(path):
     return app.send_from_directory('', path)
 
-# on connect, join room, update database, start a learner for this room
+# on connect, join room, update database
 @socketio.on('connect')
 def on_connect():
     room_id = request.sid
@@ -49,10 +51,8 @@ def on_connect():
     with transaction(database) as tr:
         tr.insert({'room_id': room_id})
 
-    config_filename = os.path.join(HERE_PATH, 'configs', 'level_4.json')
-    learner_manager.spawn(room_id, config_filename)
-
-# on disconnect, leave room, update database, delete the learner for this room
+# on disconnect, leave room, update database
+# delete the learner for this room if created
 @socketio.on('disconnect')
 def on_disconnect():
     room_id = request.sid
@@ -61,6 +61,16 @@ def on_disconnect():
     with transaction(database) as tr:
         tr.remove(where('room_id') == room_id)
     learner_manager.kill(room_id)
+
+@socketio.on('get_configs')
+def on_get_configs():
+    emit('set_configs', get_configs())
+
+@socketio.on('spawn_learner')
+def on_spawn_learner(config_filename):
+    room_id = request.sid
+    full_config_file = os.path.join(CONFIG_FOLDER, config_filename)
+    learner_manager.spawn(room_id, full_config_file)
 
 
 if __name__ == '__main__':

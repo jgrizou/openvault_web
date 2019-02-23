@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
   <div>
 
     <panel ref="display" index="display" ></panel>
@@ -6,16 +6,27 @@
     <panel ref="code" index="code"></panel>
     <br>
     <panel ref="pad" index="pad" :callback="pad_callback"></panel>
+    <br>
+
+    <b-container class="text-center" fluid>
+      <b-row>
+        <b-col>
+            <b-button v-on:click="reset">Reset</b-button>
+            <router-link :to="{ name: 'LevelSelection'}">
+              <b-button>Back to selection</b-button>
+            </router-link>
+        </b-col>
+      </b-row>
+    </b-container>
 
   </div>
 </template>
-
 
 <script>
 import Panel from './../components/Panel.vue'
 
 export default {
-  name: 'V1',
+  name: 'PasswordUI',
   components: { Panel },
   data() {
     return {
@@ -45,6 +56,9 @@ export default {
     }
   },
   methods: {
+    reset: function () {
+      this.$socket.emit('reset')
+    },
     pad_callback: function (data) {
       // data.tile_component.set_background_color("rgba(0, 0, 0, 0.5)")
       // data.tile_component.set_background_image("url(" + require('./../assets/sprite.png') + ")")
@@ -64,6 +78,8 @@ export default {
       key_info.display_colors = this.$refs.display.colors
       this.$socket.emit('key', key_info)
     });
+    // spawn the learner given link given in url
+    this.$socket.emit('spawn_learner', this.$route.params.pathMatch)
   }
 }
 </script>

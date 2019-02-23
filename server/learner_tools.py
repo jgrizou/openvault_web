@@ -29,11 +29,18 @@ class LearnerManager(Namespace):
         self.learners = {}
 
     def spawn(self, room_id, config_filename):
+        if room_id in self.learners:
+            self.kill(room_id)
         config = build_config_from_file(config_filename)
         self.learners[room_id] = Learner(self.socketio, room_id, config)
 
     def kill(self, room_id):
-        del(self.learners[room_id])
+        if room_id in self.learners:
+            del(self.learners[room_id])
+
+    def on_reset(self):
+        room_id = request.sid
+        self.learners[room_id].reset()
 
     def on_status(self, status):
         room_id = request.sid

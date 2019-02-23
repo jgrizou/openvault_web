@@ -7,6 +7,22 @@ HERE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe
 import json
 
 import ui_tools
+from tools import list_files
+
+CONFIG_FOLDER = os.path.join(HERE_PATH, 'configs')
+
+def get_configs():
+    config_files = list_files(CONFIG_FOLDER, ['*.json'])
+    config_files.sort()
+
+    configs = []
+    for config_filename in config_files:
+        config_data = read_config(config_filename)
+        config_info = {}
+        config_info['filename'] = os.path.relpath(config_filename, CONFIG_FOLDER)
+        config_info['message'] = config_data['name']
+        configs.append(config_info)
+    return configs
 
 
 def read_config(config_filename):
