@@ -1,25 +1,39 @@
 <template>
   <div
     class="square"
-    v-bind:style="styleObject"
     v-bind:ref="reference"
+    v-bind:style="styleObject"
     v-on:click="on_click"
   >
     <div class="content">{{ message }}</div>
+    <media
+      :query="{maxWidth: maxWidthTrigger}"
+      @media-enter="mediaEnter"
+      @media-leave="mediaLeave"
+    ></media>
   </div>
 </template>
 
 <script>
+import Media from 'vue-media'
+
 export default {
   name: 'Tile',
+  components: { Media },
   props: {
     index: {
       type: String,
       required: true
     },
-    fontSize: {
-      type: String,
-      default: "10vw"
+    styleDict: {
+      type: Object,
+      default : {
+        "fontSize": "10vw",
+        "maxFontSize": "30px",
+        "background": "rgba(200, 200, 200, 1)",
+        "isBackgroundImage": false,
+        "maxWidthTrigger": 600
+      }
     },
     message: {
       type: String,
@@ -28,28 +42,26 @@ export default {
     callback: {
       type: Function,
       default: undefined
-    },
-    background: {
-      type: String,
-      default: "rgba(200, 200, 200, 1)"
-    },
-    isBackgroundImage: {
-      type: Boolean,
-      default: false
     }
   },
   data: function () {
       return {
+        maxWidthTrigger: this.styleDict.maxWidthTrigger,
+        greaterThanMaxWidth: window.innerWidth > this.styleDict.maxWidthTrigger
       }
   },
   computed: {
     styleObject: function () {
       var styleDict = {}
-      styleDict.fontSize = this.fontSize
-      if (this.isBackgroundImage) {
-        styleDict.backgroundImage = this.background
+      if (this.greaterThanMaxWidth) {
+        styleDict.fontSize = this.styleDict.maxFontSize
       } else {
-        styleDict.background = this.background
+        styleDict.fontSize = this.styleDict.fontSize
+      }
+      if (this.styleDict.isBackgroundImage) {
+        styleDict.backgroundImage = this.styleDict.background
+      } else {
+        styleDict.background = this.styleDict.background
       }
       return styleDict
     },
@@ -58,13 +70,11 @@ export default {
     }
   },
   methods: {
-    set_background_color: function (newColorCSS) {
-      this.isBackgroundImage = false
-      this.background = newColorCSS
+    mediaEnter(mediaQueryString) {
+      this.greaterThanMaxWidth = false
     },
-    set_background_image: function (newImageLocation) {
-      this.isBackgroundImage = true
-      this.background = newImageLocation
+    mediaLeave(mediaQueryString) {
+      this.greaterThanMaxWidth = true
     },
     on_click: function (event) {
       if (this.callback) {
@@ -93,6 +103,12 @@ export default {
   position: relative;
   background-size: 100% 100%;
   display: flex;
+}
+
+@media (min-width: 600px) {
+  .square {
+    font-size: 60px;
+  }
 }
 
 .square:after {

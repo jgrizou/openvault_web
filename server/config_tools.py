@@ -5,6 +5,7 @@ import inspect
 HERE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 import json
+import copy
 
 import ui_tools
 from tools import list_files
@@ -17,54 +18,45 @@ def get_configs():
 
     configs = []
     for config_filename in config_files:
-        config_data = read_config(config_filename)
+        config = read_config(config_filename)
         config_info = {}
         config_info['filename'] = os.path.relpath(config_filename, CONFIG_FOLDER)
-        config_info['message'] = config_data['name']
+        config_info['message'] = config['name']
         configs.append(config_info)
     return configs
 
 
 def read_config(config_filename):
     with open(config_filename) as f:
-        config_data = json.load(f)
-    return config_data
+        config = json.load(f)
+    return config
 
 
-def build_config_from_file(config_filename):
-    return build_config(read_config(config_filename))
+def init_state_from_config(config):
 
+    config_copy = copy.deepcopy(config)
 
-def build_config(config_data):
-    config = {}
+    init_state = {}
 
     ## DISPLAY
-    display_indexes = None
-    if 'indexes' in config_data['display']:
-        display_indexes = config_data['display']['indexes']
+    init_state['display_grid'] = ui_tools.build_display_grid(
+                                    config_copy['display']['row'],
+                                    config_copy['display']['column'])
 
-    config['display_grid'] = ui_tools.build_display_grid(
-                                    config_data['display']['row'],
-                                    config_data['display']['column'],
-                                    display_indexes)
+    ## CODE
+    init_state['code'] = config_copy['code']
 
     ## PAD
     pad_indexes = None
-    if 'indexes' in config_data['pad']:
-        pad_indexes = config_data['pad']['indexes']
+    if 'indexes' in config_copy['pad']:
+        pad_indexes = config_copy['pad']['indexes']
 
-    config['pad_grid'] = ui_tools.build_pad_grid(
-                                    config_data['pad']['row'],
-                                    config_data['pad']['column'],
+    init_state['pad_grid'] = ui_tools.build_pad_grid(
+                                    config_copy['pad']['row'],
+                                    config_copy['pad']['column'],
                                     pad_indexes)
 
-    if 'colors' in config_data['pad']:
-        config['pad_colors'] = config_data['pad']['colors']
-
-    ## CODE
-    config['code'] = config_data['code']
-
     # LEARNER
-    config['learner'] = config_data['learner']
+    init_state['learner'] = config_copy['learner']
 
-    return config
+    return init_state

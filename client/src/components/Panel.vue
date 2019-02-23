@@ -9,7 +9,7 @@
             v-bind:ref="data.index"
             v-bind:index="data.index"
             v-bind:message="data.message"
-            v-bind:fontSize="data.fontSize"
+            v-bind:styleDict="data.style"
             v-bind:callback="tile_callback"
           >
           </tile>
@@ -35,9 +35,7 @@ export default {
   },
   data: function () {
       return {
-        grid: undefined,
-        colors: undefined,
-        images: undefined
+        grid: undefined
       }
   },
   computed: {
@@ -53,36 +51,6 @@ export default {
         message.tile_component = data.tile_component
         message.relative_click = data.relative_click
         this.callback(message)
-      }
-    },
-    set_background_colors: function (colors) {
-      if (this.grid) {
-        this.colors = colors
-        for (var i = 0; i < colors.length; i++) {
-          for (var j = 0; j < colors[i].length; j++) {
-            if (this.$refs[this.grid[i][j].index]) {
-              if (colors[i][j]) {
-                var child = this.$refs[this.grid[i][j].index][0]
-                child.set_background_color(colors[i][j])
-              }
-            }
-          }
-        }
-      }
-    },
-    set_background_images: function (images) {
-      if (this.grid) {
-        this.images = images
-        for (var i = 0; i < images.length; i++) {
-          for (var j = 0; j < images[i].length; j++) {
-            if (this.$refs[this.grid[i][j].index]) {
-              if (images[i][j]) {
-                var child = this.$refs[this.grid[i][j].index][0]
-                child.set_background_image(images[i][j])
-              }
-            }
-          }
-        }
       }
     }
   }

@@ -9,7 +9,7 @@
     "column": 3
   },
   "code": {
-    "value": [0, 0, 0, 0],
+    "secret_code": [0, 0, 0, 0],
     "show": true
   },
   "learner": {

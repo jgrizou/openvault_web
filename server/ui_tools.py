@@ -1,23 +1,28 @@
 import copy
 
+DEFAULT_COLOR = 'rgba(200, 200, 200, 1)'
+
 FLASH_TO_COLORS = {}
 FLASH_TO_COLORS[True] = 'rgba(220, 0, 0, 0.5)'
 FLASH_TO_COLORS[False] = 'rgba(255, 255, 255, 1)'
 
 COLORS_TO_FLASH = {v: k for k, v in FLASH_TO_COLORS.items()}
 
-DISPLAY_FONTSIZE = "10vw"
-CODE_FONTSIZE = "20vw"
+WINDOW_MAX_WIDTH_TRIGGER = 600
+
+DISPLAY_FONTSIZE_RATIO = 0.10
+DISPLAY_FONTSIZE = '{}vw'.format(100 * DISPLAY_FONTSIZE_RATIO)
+DISPLAY_MAXFONTSIZE = '{}px'.format(WINDOW_MAX_WIDTH_TRIGGER * DISPLAY_FONTSIZE_RATIO)
+
+CODE_FONTSIZE_RATIO = 0.15
+CODE_FONTSIZE = '{}vw'.format(100 * CODE_FONTSIZE_RATIO)
+MAX_CODE_FONTSIZE = '{}px'.format(WINDOW_MAX_WIDTH_TRIGGER * CODE_FONTSIZE_RATIO)
 
 
 def push_grid_to_panel(socketio, room_id, grid, panel_index):
     socketio.emit('grid', {"panel_index": panel_index, "grid": grid}, room=room_id)
 
-def push_colors_to_panel(socketio, room_id, colors, panel_index):
-    socketio.emit('colors', {"panel_index": panel_index, "colors": colors}, room=room_id)
-
-
-def build_display_grid(n_row, n_column, indexes=None, fontSize=DISPLAY_FONTSIZE):
+def build_display_grid(n_row, n_column, flash_patterns=None):
     i_number = 0
     display_grid = []
     for i_row in range(n_row):
@@ -25,12 +30,19 @@ def build_display_grid(n_row, n_column, indexes=None, fontSize=DISPLAY_FONTSIZE)
         for i_column in range(n_column):
 
             tile_info = {}
-            if indexes is not None:
-                tile_info['index'] = indexes[i_row][i_column]
-            else:
-                tile_info['index'] = 'display_{}'.format(i_number)
+            tile_info['index'] = 'display_{}'.format(i_number)
             tile_info['message'] = str(i_number)
-            tile_info['fontSize'] = fontSize
+
+            style = {}
+            style['fontSize'] = DISPLAY_FONTSIZE
+            style['maxFontSize'] = DISPLAY_MAXFONTSIZE
+            style['maxWidthTrigger'] = WINDOW_MAX_WIDTH_TRIGGER
+            if flash_patterns is None:
+                style['background'] = DEFAULT_COLOR
+            else:
+                style['background'] = FLASH_TO_COLORS[flash_patterns[i_number]]
+            style['isBackgroundImage'] = False
+            tile_info['style'] = style
 
             display_grid[i_row].append(tile_info)
             i_number += 1
@@ -38,20 +50,31 @@ def build_display_grid(n_row, n_column, indexes=None, fontSize=DISPLAY_FONTSIZE)
     return display_grid
 
 
-def build_code_grid(code_list, indexes=None, fontSize=CODE_FONTSIZE):
-    code_row = []
-    for i_number, number in enumerate(code_list):
-        tile_info = {}
-        if indexes is not None:
-            tile_info['index'] = indexes[i_number]
-        else:
-            tile_info['index'] = 'code_{}'.format(i_number)
-        tile_info['message'] = str(number)
-        tile_info['fontSize'] = fontSize
-        code_row.append(tile_info)
-    code_grid = [code_row]
-    return code_grid
+def build_code_grid(code_list, grid_layout=None):
 
+    if grid_layout is None:
+        grid_layout = [[True for _ in code_list]]  # all in one row
+
+    i_number = 0
+    code_grid = copy.deepcopy(grid_layout)
+    for i, row in enumerate(grid_layout):
+        for j, valid_emplacement in enumerate(row):
+            tile_info = {}
+            if valid_emplacement:
+                tile_info['index'] = 'code_{}'.format(i_number)
+                tile_info['message'] = str(code_list[i_number])
+
+                style = {}
+                style['fontSize'] = DISPLAY_FONTSIZE
+                style['maxFontSize'] = DISPLAY_MAXFONTSIZE
+                style['maxWidthTrigger'] = WINDOW_MAX_WIDTH_TRIGGER
+                style['background'] = DEFAULT_COLOR
+                style['isBackgroundImage'] = False
+                tile_info['style'] = style
+
+                code_grid[i][j] = tile_info
+                i_number += 1
+    return code_grid
 
 def build_pad_grid(n_row, n_column, indexes=None):
     i_number = 0
@@ -64,55 +87,55 @@ def build_pad_grid(n_row, n_column, indexes=None):
                 tile_info['index'] = indexes[i_row][i_column]
             else:
                 tile_info['index'] = 'pad_{}'.format(i_number)
+
+            style = {}
+            style['background'] = DEFAULT_COLOR
+            style['isBackgroundImage'] = False
+            tile_info['style'] = style
+
             pad_grid[i_row].append(tile_info)
             i_number += 1
     return pad_grid
 
 
-def display_colors_from_flash_patterns(display_grid, flash_patterns, flash_to_colors=FLASH_TO_COLORS):
-
-    # deep copy to keep same structure [i][j] but not alter content
-    display_colors = copy.deepcopy(display_grid)
-
-    flash_index = 0
-    for i, row in enumerate(display_grid):
+def update_grid_colors(grid, colors):
+    for i, row in enumerate(grid):
         for j, column in enumerate(row):
-            if display_grid[i][j]:
-                # replace with color
-                display_colors[i][j] = flash_to_colors[flash_patterns[flash_index]]
-                flash_index += 1
-            else:
-                display_colors[i][j] = '' # to erase the copy values
-
-    return display_colors
+            grid[i][j]['style']['background'] = colors[i][j]
+            grid[i][j]['style']['isBackgroundImage'] = False
+    return grid
 
 
-def flash_patterns_from_display_colors(display_colors, colors_to_flash=COLORS_TO_FLASH):
+def flash_patterns_from_displayed_grid(displayed_grid):
 
     flash_patterns = []
 
-    for i, row in enumerate(display_colors):
+    for i, row in enumerate(displayed_grid):
         for j, column in enumerate(row):
-            if display_colors[i][j]:
-                flash_value = colors_to_flash[display_colors[i][j]]
+            if displayed_grid[i][j]:
+                if displayed_grid[i][j]['style']['isBackgroundImage']:
+                    raise NotImplemented()
+                else:
+                    flash_value = COLORS_TO_FLASH[
+                        displayed_grid[i][j]['style']['background']]
                 flash_patterns.append(flash_value)
 
     return flash_patterns
 
 
-def colors_from_index_flash_values(grid, index_to_flash_values_dict, flash_to_colors=FLASH_TO_COLORS):
+def colors_from_index_flash_values(grid, index_to_flash_values_dict):
 
     # deep copy to keep same structure [i][j] but not alter content
     colors = copy.deepcopy(grid)
 
     for i, row in enumerate(grid):
         for j, column in enumerate(row):
-            color_value = '' # to erase the copy values if nothing to do
+            color_value = DEFAULT_COLOR  # default to DEFAULT_COLOR
             if grid[i][j]:
                 if grid[i][j]['index'] in index_to_flash_values_dict:
                     # replace with color
                     flash_value = index_to_flash_values_dict[grid[i][j]['index']]
-                    color_value = flash_to_colors[flash_value]
+                    color_value = FLASH_TO_COLORS[flash_value]
 
             colors[i][j] = color_value
 

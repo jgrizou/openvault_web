@@ -12,10 +12,15 @@
       <b-container class="text-center" fluid>
         <b-row>
           <b-col>
-              <b-button v-on:click="reset">Reset</b-button>
-              <router-link :to="{ name: 'LevelSelection'}">
-                <b-button>Back to selection</b-button>
-              </router-link>
+            <b-button v-on:click="reset">
+              <b-badge pill variant="light">{{ n_iteration }}</b-badge>
+              Reset
+            </b-button>
+            <router-link :to="{ name: 'LevelSelection'}">
+              <b-button>
+                Level selection
+              </b-button>
+            </router-link>
           </b-col>
         </b-row>
       </b-container>
@@ -32,11 +37,13 @@ export default {
   components: { Panel },
   data() {
     return {
+      n_iteration: 0
     };
   },
   sockets: {
     connect: function () {
       console.log('## Socket connected')
+      this.$socket.emit('is_spawn')
     },
     disconnect: function () {
       console.log('## Socket disconnected')
@@ -45,21 +52,22 @@ export default {
       var child = this.$refs[data.panel_index]
       child.grid = data.grid
     },
-    colors: function (data) {
-      var child = this.$refs[data.panel_index]
-      child.set_background_colors(data.colors)
+    n_iteration: function (n_iteration) {
+      this.n_iteration = n_iteration
     },
-    status: function () {
-      var status = true
-      status = this.$refs.display.status
-      status = this.$refs.code.status
-      status = this.$refs.pad.status
-      this.$socket.emit('status', status)
+    spawn_state: function (state) {
+      if (!state) {
+        this.spawn_learner()
+      }
     }
   },
   methods: {
     reset: function () {
       this.$socket.emit('reset')
+    },
+    spawn_learner: function () {
+      // spawn the learner given link given in url
+      this.$socket.emit('spawn_learner', this.$route.params.pathMatch)
     },
     pad_callback: function (data) {
       // data.tile_component.set_background_color("rgba(0, 0, 0, 0.5)")
@@ -69,7 +77,7 @@ export default {
       click_info.panel_index = data.panel_component.index
       click_info.tile_index = data.tile_component.index
       click_info.relative_click = data.relative_click
-      click_info.display_colors = this.$refs.display.colors
+      click_info.display_grid = this.$refs.display.grid
       this.$socket.emit('click', click_info)
     }
   },
@@ -77,11 +85,11 @@ export default {
     window.addEventListener('keypress', (event) => {
       var key_info = {}
       key_info.key = String.fromCharCode(event.keyCode)
-      key_info.display_colors = this.$refs.display.colors
+      key_info.display_grid = this.$refs.display.grid
       this.$socket.emit('key', key_info)
     });
     // spawn the learner given link given in url
-    this.$socket.emit('spawn_learner', this.$route.params.pathMatch)
+    this.spawn_learner()
   }
 }
 </script>

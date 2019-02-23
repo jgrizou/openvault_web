@@ -9,7 +9,8 @@
     "column": 3
   },
   "code": {
-    "value": [0, 0],
+    "secret_code": [0, 0],
+    "grid_layout": [[false, true, true, false]],
     "show": true
   },
   "learner": {

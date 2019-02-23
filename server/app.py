@@ -30,7 +30,7 @@ from learner_tools import LearnerManager
 learner_manager = LearnerManager(socketio)
 socketio.on_namespace(learner_manager)
 
-from config_tools import CONFIG_FOLDER, get_configs
+import config_tools
 
 # when opening the root, we server index.html
 @app.route('/')
@@ -46,30 +46,32 @@ def serve_static(path):
 @socketio.on('connect')
 def on_connect():
     room_id = request.sid
-    print('Client {} connected'.format(room_id))
     join_room(room_id)
     with transaction(database) as tr:
         tr.insert({'room_id': room_id})
+    print('{} clients connected'.format(len(database.all())))
 
 # on disconnect, leave room, update database
 # delete the learner for this room if created
 @socketio.on('disconnect')
 def on_disconnect():
     room_id = request.sid
-    print('Client {} disconnected'.format(room_id))
     leave_room(room_id)
     with transaction(database) as tr:
         tr.remove(where('room_id') == room_id)
     learner_manager.kill(room_id)
+    print('{} clients connected'.format(len(database.all())))
 
 @socketio.on('get_configs')
 def on_get_configs():
-    emit('set_configs', get_configs())
+    emit('set_configs', config_tools.get_configs())
 
 @socketio.on('spawn_learner')
 def on_spawn_learner(config_filename):
     room_id = request.sid
-    full_config_file = os.path.join(CONFIG_FOLDER, config_filename)
+    full_config_file = os.path.join(
+        config_tools.CONFIG_FOLDER,
+        config_filename)
     learner_manager.spawn(room_id, full_config_file)
 
 
