@@ -19,5 +19,6 @@
     "known_symbols": {},
     "accumulate_known_symbols_between_numbers": false,
     "show_learning_progress": false
-  }
+  },
+  "pause_between_trials_in_seconds": 5
 }

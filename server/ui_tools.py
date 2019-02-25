@@ -144,21 +144,20 @@ def colors_from_index_flash_values(grid, index_to_flash_values_dict):
     return colors
 
 
-def trigger_modal(socketio, room_id, is_code_valid, is_inconsistent, code_list):
+def trigger_modal(learner):
     modal_data = {}
-    modal_data['success'] = bool(is_code_valid)
-    modal_data['inconsistent'] = bool(is_inconsistent)
-    modal_data['code'] = ''.join(map(str, code_list))
+    modal_data['success'] = bool(learner.code_manager.is_code_valid())
+    modal_data['inconsistent'] = bool(learner.learner.is_inconsistent())
+    modal_data['code'] = ''.join(map(str, learner.code_manager.decoded_code))
 
-    if is_code_valid:
+    if modal_data['success']:
         gif_path = 'gifs/yes'
     else:
-        if is_inconsistent:
+        if modal_data['inconsistent']:
             gif_path = 'gifs/inconsistent'
         else:
             gif_path = 'gifs/no'
     modal_data['gif'] = tools.get_random_file_from_public_path(gif_path)
+    modal_data['pause_in_second'] = learner.config['pause_between_trials_in_seconds']
 
-    print(modal_data)
-
-    socketio.emit('modal', modal_data, room=room_id)
+    learner.socketio.emit('modal', modal_data, room=learner.room_id)

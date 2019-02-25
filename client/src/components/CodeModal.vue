@@ -16,9 +16,9 @@
           <p>The code is indeed: {{ code }}<p>
         </div>
         <b-button
-          variant="outline-success"
+          variant="success"
           block
-          v-on:click="modal_callback"
+          v-on:click="modalCallback"
         >
           Go to vault control panel
         </b-button>
@@ -37,11 +37,22 @@
           </div>
         </div>
         <b-button
+          v-if="disabled"
           variant="outline-success"
           block
-          v-on:click="modal_callback"
+          disabled
+          v-on:click="modalCallback"
         >
-          Try Again
+          Try again in
+          <b-badge pill variant="light">{{ remainingTimeDisplay }}</b-badge> seconds
+        </b-button>
+        <b-button
+          v-else
+          variant="success"
+          block
+          v-on:click="modalCallback"
+        >
+          Try again now !
         </b-button>
       </div>
 
@@ -63,8 +74,19 @@ export default {
         success: undefined,
         inconsistent: undefined,
         code: undefined,
-        gif: undefined
-      }
+        gif: undefined,
+        endTime: undefined,
+        remainingTime: undefined,
+        interval: undefined
+    }
+  },
+  computed: {
+    disabled: function () {
+      return (this.remainingTime > 0)
+    },
+    remainingTimeDisplay: function () {
+      return Math.max(0, Math.round(this.remainingTime / 1000))
+    }
   },
   methods: {
     show: function (data) {
@@ -72,18 +94,32 @@ export default {
       this.inconsistent = data.inconsistent
       this.code = data.code
       this.gif = data.gif
+
+      var nowTime = new Date().getTime()
+      this.remainingTime = 1000*data.pause_in_second
+      this.endTime = new Date(nowTime + this.remainingTime)
+
+      this.interval = setInterval(() => {
+        this.timerCount()
+      }, 1000)
       this.$refs.codeModal.show()
     },
     hide: function () {
       this.$refs.codeModal.hide()
     },
-    modal_callback: function () {
-      console.log('here')
+    modalCallback: function () {
       this.hide()
       if (this.success) {
         this.$router.push({ path: '/vaultcontrol'})
       } else {
         this.callback()
+      }
+    },
+    timerCount: function() {
+      var nowTime = new Date().getTime()
+      this.remainingTime = this.endTime - nowTime
+      if (this.remainingTime < 0) {
+        clearInterval(this.interval)
       }
     }
   }

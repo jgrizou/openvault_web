@@ -22,5 +22,6 @@
     },
     "accumulate_known_symbols_between_numbers": false,
     "show_learning_progress": true
-  }
+  },
+  "pause_between_trials_in_seconds": 10
 }

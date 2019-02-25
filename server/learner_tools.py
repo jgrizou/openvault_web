@@ -60,11 +60,11 @@ class LearnerManager(Namespace):
 
     def on_success(self):
         filename = tools.get_random_file_from_public_path('gifs/yes')
-        emit('modal', {'success': True, 'code': '2365', 'gif': filename, 'inconsistent': False})
+        emit('modal', {'success': True, 'code': '2365', 'gif': filename, 'inconsistent': False, 'pause_in_second': 0})
 
     def on_fail(self):
         filename = tools.get_random_file_from_public_path('gifs/no')
-        emit('modal', {'success': False, 'code': '0000', 'gif': filename, 'inconsistent': True})
+        emit('modal', {'success': False, 'code': '0000', 'gif': filename, 'inconsistent': True, 'pause_in_second': 5})
 
 
 class Learner(object):
@@ -98,24 +98,14 @@ class Learner(object):
 
     def step(self, feedback_info):
         if self.code_manager.is_code_decoded():
-            ui_tools.trigger_modal(
-                self.socketio,
-                self.room_id,
-                self.code_manager.is_code_valid(),
-                self.learner.is_inconsistent(),
-                self.code_manager.decoded_code)
+            ui_tools.trigger_modal(self)
         else:
             self.update_iteration(self.n_iteration + 1)
 
             self.update_learner(feedback_info)
 
             if self.learner.is_inconsistent():
-                ui_tools.trigger_modal(
-                    self.socketio,
-                    self.room_id,
-                    self.code_manager.is_code_valid(),
-                    self.learner.is_inconsistent(),
-                    self.code_manager.decoded_code)
+                ui_tools.trigger_modal(self)
 
             if self.learner.is_solved():
                 self.update_code()
@@ -128,12 +118,7 @@ class Learner(object):
                 print(self.code_manager.decoded_code)
 
             if self.code_manager.is_code_decoded():
-                ui_tools.trigger_modal(
-                    self.socketio,
-                    self.room_id,
-                    self.code_manager.is_code_valid(),
-                    self.learner.is_inconsistent(),
-                    self.code_manager.decoded_code)
+                ui_tools.trigger_modal(self)
             else:
                 self.update_flash_pattern()
 

@@ -72,7 +72,6 @@ export default {
       }
     },
     modal: function (data) {
-      console.log(data)
       this.success = data.success
       this.$refs.codeModal.show(data)
     }
