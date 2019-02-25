@@ -1,5 +1,7 @@
 import copy
 
+import tools
+
 DEFAULT_COLOR = 'rgba(200, 200, 200, 1)'
 
 FLASH_TO_COLORS = {}
@@ -140,3 +142,23 @@ def colors_from_index_flash_values(grid, index_to_flash_values_dict):
             colors[i][j] = color_value
 
     return colors
+
+
+def trigger_modal(socketio, room_id, is_code_valid, is_inconsistent, code_list):
+    modal_data = {}
+    modal_data['success'] = bool(is_code_valid)
+    modal_data['inconsistent'] = bool(is_inconsistent)
+    modal_data['code'] = ''.join(map(str, code_list))
+
+    if is_code_valid:
+        gif_path = 'gifs/yes'
+    else:
+        if is_inconsistent:
+            gif_path = 'gifs/inconsistent'
+        else:
+            gif_path = 'gifs/no'
+    modal_data['gif'] = tools.get_random_file_from_public_path(gif_path)
+
+    print(modal_data)
+
+    socketio.emit('modal', modal_data, room=room_id)

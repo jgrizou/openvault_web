@@ -33,7 +33,7 @@ export default {
   },
   methods: {
     onClick: function (i) {
-      this.$router.push({ path: `${this.configs[i].filename}`});
+      this.$router.push({ path: `/ui/${this.configs[i].filename}`});
     }
   },
   mounted() {

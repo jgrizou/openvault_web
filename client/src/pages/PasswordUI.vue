@@ -1,5 +1,8 @@
 <template>
   <div class="text-center">
+
+    <codeModal ref="codeModal" :callback="modal_callback"></codeModal>
+
     <b-container class="passwordui" fluid>
 
       <panel ref="display" index="display" ></panel>
@@ -16,11 +19,17 @@
               <b-badge pill variant="light">{{ n_iteration }}</b-badge>
               Reset
             </b-button>
+          </b-col>
+          <b-col>
             <router-link :to="{ name: 'LevelSelection'}">
               <b-button>
                 Level selection
               </b-button>
             </router-link>
+          </b-col>
+          <b-col>
+            <b-button @click="emit_success">Success</b-button>
+            <b-button @click="emit_fail">Failure</b-button>
           </b-col>
         </b-row>
       </b-container>
@@ -31,13 +40,15 @@
 
 <script>
 import Panel from './../components/Panel.vue'
+import CodeModal from './../components/CodeModal.vue'
 
 export default {
   name: 'PasswordUI',
-  components: { Panel },
+  components: { Panel, CodeModal },
   data() {
     return {
-      n_iteration: 0
+      n_iteration: 0,
+      success: undefined
     };
   },
   sockets: {
@@ -59,6 +70,11 @@ export default {
       if (!state) {
         this.spawn_learner()
       }
+    },
+    modal: function (data) {
+      console.log(data)
+      this.success = data.success
+      this.$refs.codeModal.show(data)
     }
   },
   methods: {
@@ -70,15 +86,25 @@ export default {
       this.$socket.emit('spawn_learner', this.$route.params.pathMatch)
     },
     pad_callback: function (data) {
-      // data.tile_component.set_background_color("rgba(0, 0, 0, 0.5)")
-      // data.tile_component.set_background_image("url(" + require('./../assets/sprite.png') + ")")
-
       var click_info = {}
       click_info.panel_index = data.panel_component.index
       click_info.tile_index = data.tile_component.index
       click_info.relative_click = data.relative_click
       click_info.display_grid = this.$refs.display.grid
       this.$socket.emit('click', click_info)
+    },
+    emit_success: function (data) {
+      this.$socket.emit('success')
+    },
+    emit_fail: function (data) {
+      this.$socket.emit('fail')
+    },
+    modal_callback: function () {
+      if (this.success) {
+        this.$router.push({ path: '/vaultcontrol'})
+      } else {
+        this.reset()
+      }
     }
   },
   mounted() {

@@ -29,9 +29,12 @@ export default {
   props: {
     index: {
       type: String,
-      required: false
+      required: true
     },
-    callback: undefined
+    callback: {
+      type :Function,
+      default: undefined
+    }
   },
   data: function () {
       return {

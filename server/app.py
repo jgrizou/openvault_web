@@ -17,9 +17,8 @@ database.purge()
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room
 
-# say the server where to serve the static files
-server_folder=os.path.normpath(os.path.join(HERE_PATH, '../client/dist'))
-app = Flask(__name__, static_folder=server_folder, template_folder=server_folder, static_url_path='')
+from tools import SERVER_FOLDER
+app = Flask(__name__, static_folder=SERVER_FOLDER, template_folder=SERVER_FOLDER, static_url_path='')
 
 app.config['SECRET_KEY'] = 'secret!'
 

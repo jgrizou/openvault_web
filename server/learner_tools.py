@@ -14,8 +14,9 @@ from flask_socketio import Namespace, emit
 
 from openvault.discrete import DiscreteLearner
 
+import tools
 import ui_tools
-from config_tools import read_config, init_state_from_config
+import config_tools
 
 import random
 import string
@@ -31,7 +32,7 @@ class LearnerManager(Namespace):
     def spawn(self, room_id, config_filename):
         if room_id in self.learners:
             self.kill(room_id)
-        config = read_config(config_filename)
+        config = config_tools.read_config(config_filename)
         self.learners[room_id] = Learner(self.socketio, room_id, config)
 
     def kill(self, room_id):
@@ -57,6 +58,14 @@ class LearnerManager(Namespace):
         if room_id in self.learners:
             self.learners[room_id].step(feedback_info)
 
+    def on_success(self):
+        filename = tools.get_random_file_from_public_path('gifs/yes')
+        emit('modal', {'success': True, 'code': '2365', 'gif': filename, 'inconsistent': False})
+
+    def on_fail(self):
+        filename = tools.get_random_file_from_public_path('gifs/no')
+        emit('modal', {'success': False, 'code': '0000', 'gif': filename, 'inconsistent': True})
+
 
 class Learner(object):
 
@@ -67,7 +76,7 @@ class Learner(object):
         self.reset()
 
     def reset(self):
-        self.state = init_state_from_config(self.config)
+        self.state = config_tools.init_state_from_config(self.config)
         self.code_manager = CodeManager(self.state['code'])
         self.init_learner()
         self.start()
@@ -89,14 +98,24 @@ class Learner(object):
 
     def step(self, feedback_info):
         if self.code_manager.is_code_decoded():
-            print('NOT PROCESSING!')
+            ui_tools.trigger_modal(
+                self.socketio,
+                self.room_id,
+                self.code_manager.is_code_valid(),
+                self.learner.is_inconsistent(),
+                self.code_manager.decoded_code)
         else:
             self.update_iteration(self.n_iteration + 1)
 
             self.update_learner(feedback_info)
 
             if self.learner.is_inconsistent():
-                print('!!!!! INCONSISTENT !!!!!')
+                ui_tools.trigger_modal(
+                    self.socketio,
+                    self.room_id,
+                    self.code_manager.is_code_valid(),
+                    self.learner.is_inconsistent(),
+                    self.code_manager.decoded_code)
 
             if self.learner.is_solved():
                 self.update_code()
@@ -109,12 +128,12 @@ class Learner(object):
                 print(self.code_manager.decoded_code)
 
             if self.code_manager.is_code_decoded():
-                print(self.code_manager.secret_code)
-                print(self.code_manager.decoded_code)
-                if self.code_manager.is_code_valid():
-                    print('Amazing!!')
-                else:
-                    print('Code invalid!!')
+                ui_tools.trigger_modal(
+                    self.socketio,
+                    self.room_id,
+                    self.code_manager.is_code_valid(),
+                    self.learner.is_inconsistent(),
+                    self.code_manager.decoded_code)
             else:
                 self.update_flash_pattern()
 
