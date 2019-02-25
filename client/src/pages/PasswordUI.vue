@@ -100,7 +100,7 @@ export default {
     },
     modal_callback: function () {
       if (this.success) {
-        this.$router.push({ path: '/vaultcontrol'})
+        this.$router.push({ path: '/'})
       } else {
         this.reset()
       }

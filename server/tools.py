@@ -13,7 +13,7 @@ SERVER_FOLDER=os.path.normpath(os.path.join(HERE_PATH, '../client/dist'))
 
 def get_random_file_from_public_path(path):
     folderpath = os.path.join(SERVER_FOLDER, path)
-    all_files = list_files(folderpath)
+    all_files = list_files(folderpath, ['*.gif'])
     selected_file = random.choice(all_files)
     rel_path = os.path.relpath(selected_file, SERVER_FOLDER)
     return rel_path

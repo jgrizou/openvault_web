@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-modal
-      ref="codeModal"
+      ref="codeModal" class="codeModal"
       centered
       no-close-on-esc
       no-close-on-backdrop
@@ -10,9 +10,11 @@
     >
 
       <div v-if="success">
-        <div class="d-block text-center">
+        <div class="text-center">
           <h1>Hooray !!!  &#x1F973</h1>
-          <b-img :src="gif" fluid-grow></b-img>
+          <b-container class="modalImg" fluid>
+            <b-img :src="gif" fluid-grow></b-img>
+          </b-container>
           <p>The code is indeed: {{ code }}<p>
         </div>
         <b-button
@@ -24,16 +26,18 @@
         </b-button>
       </div>
       <div v-else>
-        <div class="d-block text-center">
+        <div class="text-center">
           <div v-if="inconsistent">
             <h1>Hmmm... &#x1F937</h1>
-            <b-img :src="gif" fluid-grow></b-img>
-            <p>Sounds like you got mixed up.<p>
+            <b-container class="modalImg" fluid>
+              <b-img :src="gif" fluid-grow></b-img>
+            </b-container>            <p>Sounds like you got mixed up.<p>
           </div>
           <div v-else>
             <h1>Oh Noooooo &#x1F914</h1>
-            <b-img :src="gif" fluid-grow></b-img>
-            <p>Sorry, the code is not: {{ code }}<p>
+            <b-container class="modalImg" fluid>
+              <b-img :src="gif" fluid-grow></b-img>
+            </b-container>            <p>Sorry, the code is not: {{ code }}<p>
           </div>
         </div>
         <b-button
@@ -109,11 +113,7 @@ export default {
     },
     modalCallback: function () {
       this.hide()
-      if (this.success) {
-        this.$router.push({ path: '/vaultcontrol'})
-      } else {
-        this.callback()
-      }
+      this.callback()
     },
     timerCount: function() {
       var nowTime = new Date().getTime()
@@ -128,6 +128,11 @@ export default {
 
 <style>
 /* global styles */
+
+.modalImg {
+  max-width: 400px;
+}
+
 </style>
 
 <style scoped>
