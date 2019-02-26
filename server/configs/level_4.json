@@ -11,7 +11,7 @@
   "code": {
     "secret_code": [0, 0],
     "grid_layout": [[false, true, true, false]],
-    "show": true
+    "show": false
   },
   "learner": {
     "type": "discrete",

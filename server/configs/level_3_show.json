@@ -1,5 +1,5 @@
 {
-  "name": "Level 3",
+  "name": "Level 3 - Visible Code",
   "display": {
     "row": 2,
     "column": 5
@@ -10,7 +10,7 @@
   },
   "code": {
     "secret_code": [0, 0, 0, 0],
-    "show": false
+    "show": true
   },
   "learner": {
     "type": "discrete",

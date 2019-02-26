@@ -27,10 +27,6 @@
               </b-button>
             </router-link>
           </b-col>
-          <b-col>
-            <b-button @click="emit_success">Success</b-button>
-            <b-button @click="emit_fail">Failure</b-button>
-          </b-col>
         </b-row>
       </b-container>
 
@@ -48,7 +44,8 @@ export default {
   data() {
     return {
       n_iteration: 0,
-      success: undefined
+      success: undefined,
+      waiting_for_new_grid: true
     };
   },
   sockets: {
@@ -62,6 +59,7 @@ export default {
     grid: function (data) {
       var child = this.$refs[data.panel_index]
       child.grid = data.grid
+      this.waiting_for_new_grid = false
     },
     n_iteration: function (n_iteration) {
       this.n_iteration = n_iteration
@@ -85,12 +83,15 @@ export default {
       this.$socket.emit('spawn_learner', this.$route.params.pathMatch)
     },
     pad_callback: function (data) {
-      var click_info = {}
-      click_info.panel_index = data.panel_component.index
-      click_info.tile_index = data.tile_component.index
-      click_info.relative_click = data.relative_click
-      click_info.display_grid = this.$refs.display.grid
-      this.$socket.emit('click', click_info)
+      if (!this.waiting_for_new_grid){
+        var click_info = {}
+        click_info.panel_index = data.panel_component.index
+        click_info.tile_index = data.tile_component.index
+        click_info.relative_click = data.relative_click
+        click_info.display_grid = this.$refs.display.grid
+        this.$socket.emit('click', click_info)
+        this.waiting_for_new_grid = true
+      }
     },
     emit_success: function (data) {
       this.$socket.emit('success')

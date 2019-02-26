@@ -58,14 +58,6 @@ class LearnerManager(Namespace):
         if room_id in self.learners:
             self.learners[room_id].step(feedback_info)
 
-    def on_success(self):
-        filename = tools.get_random_file_from_public_path('gifs/yes')
-        emit('modal', {'success': True, 'code': '2365', 'gif': filename, 'inconsistent': False, 'pause_in_second': 0})
-
-    def on_fail(self):
-        filename = tools.get_random_file_from_public_path('gifs/no')
-        emit('modal', {'success': False, 'code': '0000', 'gif': filename, 'inconsistent': True, 'pause_in_second': 5})
-
 
 class Learner(object):
 

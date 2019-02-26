@@ -15,8 +15,8 @@
           <b-container class="modalImg" fluid>
             <b-img :src="gif" fluid-grow></b-img>
           </b-container>
-          <p>The code is indeed: {{ code }}<p>
         </div>
+        <br>
         <b-button
           variant="success"
           block

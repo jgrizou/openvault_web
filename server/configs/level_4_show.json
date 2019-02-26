@@ -1,5 +1,5 @@
 {
-  "name": "Level 3",
+  "name": "Level 4 - Visible Code",
   "display": {
     "row": 2,
     "column": 5
@@ -9,14 +9,15 @@
     "column": 3
   },
   "code": {
-    "secret_code": [0, 0, 0, 0],
-    "show": false
+    "secret_code": [0, 0],
+    "grid_layout": [[false, true, true, false]],
+    "show": true
   },
   "learner": {
     "type": "discrete",
     "n_hypothesis": 10,
     "known_symbols": {},
-    "accumulate_known_symbols_between_numbers": true,
+    "accumulate_known_symbols_between_numbers": false,
     "show_learning_progress": false
   },
   "pause_between_trials_in_seconds": 5

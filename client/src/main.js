@@ -7,6 +7,8 @@ import router from './router'
 
 Vue.use(new VueSocketIO({
   debug: false,
+  // connection: 'http://11.1.194.39:5000'
+  // connection: 'http://150.10.147.98:5000'
   connection: 'http://localhost:5000'
 }))
 

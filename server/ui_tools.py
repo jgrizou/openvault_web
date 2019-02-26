@@ -147,7 +147,7 @@ def colors_from_index_flash_values(grid, index_to_flash_values_dict):
 def trigger_modal(learner):
     modal_data = {}
     modal_data['success'] = bool(learner.code_manager.is_code_valid())
-    modal_data['inconsistent'] = bool(learner.learner.is_inconsistent())
+    modal_data['inconsistent'] = bool(learner.learner.is_inconsistent())    
     modal_data['code'] = ''.join(map(str, learner.code_manager.decoded_code))
 
     if modal_data['success']:

@@ -10,7 +10,7 @@
   },
   "code": {
     "secret_code": [0, 0, 0, 0],
-    "show": true
+    "show": false
   },
   "learner": {
     "type": "discrete",
