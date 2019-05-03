@@ -1,12 +1,8 @@
 <template>
   <div>
-      <b-container class="text-center" fluid>
-        <b-row v-for="(row, i) of configs" :key="i">
-          <b-col>
-            <b-button v-on:click="onClick(i)">{{ row.message }}</b-button>
-          </b-col>
-        </b-row>
-      </b-container>
+    <div class="level-selector" v-for="(row, i) of configs" :key="i">
+      <button class="level-button" v-on:click="onClick(i)">{{ row.message }}</button>
+    </div>
   </div>
 </template>
 
@@ -21,12 +17,6 @@ export default {
     };
   },
   sockets: {
-    connect: function () {
-      console.log('## Socket connected')
-    },
-    disconnect: function () {
-      console.log('## Socket disconnected')
-    },
     set_configs: function (configs){
       this.configs = configs
     }
@@ -45,13 +35,27 @@ export default {
 
 <style>
 /* global styles */
+
+.level-selector {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.level-button {
+  display: inline-block;
+  width: 200px;
+  height: 50px;
+  outline: none; /* remove contour when clicked */
+  border: none;
+  background-color: rgba(150, 150, 150, 1);
+  color: black;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+}
+
 </style>
 
 <style scoped>
 /* local styles */
-
-.row {
-  margin-bottom: 10px;
-}
-
 </style>

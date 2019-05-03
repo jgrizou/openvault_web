@@ -1,8 +1,8 @@
 {
-  "name": "Level 3",
+  "name": "Level 4 - Visible",
   "code": {
     "secret_code": [0, 0, 0, 0],
-    "show_code": false
+    "show_code": true
   },
   "learner": {
     "type": "discrete",
@@ -12,6 +12,6 @@
   },
   "pad": {
     "n_pad": 9,
-    "show_learning_progress": true
+    "show_learning_progress": false
   }
 }

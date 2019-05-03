@@ -18,16 +18,14 @@
   "author": "Jonathan Grizou",
   "license": "ISC",
   "dependencies": {
-    "assets": "^3.0.1",
-    "bootstrap-css-only": "^4.3.1",
-    "bootstrap-vue": "^2.0.0-rc.11",
+    "mic-recorder-to-mp3": "^2.2.1",
     "vue": "^2.6.6",
-    "vue-media": "^1.1.1",
     "vue-router": "^3.0.2",
     "vue-socket.io": "^3.0.5"
   },
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.5.2",
+    "autoprefixer": "^9.4.10",
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
     "eslint": "^5.13.0",
@@ -37,7 +35,7 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.1.0",
-    "parcel-bundler": "^1.11.0",
+    "parcel-bundler": "^1.12.3",
     "parcel-plugin-eslint": "^1.0.6",
     "parcel-plugin-static-files-copy": "^2.0.0",
     "vue-hot-reload-api": "^2.3.2",

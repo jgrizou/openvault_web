@@ -5,19 +5,29 @@ import inspect
 HERE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 import fnmatch
-import random
+import json
 
 # say the server where to serve the static files
-SERVER_FOLDER=os.path.normpath(os.path.join(HERE_PATH, '../client/dist'))
+SERVE_FOLDER=os.path.normpath(os.path.join(HERE_PATH, '../client/dist'))
+CONFIG_FOLDER = os.path.join(HERE_PATH, 'configs')
 
+def read_config(config_filename):
+    with open(config_filename) as f:
+        config = json.load(f)
+    return config
 
-def get_random_file_from_public_path(path):
-    folderpath = os.path.join(SERVER_FOLDER, path)
-    all_files = list_files(folderpath, ['*.gif'])
-    selected_file = random.choice(all_files)
-    rel_path = os.path.relpath(selected_file, SERVER_FOLDER)
-    return rel_path
+def get_configs():
+    config_files = list_files(CONFIG_FOLDER, ['*.json'])
+    config_files.sort()
 
+    configs = []
+    for config_filename in config_files:
+        config = read_config(config_filename)
+        config_info = {}
+        config_info['filename'] = os.path.relpath(config_filename, CONFIG_FOLDER)
+        config_info['message'] = config['name']
+        configs.append(config_info)
+    return configs
 
 def list_files(path='.', patterns=['*'], min_depth=0, max_depth=float('inf')):
     if type(patterns) == str:

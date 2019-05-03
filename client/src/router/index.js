@@ -1,8 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import PasswordUI from './../pages/PasswordUI'
 import LevelSelection from './../pages/LevelSelection'
-import VaultControl from './../pages/VaultControl'
+import SPA from './../pages/SPA'
 
 Vue.use(Router)
 
@@ -15,13 +14,8 @@ export default new Router({
     },
     {
       path: '/ui/*',
-      name: 'PasswordUI',
-      component: PasswordUI
-    },
-    {
-      path: '/vaultcontrol',
-      name: 'VaultControl',
-      component: VaultControl
+      name: 'SPA',
+      component: SPA
     }
   ]
 })

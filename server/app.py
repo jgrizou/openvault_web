@@ -4,23 +4,12 @@ import os
 import inspect
 HERE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-
-# we will keep a simple database of rooms used
-# 1 room == 1 user
-from tinydb import TinyDB, where
-from tinyrecord import transaction
-
-database = TinyDB('rooms.json')
-database.purge()
-
 # we initialize the web server
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room
 
-from tools import SERVER_FOLDER
-app = Flask(__name__, static_folder=SERVER_FOLDER, template_folder=SERVER_FOLDER, static_url_path='')
-
-app.config['SECRET_KEY'] = 'secret!'
+from tools import SERVE_FOLDER, CONFIG_FOLDER, get_configs
+app = Flask(__name__, static_folder=SERVE_FOLDER, template_folder=SERVE_FOLDER, static_url_path='')
 
 socketio = SocketIO(app)
 
@@ -29,9 +18,7 @@ from learner_tools import LearnerManager
 learner_manager = LearnerManager(socketio)
 socketio.on_namespace(learner_manager)
 
-import config_tools
-
-# when opening the root, we server index.html
+# when opening the root url, we server index.html that was compiled via npm in SERVE_FOLDER
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -41,14 +28,13 @@ def index():
 def serve_static(path):
     return app.send_from_directory('', path)
 
+
 # on connect, join room, update database
 @socketio.on('connect')
 def on_connect():
     room_id = request.sid
     join_room(room_id)
-    with transaction(database) as tr:
-        tr.insert({'room_id': room_id})
-    print('{} clients connected'.format(len(database.all())))
+
 
 # on disconnect, leave room, update database
 # delete the learner for this room if created
@@ -56,35 +42,47 @@ def on_connect():
 def on_disconnect():
     room_id = request.sid
     leave_room(room_id)
-    with transaction(database) as tr:
-        tr.remove(where('room_id') == room_id)
     learner_manager.kill(room_id)
-    print('{} clients connected'.format(len(database.all())))
+
 
 @socketio.on('get_configs')
 def on_get_configs():
-    emit('set_configs', config_tools.get_configs())
+    emit('set_configs', get_configs())
+
 
 @socketio.on('spawn_learner')
 def on_spawn_learner(config_filename):
     room_id = request.sid
-    full_config_file = os.path.join(
-        config_tools.CONFIG_FOLDER,
-        config_filename)
+    full_config_file = os.path.join(CONFIG_FOLDER, config_filename)
     learner_manager.spawn(room_id, full_config_file)
 
 
+@socketio.on('mp3')
+def on_open_vault(data):
+    with open('test.mp3', 'wb') as f:
+        f.write(data['mp3'])
+    print(data)
+
 if __name__ == '__main__':
+    print('Flask is running in python')
 
     # import eventlet
-    # import numpy as np
+    # import random
+    #
+    # def random_boolean():
+    #     return random.choice([True, False])
+    #
+    # def random_text():
+    #     return random.choice(['#', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+    #
+    # def random_pad_color():
+    #     return random.choice(['flash', 'noflash', 'neutral'])
     #
     # ## from https://github.com/miguelgrinberg/python-socketio/issues/16
     # def background_emit():
     #     while True:
-    #         for items in database:
-    #             room_name = items['room_id']
-    #             socketio.emit('watchdog', np.random.rand(), room=room_name)
+    #         pad_color = [random_pad_color() for _ in range(9)]
+    #         socketio.emit('update_pad', pad_color)
     #         eventlet.sleep(1)
     #
     # eventlet.monkey_patch(time=True)

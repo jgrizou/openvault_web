@@ -1,23 +1,20 @@
 {
   "name": "Level 2",
-  "display": {
-    "row": 2,
-    "column": 5
-  },
-  "pad": {
-    "row": 3,
-    "column": 3
-  },
   "code": {
     "secret_code": [0, 0, 0, 0],
-    "show": false
+    "show_code": false
   },
   "learner": {
     "type": "discrete",
     "n_hypothesis": 10,
-    "known_symbols": {},
-    "accumulate_known_symbols_between_numbers": true,
-    "show_learning_progress": true
+    "known_symbols": {
+      "0": false,
+      "1": true
+    },
+    "accumulate_known_symbols_between_numbers": false
   },
-  "pause_between_trials_in_seconds": 5
+  "pad": {
+    "n_pad": 2,
+    "show_learning_progress": false
+  }
 }

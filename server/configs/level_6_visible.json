@@ -1,0 +1,15 @@
+{
+  "name": "Level 6 - Visible",
+  "code": {
+    "secret_code": [0, 0, 0, 0],
+    "show_code": true
+  },
+  "learner": {
+    "type": "continuous",
+    "n_hypothesis": 10,
+    "accumulate_info_between_numbers": true
+  },
+  "pad": {
+    "show_learning_progress": false
+  }
+}
