@@ -9,13 +9,11 @@ import sys
 openvault_path = os.path.join(HERE_PATH, '..', '..')
 sys.path.append(openvault_path)
 
-import time
-import random
-
 from flask import request
 from flask_socketio import Namespace, emit
 
 from tools import read_config
+from logging_tools import Logger
 
 from openvault.discrete import DiscreteLearner
 from openvault.continuous import ContinuousLearner
@@ -62,6 +60,7 @@ class Learner(object):
         self.socketio = socketio
         self.room_id = room_id
         self.config_filename = config_filename
+        self.logger = Logger()
         ##
         print('[{}] Starting learner from {}'.format(self.room_id, self.config_filename))
         self.config = read_config(self.config_filename)
@@ -81,10 +80,9 @@ class Learner(object):
                 proba_decision_threshold=0.95,
                 proba_assigned_to_label_valid=0.95)
         else:
-            raise Exception('Learner of type {} not handled'. format(learner_info['type']))
+            raise Exception('Type of learner not defined in config file or not handled.')
 
     def start(self):
-        self.start_time = time.time()
         self.update_iteration(new_iteration_value=0)
         self.update_code(apply_pause=False)
         self.update_pad()
@@ -136,10 +134,18 @@ class Learner(object):
         if learner_info['type'] == 'discrete':
             feedback_symbol = feedback_info['symbol']
             self.learner.update(displayed_flash_patterns, feedback_symbol)
-            # print('##### Updating {} for {} with {}'.format(self.room_id, displayed_flash_patterns, feedback_symbol))
+
         elif learner_info['type'] == 'continuous':
-            feedback_signal = feedback_info['signal']
-            self.learner.update(displayed_flash_patterns, feedback_signal)
+
+            if 'signal' in feedback_info:
+                feedback_signal = feedback_info['signal']
+                self.learner.update(displayed_flash_patterns, feedback_signal)
+
+            elif 'mp3' in feedback_info:
+                mp3_file = self.logger.save_mp3(feedback_info['mp3'])
+                print(mp3_file)
+            else:
+                raise Exception('No "signal" field in feedback_info.')
 
 
     def prepare_learner_for_next_digit(self):

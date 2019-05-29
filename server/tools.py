@@ -29,6 +29,10 @@ def get_configs():
         configs.append(config_info)
     return configs
 
+def ensure_dir(dirname):
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+
 def list_files(path='.', patterns=['*'], min_depth=0, max_depth=float('inf')):
     if type(patterns) == str:
         patterns = [patterns]

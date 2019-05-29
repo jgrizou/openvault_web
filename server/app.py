@@ -53,15 +53,26 @@ def on_get_configs():
 @socketio.on('spawn_learner')
 def on_spawn_learner(config_filename):
     room_id = request.sid
-    full_config_file = os.path.join(CONFIG_FOLDER, config_filename)
-    learner_manager.spawn(room_id, full_config_file)
+    full_config_filename = os.path.join(CONFIG_FOLDER, config_filename)
+    learner_manager.spawn(room_id, full_config_filename)
 
 
-@socketio.on('mp3')
-def on_open_vault(data):
-    with open('test.mp3', 'wb') as f:
-        f.write(data['mp3'])
-    print(data)
+# @socketio.on('mp3')
+# def on_open_vault(data):
+#     room_id = request.sid
+#
+#     from tools import LOG_FOLDER
+#     room_folder = os.path.join(LOG_FOLDER, room_id)
+#
+#     from tools import ensure_dir
+#     ensure_dir(room_folder)
+#
+#     from tools import list_files
+#     files = list_files(room_folder, ['*.mp3'])
+#     savefilename = os.path.join(room_folder, '{}.mp3'.format(len(files)))
+#     with open(savefilename, 'wb') as f:
+#         f.write(data['mp3'])
+#     print(data)
 
 if __name__ == '__main__':
     print('Flask is running in python')
