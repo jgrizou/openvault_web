@@ -12,6 +12,7 @@ import tools
 LOG_FOLDER = os.path.join(HERE_PATH, 'logs')
 MP3_FOLDER_NAME = 'mp3'
 
+
 def generate_unique_log_folder():
     while True:
         tmp_log_folder = os.path.join(LOG_FOLDER, str(uuid.uuid4()))
@@ -19,6 +20,7 @@ def generate_unique_log_folder():
             break
     tools.ensure_dir(tmp_log_folder)
     return tmp_log_folder
+
 
 class Logger(object):
 

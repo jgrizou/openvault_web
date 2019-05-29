@@ -51,7 +51,15 @@ pip install gunicorn
 conda install -c conda-forge nodejs
 
 conda install numpy
-pip install sklearn
+conda install scikit-learn
+
+// audio stuff
+
+pip install requests
+pip install docker
+conda install -c conda-forge umap-learn
+conda install -c conda-forge librosa
+conda install -c roebel pysndfile
 
 
 ## flask

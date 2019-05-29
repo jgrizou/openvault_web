@@ -12,11 +12,14 @@ sys.path.append(openvault_path)
 from flask import request
 from flask_socketio import Namespace, emit
 
-from tools import read_config
+from tools import CONFIG_FOLDER, read_config
 from logging_tools import Logger
 
 from openvault.discrete import DiscreteLearner
 from openvault.continuous import ContinuousLearner
+
+from audio_features.openvault_tools import AudioVaultSignal
+
 
 class LearnerManager(Namespace):
 
@@ -41,6 +44,11 @@ class LearnerManager(Namespace):
     def on_is_spawn(self):
         room_id = request.sid
         emit('spawn_state', room_id in self.learners)
+
+    def on_spawn_learner(self, config_filename):
+        room_id = request.sid
+        full_config_filename = os.path.join(CONFIG_FOLDER, config_filename)
+        self.spawn(room_id, full_config_filename)
 
     def on_reset(self):
         room_id = request.sid
@@ -79,6 +87,8 @@ class Learner(object):
                 learner_info['n_hypothesis'],
                 proba_decision_threshold=0.95,
                 proba_assigned_to_label_valid=0.95)
+            # only used for audi level but we will init it here anyway
+            self.audio_transformer = AudioVaultSignal()
         else:
             raise Exception('Type of learner not defined in config file or not handled.')
 
@@ -143,9 +153,17 @@ class Learner(object):
 
             elif 'mp3' in feedback_info:
                 mp3_file = self.logger.save_mp3(feedback_info['mp3'])
-                print(mp3_file)
+
+                print('Received {} from user'.format(mp3_file))
+
+                self.audio_transformer.add_feedback_mp3(mp3_file)
+                feedback_signals, _ = self.audio_transformer.get_feedback_signals()
+
+                self.learner.signal_history = feedback_signals[:-1]
+                self.learner.update(displayed_flash_patterns, feedback_signals[-1])
+
             else:
-                raise Exception('No "signal" field in feedback_info.')
+                raise Exception('Not enough info to process in feedback_info.')
 
 
     def prepare_learner_for_next_digit(self):

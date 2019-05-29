@@ -145,9 +145,6 @@ export default {
       this.$refs.reset.force_hide = false
       this.reset()
     }
-  },
-  mounted() {
-    this.spawn_learner()
   }
 }
 </script>

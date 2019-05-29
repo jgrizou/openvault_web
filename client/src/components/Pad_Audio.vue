@@ -38,12 +38,11 @@ export default {
     on_mousedown: function () {
       this.recorder.start().then(() => {
         // something else
-        console.log("RECORDING")
-
-        this.buffer_check = setInterval( () => {
-          var info = this.recorder.lameEncoder.dataBuffer
-          console.log(info)
-        }, 1000);
+        // console.log("RECORDING")
+        // this.buffer_check = setInterval( () => {
+        //   var info = this.recorder.lameEncoder.dataBuffer
+        //   console.log(info)
+        // }, 1000);
 
       }).catch((e) => {
         console.error(e);
@@ -51,16 +50,16 @@ export default {
     },
     on_mouseup: function () {
 
-      clearInterval(this.buffer_check)
+      // clearInterval(this.buffer_check)
 
       // Once you are done singing your best song, stop and get the mp3.
       this.recorder.stop().getMp3().then(([buffer, blob]) => {
 
-        console.log("RECORDING STOPPED")
+        // console.log("RECORDING STOPPED")
 
         // do what ever you want with buffer and blob
         // Example: Create a mp3 file and play
-        const file = new File(buffer, 'test.mp3', {
+        const file = new File(buffer, 'recording.mp3', {
           type: blob.type,
           lastModified: Date.now()
         });
@@ -70,8 +69,8 @@ export default {
 
         this.callback(audio_info)
 
-        const player = new Audio(URL.createObjectURL(file));
-        player.play();
+        // const player = new Audio(URL.createObjectURL(file));
+        // player.play();
 
       }).catch((e) => {
         alert('We could not retrieve your message');
