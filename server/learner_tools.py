@@ -47,7 +47,8 @@ class LearnerManager(Namespace):
     def on_reset(self):
         room_id = request.sid
         if room_id in self.learners:
-            self.learners[room_id].reset()
+            config_filename = self.learners[room_id].config_filename
+            self.spawn(room_id, config_filename)
 
     def on_feedback_info(self, feedback_info):
         room_id = request.sid
@@ -61,13 +62,7 @@ class Learner(object):
         self.socketio = socketio
         self.room_id = room_id
         self.config_filename = config_filename
-        # self.logger = Logger(self)
-        self.reset()
-
-    def reset(self):
-        ## save before reseting if applicable
-        # self.logger.log_on_reset()
-        ## reset procedure
+        ##
         print('[{}] Starting learner from {}'.format(self.room_id, self.config_filename))
         self.config = read_config(self.config_filename)
         self.code_manager = CodeManager(self.config['code'])
@@ -75,9 +70,6 @@ class Learner(object):
         self.start()
 
     def init_learner(self):
-        ## save learner info before reinit_learner
-        # self.logger.log_on_init_learner()
-        ##
         learner_info = self.config['learner']
         if learner_info['type'] == 'discrete':
             self.learner = DiscreteLearner(
@@ -85,7 +77,9 @@ class Learner(object):
                 learner_info['known_symbols'])
         elif learner_info['type'] == 'continuous':
             self.learner = ContinuousLearner(
-                learner_info['n_hypothesis'])
+                learner_info['n_hypothesis'],
+                proba_decision_threshold=0.95,
+                proba_assigned_to_label_valid=0.95)
         else:
             raise Exception('Learner of type {} not handled'. format(learner_info['type']))
 
@@ -147,6 +141,7 @@ class Learner(object):
             feedback_signal = feedback_info['signal']
             self.learner.update(displayed_flash_patterns, feedback_signal)
 
+
     def prepare_learner_for_next_digit(self):
 
         learner_info = self.config['learner']
@@ -168,6 +163,7 @@ class Learner(object):
                 self.init_learner()
         else:
             raise Exception('Learner of type {} not handled'. format(learner_info['type']))
+
 
     def update_code(self, apply_pause=True):
         # if new digit found
