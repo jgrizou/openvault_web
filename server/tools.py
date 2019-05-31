@@ -11,6 +11,12 @@ import json
 SERVE_FOLDER=os.path.normpath(os.path.join(HERE_PATH, '../client/dist'))
 CONFIG_FOLDER = os.path.join(HERE_PATH, 'configs')
 
+
+def save_json(filename, data):
+    with open(filename, 'w') as f:
+        json.dump(data, f)
+
+
 def read_config(config_filename):
     with open(config_filename) as f:
         config = json.load(f)

@@ -28,10 +28,10 @@ class LearnerManager(Namespace):
         self.socketio = socketio
         self.learners = {}
 
-    def spawn(self, room_id, config_filename):
+    def spawn(self, room_id, config_filename, client_ip, user_agent):
         if room_id in self.learners:
             self.kill(room_id)
-        self.learners[room_id] = Learner(self.socketio, room_id, config_filename)
+        self.learners[room_id] = Learner(self.socketio, room_id, config_filename, client_ip, user_agent)
 
     def kill(self, room_id):
         if room_id in self.learners:
@@ -48,13 +48,17 @@ class LearnerManager(Namespace):
     def on_spawn_learner(self, config_filename):
         room_id = request.sid
         full_config_filename = os.path.join(CONFIG_FOLDER, config_filename)
-        self.spawn(room_id, full_config_filename)
+        client_ip = request.remote_addr
+        user_agent = request.user_agent
+        self.spawn(room_id, full_config_filename, client_ip, user_agent)
 
     def on_reset(self):
         room_id = request.sid
         if room_id in self.learners:
             config_filename = self.learners[room_id].config_filename
-            self.spawn(room_id, config_filename)
+            client_ip = request.remote_addr
+            user_agent = request.user_agent
+            self.spawn(room_id, config_filename, client_ip, user_agent)
 
     def on_feedback_info(self, feedback_info):
         room_id = request.sid
@@ -64,15 +68,20 @@ class LearnerManager(Namespace):
 
 class Learner(object):
 
-    def __init__(self, socketio, room_id, config_filename):
+    def __init__(self, socketio, room_id, config_filename, client_ip, user_agent):
         self.socketio = socketio
         self.room_id = room_id
         self.config_filename = config_filename
-        self.logger = Logger()
+        self.client_ip = client_ip
+        self.user_agent = user_agent
         ##
         print('[{}] Starting learner from {}'.format(self.room_id, self.config_filename))
         self.config = read_config(self.config_filename)
         self.code_manager = CodeManager(self.config['code'])
+        ##
+        self.logger = Logger()
+        self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
+        ##
         self.init_learner()
         self.start()
 
@@ -152,7 +161,7 @@ class Learner(object):
                 self.learner.update(displayed_flash_patterns, feedback_signal)
 
             elif 'mp3' in feedback_info:
-                mp3_file = self.logger.save_mp3(feedback_info['mp3'])
+                mp3_file = self.logger.save_mp3_to_file(feedback_info['mp3'])
 
                 print('Received {} from user'.format(mp3_file))
 
