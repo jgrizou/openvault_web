@@ -82,6 +82,7 @@ class Learner(object):
         self.logger = Logger()
         self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
         ##
+        self.init_pad()
         self.init_learner()
         self.start()
 
@@ -210,6 +211,10 @@ class Learner(object):
 
         self.socketio.emit('update_code', code_info, room=self.room_id)
 
+
+    def init_pad(self):
+        pad_info = self.config['pad']
+        self.socketio.emit('init_pad', pad_info, room=self.room_id)
 
     def update_pad(self):
         pad_info = self.config['pad']

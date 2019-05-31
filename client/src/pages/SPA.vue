@@ -1,9 +1,6 @@
 <template>
   <div>
 
-
-    <!-- <button class="digit" v-on:click="show_check_panel('valid')"> HERE </button> -->
-
     <Digit ref="digit" class="digit"></Digit>
 
     <Display ref="display" class="display"></Display>
@@ -13,27 +10,24 @@
 
 
     <!-- level components -->
-    <div v-if="level == 1">
+    <div v-if="pad_type == '1x2'">
       <Pad12 ref="pad" class="pad" :callback="discrete_pad_callback"></Pad12>
     </div>
-    <div v-else-if="level == 2">
+    <div v-else-if="pad_type == '1x2_random'">
       <Pad12Random ref="pad" class="pad" :callback="discrete_pad_callback"></Pad12Random>
     </div>
-    <div v-else-if="level == 3">
+    <div v-else-if="pad_type == '3x3'">
       <Pad33 ref="pad" class="pad" :callback="discrete_pad_callback"></Pad33>
     </div>
-    <div v-else-if="level == 4">
-      <Pad33 ref="pad" class="pad" :callback="discrete_pad_callback"></Pad33>
-    </div>
-    <div v-else-if="level == 5">
+    <div v-else-if="pad_type == 'touch'">
       <PadContinuous ref="pad" class="pad" :callback="continuous_pad_callback"></PadContinuous>
     </div>
-    <div v-else-if="level == 6">
+    <div v-else-if="pad_type == 'audio'">
       <PadAudio ref="pad" class="pad" :callback="audio_pad_callback"></PadAudio>
     </div>
-    <div v-else>
-      <div class="pad">Level {{ level }} not implemented</div>
-    </div>
+    <!-- <div v-else>
+      <div class="pad">Pad {{ pad_type }} not implemented</div>
+    </div> -->
 
     <!-- check panel appears only when needed -->
     <Check ref="check" :callback="hide_check_panel"></Check>
@@ -57,13 +51,10 @@ import PadAudio from './../components/Pad_Audio.vue'
 export default {
   name: 'SPA',
   components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadContinuous, PadAudio},
-  computed: {
-    level: function () {
-      var config_file = this.$route.params.pathMatch
-      var number_in_config_file = config_file.match(/\d/) // regex
-      // return 6
-      return parseInt(number_in_config_file, 10) // convert str to int
-    }
+  data() {
+    return {
+      pad_type: undefined
+    };
   },
   sockets: {
     connect: function () {
@@ -73,6 +64,9 @@ export default {
       if (!state) {
         this.spawn_learner()
       }
+    },
+    init_pad: function (pad_info) {
+      this.pad_type = pad_info.type
     },
     update_code: function (code_info) {
       if (code_info.apply_pause) {

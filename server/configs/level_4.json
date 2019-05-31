@@ -11,6 +11,7 @@
     "accumulate_known_symbols_between_numbers": true
   },
   "pad": {
+    "type": "3x3",
     "n_pad": 9,
     "show_learning_progress": false
   }

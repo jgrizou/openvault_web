@@ -10,6 +10,7 @@
     "accumulate_info_between_numbers": true
   },
   "pad": {
+    "type": "touch",
     "show_learning_progress": false
   }
 }
