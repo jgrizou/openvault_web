@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="(color, index) in pad_color">
+    <div v-for="(color, index) in button_color">
 
       <button
         :class="{
@@ -31,7 +31,7 @@ export default {
     return {
       paused: false,
       awaiting_flash: false,
-      pad_color: ['noflash', 'flash']
+      button_color: ['noflash', 'flash']
     }
   },
   computed: {

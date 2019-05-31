@@ -102,8 +102,8 @@ class Learner(object):
     def init_pad(self):
         self.is_pad_ready = False
         # send client message to init pad
-        pad_info = self.config['pad']
-        self.socketio.emit('init_pad', pad_info, room=self.room_id)
+        pad_config = self.config['pad']
+        self.socketio.emit('init_pad', pad_config, room=self.room_id)
         # ask and wait for confirmation that pad is ready
         self.ask_pad_state()
         while not self.is_pad_ready:
@@ -113,14 +113,14 @@ class Learner(object):
         self.socketio.emit('is_pad_ready', room=self.room_id)
 
     def init_learner(self):
-        learner_info = self.config['learner']
-        if learner_info['type'] == 'discrete':
+        learner_config = self.config['learner']
+        if learner_config['type'] == 'discrete':
             self.learner = DiscreteLearner(
-                learner_info['n_hypothesis'],
-                learner_info['known_symbols'])
-        elif learner_info['type'] == 'continuous':
+                learner_config['n_hypothesis'],
+                learner_config['known_symbols'])
+        elif learner_config['type'] == 'continuous':
             self.learner = ContinuousLearner(
-                learner_info['n_hypothesis'],
+                learner_config['n_hypothesis'],
                 proba_decision_threshold=0.95,
                 proba_assigned_to_label_valid=0.95)
             # only used for audi level but we will init it here anyway
@@ -142,8 +142,6 @@ class Learner(object):
             if self.learner.is_solved():
                 # get the code info
                 self.update_code()
-                print(self.code_manager.decoded_code)
-
                 # prepare learner for next digit
                 self.prepare_learner_for_next_digit()
 
@@ -153,6 +151,10 @@ class Learner(object):
                         self.socketio.emit('check', 'valid', room=self.room_id)
                     else:
                         self.socketio.emit('check', 'invalid', room=self.room_id)
+                else:
+                    # just to show what was leart with the last digit learning
+                    self.update_pad()
+                    # not updating flash pattern as it would also make the interface sensible ot input again
             else:
                 self.update_pad()
                 self.update_flash_pattern()
@@ -171,12 +173,12 @@ class Learner(object):
 
         displayed_flash_patterns = feedback_info['flash']
 
-        learner_info = self.config['learner']
-        if learner_info['type'] == 'discrete':
+        learner_config = self.config['learner']
+        if learner_config['type'] == 'discrete':
             feedback_symbol = feedback_info['symbol']
             self.learner.update(displayed_flash_patterns, feedback_symbol)
 
-        elif learner_info['type'] == 'continuous':
+        elif learner_config['type'] == 'continuous':
 
             if 'signal' in feedback_info:
                 feedback_signal = feedback_info['signal']
@@ -199,25 +201,25 @@ class Learner(object):
 
     def prepare_learner_for_next_digit(self):
 
-        learner_info = self.config['learner']
-        if learner_info['type'] == 'discrete':
+        learner_config = self.config['learner']
+        if learner_config['type'] == 'discrete':
             # if required, update known symbols with acquired ones
-            if learner_info['accumulate_known_symbols_between_numbers']:
+            if learner_config['accumulate_known_symbols_between_numbers']:
                 solution_index = self.learner.get_solution_index()
-                learner_info['known_symbols'] = self.learner.compute_symbols_belief_for_hypothesis(solution_index)
+                learner_config['known_symbols'] = self.learner.compute_symbols_belief_for_hypothesis(solution_index)
             # restart a new learner (with the original or new symbols set if update above)
             self.init_learner()
             print(self.config['learner']['known_symbols'])
 
-        elif learner_info['type'] == 'continuous':
-            if learner_info['accumulate_info_between_numbers']:
+        elif learner_config['type'] == 'continuous':
+            if learner_config['accumulate_info_between_numbers']:
                 solution_index = self.learner.get_solution_index()
                 self.learner.propagate_labels_from_hypothesis(solution_index)
             else:
                 # spawn a new learner from scratch
                 self.init_learner()
         else:
-            raise Exception('Learner of type {} not handled'. format(learner_info['type']))
+            raise Exception('Learner of type {} not handled'. format(learner_config['type']))
 
 
     def update_code(self, apply_pause=True):
@@ -226,30 +228,39 @@ class Learner(object):
             solution_index = self.learner.get_solution_index()
             self.code_manager.add_new_digit(solution_index)
 
-        code_info = {}
-        code_info['code_json'] = self.code_manager.code_json
-        code_info['apply_pause'] = apply_pause
+        update_code_info = {}
+        update_code_info['code_json'] = self.code_manager.code_json
+        update_code_info['apply_pause'] = apply_pause
 
-        self.socketio.emit('update_code', code_info, room=self.room_id)
+        self.socketio.emit('update_code', update_code_info, room=self.room_id)
+
 
     def update_pad(self):
-        pad_info = self.config['pad']
-        if pad_info['show_learning_progress']:
-            learner_info = self.config['learner']
+        update_pad_info = {}
 
-            if learner_info['type'] == 'discrete':
-                known_symbols = learner_info['known_symbols']
+        pad_config = self.config['pad']
+        if pad_config['show_learning_progress']:
 
-                FLASH_TO_COLOR = {}
-                FLASH_TO_COLOR[True] = 'flash'
-                FLASH_TO_COLOR[False] = 'noflash'
+            learner_config = self.config['learner']
+            if learner_config['type'] == 'discrete':
+                known_symbols = learner_config['known_symbols']
 
-                pad_color = ['neutral' for _ in range(pad_info['n_pad'])]
-                for k, v in known_symbols.items():
-                    pad_color[int(k)] = FLASH_TO_COLOR[v]
-                print(pad_color)
-                self.socketio.emit('update_pad', pad_color, room=self.room_id)
+                # those are constants and shoudl be defined outside this scope but we prefer to define them here as they are only relevant here
+                MEANING_TO_COLOR = {}
+                MEANING_TO_COLOR[True] = 'flash'
+                MEANING_TO_COLOR[False] = 'noflash'
 
+                button_color = ['neutral' for _ in range(pad_config['n_pad'])]
+                for button_number, button_meaning in known_symbols.items():
+                    button_color[int(button_number)] = MEANING_TO_COLOR[button_meaning]
+
+                update_pad_info['button_color'] = button_color
+
+            elif learner_config['type'] == 'continous':
+                pass
+
+
+            self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
 
 
 class CodeManager(object):

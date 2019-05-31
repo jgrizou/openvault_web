@@ -86,8 +86,10 @@ export default {
       this.$refs.digit.flash = flash
       this.$refs.pad.awaiting_flash = false // enable the pad button
     },
-    update_pad: function (pad_color) {
-      this.$refs.pad.pad_color = pad_color
+    update_pad: function (pad_info) {
+      if (pad_info.button_color) {
+        this.$refs.pad.button_color = pad_info.button_color
+      }
     },
     check: function (check_state) {
       this.show_check_panel(check_state)

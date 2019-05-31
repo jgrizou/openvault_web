@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="(color, index) in pad_color">
+    <div v-for="(color, index) in button_color">
 
       <button
         :class="{
@@ -31,9 +31,9 @@ export default {
     return {
       paused: false,
       awaiting_flash: false,
-      pad_color: ['noflash', 'flash'],
-      pad_color_1: ['noflash', 'flash'],
-      pad_color_2: ['flash', 'noflash'],
+      button_color: ['noflash', 'flash'],
+      button_color_1: ['noflash', 'flash'],
+      button_color_2: ['flash', 'noflash'],
     }
   },
   computed: {
@@ -46,13 +46,13 @@ export default {
       var click_info = {}
       click_info.button = button_name
       this.callback(click_info)
-      this.toggle_pad_color()
+      this.toggle_button_color()
     },
-    toggle_pad_color: function () {
-      if (this.pad_color === this.pad_color_2) {
-        this.pad_color = this.pad_color_1
+    toggle_button_color: function () {
+      if (this.button_color === this.button_color_2) {
+        this.button_color = this.button_color_1
       } else {
-        this.pad_color = this.pad_color_2
+        this.button_color = this.button_color_2
       }
     }
   }
