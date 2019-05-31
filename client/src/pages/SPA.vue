@@ -20,14 +20,14 @@
       <Pad33 ref="pad" class="pad" :callback="discrete_pad_callback"></Pad33>
     </div>
     <div v-else-if="pad_type == 'touch'">
-      <PadContinuous ref="pad" class="pad" :callback="continuous_pad_callback"></PadContinuous>
+      <PadTouch ref="pad" class="pad" :callback="continuous_pad_callback"></PadTouch>
     </div>
     <div v-else-if="pad_type == 'audio'">
       <PadAudio ref="pad" class="pad" :callback="audio_pad_callback"></PadAudio>
     </div>
-    <!-- <div v-else>
-      <div class="pad">Pad {{ pad_type }} not implemented</div>
-    </div> -->
+    <div v-else>
+      <!-- <div class="pad">Pad {{ pad_type }} not implemented</div> -->
+    </div>
 
     <!-- check panel appears only when needed -->
     <Check ref="check" :callback="hide_check_panel"></Check>
@@ -45,24 +45,38 @@ import Reset from './../components/Reset.vue'
 import Pad12 from './../components/Pad_1x2.vue'
 import Pad12Random from './../components/Pad_1x2_RandomPadColor.vue'
 import Pad33 from './../components/Pad_3x3.vue'
-import PadContinuous from './../components/Pad_Continuous.vue'
+import PadTouch from './../components/Pad_Touch.vue'
 import PadAudio from './../components/Pad_Audio.vue'
 
 export default {
   name: 'SPA',
-  components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadContinuous, PadAudio},
+  components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadAudio },
   data() {
     return {
       pad_type: undefined
     };
+  },
+  mounted: function () {
+    this.spawn_learner()
   },
   sockets: {
     init_pad: function (pad_info) {
       this.pad_type = pad_info.type
     },
     is_pad_ready: function () {
-      var pad_state = this.$refs.pad != undefined
-      this.$socket.emit('pad_state', pad_state)
+      var pad_ready_state = this.$refs.pad != undefined
+      this.$socket.emit('pad_ready', pad_ready_state)
+    },
+    clean_pad: function () {
+      this.$refs.pad.clean_pad()
+    },
+    is_pad_clean: function () {
+      if ( this.$refs.pad.is_clean == undefined ) {
+        console.error('Error: is_clean property not present in pad: ' + this.pad_type);
+      } else {
+        var pad_clean_state = this.$refs.pad.is_clean
+        this.$socket.emit('pad_clean', pad_clean_state)
+      }
     },
     update_code: function (code_info) {
       if (code_info.apply_pause) {
@@ -87,9 +101,8 @@ export default {
       this.$refs.pad.awaiting_flash = false // enable the pad button
     },
     update_pad: function (pad_info) {
-      if (pad_info.button_color) {
-        this.$refs.pad.button_color = pad_info.button_color
-      }
+      this.$refs.pad.update_pad_info(pad_info)
+      console.log(pad_info)
     },
     check: function (check_state) {
       this.show_check_panel(check_state)
@@ -137,9 +150,6 @@ export default {
       this.$refs.reset.force_hide = false
       this.reset()
     }
-  },
-  mounted: function () {
-    this.spawn_learner()
   }
 }
 </script>

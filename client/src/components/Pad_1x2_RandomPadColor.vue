@@ -39,6 +39,9 @@ export default {
   computed: {
     disabled: function () {
       return this.paused || this.awaiting_flash
+    },
+    is_clean: function () {
+      return true
     }
   },
   methods: {
@@ -53,6 +56,13 @@ export default {
         this.button_color = this.button_color_1
       } else {
         this.button_color = this.button_color_2
+      }
+    },
+    clean_pad: function () {
+    },
+    update_pad_info: function (pad_info) {
+      if (pad_info.button_color) {
+          this.button_color = pad_info.button_color
       }
     }
   }

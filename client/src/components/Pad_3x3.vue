@@ -38,6 +38,9 @@ export default {
   computed: {
     disabled: function () {
       return this.paused || this.awaiting_flash
+    },
+    is_clean: function () {
+      return true
     }
   },
   methods: {
@@ -45,6 +48,13 @@ export default {
       var click_info = {}
       click_info.button = button_name
       this.callback(click_info)
+    },
+    clean_pad: function () {
+    },
+    update_pad_info: function (pad_info) {
+      if (pad_info.button_color) {
+          this.button_color = pad_info.button_color
+      }
     }
   }
 }

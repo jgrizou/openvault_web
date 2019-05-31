@@ -12,6 +12,6 @@
   },
   "pad": {
     "type": "touch",
-    "show_learning_progress": false
+    "show_learning_progress": true
   }
 }

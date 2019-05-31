@@ -29,10 +29,25 @@ export default {
   },
   data() {
     return {
+      paused: false,
+      awaiting_flash: false,
       recorder: new MicRecorder()
     }
   },
+  computed: {
+    disabled: function () {
+      return this.paused || this.awaiting_flash
+    },
+    is_clean: function () {
+      return true
+    }
+  },
   methods: {
+    clean_pad: function () {
+    },
+    update_pad_info: function (pad_info) {
+      console.log(pad_info)
+    },
     on_click: function () {
     },
     on_mousedown: function () {

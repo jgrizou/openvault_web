@@ -11,6 +11,8 @@ sys.path.append(openvault_path)
 
 import time
 
+import base64
+
 from flask import request
 from flask_socketio import Namespace, emit
 
@@ -19,6 +21,8 @@ from logging_tools import Logger
 
 from openvault.discrete import DiscreteLearner
 from openvault.continuous import ContinuousLearner
+from openvault.classifier_tools import generate_map_from_classifier
+from openvault.classifier_tools import save_map_to_file
 
 from audio_features.openvault_tools import AudioVaultSignal
 
@@ -51,13 +55,21 @@ class LearnerManager(Namespace):
         user_agent = request.user_agent
         self.spawn(room_id, full_config_filename, client_ip, user_agent)
 
-    def on_pad_state(self, pad_state):
+    def on_pad_ready(self, pad_ready_state):
         room_id = request.sid
         if room_id in self.learners:
-            if pad_state:
+            if pad_ready_state:
                 self.learners[room_id].is_pad_ready = True
             else:
-                self.learners[room_id].ask_pad_state()
+                self.learners[room_id].ask_pad_ready()
+
+    def on_pad_clean(self, pad_clean_state):
+        room_id = request.sid
+        if room_id in self.learners:
+            if pad_clean_state:
+                self.learners[room_id].is_pad_clean = True
+            else:
+                self.learners[room_id].ask_pad_clean()
 
     def on_reset(self):
         room_id = request.sid
@@ -90,10 +102,14 @@ class Learner(object):
         ## init a Logger
         self.logger = Logger()
         self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
+        ## make sure pad is loaded
+        self.init_pad()
         ## initialize the algortihm
         self.init_learner()
         ## make sure all element are correctly displayed
-        self.init_pad()
+        self.classifier_last_solved = None
+        self.n_iteration_at_last_solved = 0
+        self.clean_pad()
         self.update_iteration(new_iteration_value=0)
         self.update_code(apply_pause=False)
         self.update_pad()
@@ -105,12 +121,24 @@ class Learner(object):
         pad_config = self.config['pad']
         self.socketio.emit('init_pad', pad_config, room=self.room_id)
         # ask and wait for confirmation that pad is ready
-        self.ask_pad_state()
+        self.ask_pad_ready()
         while not self.is_pad_ready:
             time.sleep(0.1)
 
-    def ask_pad_state(self):
+    def ask_pad_ready(self):
         self.socketio.emit('is_pad_ready', room=self.room_id)
+
+    def clean_pad(self):
+        self.is_pad_clean = False
+        # send client message to init pad
+        self.socketio.emit('clean_pad', room=self.room_id)
+        # ask and wait for confirmation that pad is ready
+        self.ask_pad_clean()
+        while not self.is_pad_clean:
+            time.sleep(0.1)
+
+    def ask_pad_clean(self):
+        self.socketio.emit('is_pad_clean', room=self.room_id)
 
     def init_learner(self):
         learner_config = self.config['learner']
@@ -145,18 +173,15 @@ class Learner(object):
                 # prepare learner for next digit
                 self.prepare_learner_for_next_digit()
 
+            self.update_pad()
+
             if self.code_manager.is_code_decoded():
                 if self.code_manager.is_check_procedure_required():
                     if self.code_manager.is_code_valid():
                         self.socketio.emit('check', 'valid', room=self.room_id)
                     else:
                         self.socketio.emit('check', 'invalid', room=self.room_id)
-                else:
-                    # just to show what was leart with the last digit learning
-                    self.update_pad()
-                    # not updating flash pattern as it would also make the interface sensible ot input again
             else:
-                self.update_pad()
                 self.update_flash_pattern()
 
     def update_iteration(self, new_iteration_value):
@@ -207,14 +232,16 @@ class Learner(object):
             if learner_config['accumulate_known_symbols_between_numbers']:
                 solution_index = self.learner.get_solution_index()
                 learner_config['known_symbols'] = self.learner.compute_symbols_belief_for_hypothesis(solution_index)
-            # restart a new learner (with the original or new symbols set if update above)
+            # restart a new learner (with the original or new symbols set if updated above)
             self.init_learner()
-            print(self.config['learner']['known_symbols'])
 
         elif learner_config['type'] == 'continuous':
             if learner_config['accumulate_info_between_numbers']:
                 solution_index = self.learner.get_solution_index()
                 self.learner.propagate_labels_from_hypothesis(solution_index)
+                # if we accumulate the info, we change this variable that is used to update the pad with learned information up to the current iteration
+                self.classifier_last_solved = self.learner.hypothesis_classifier_infos[solution_index]['clf']
+                self.n_iteration_at_last_solved = self.n_iteration
             else:
                 # spawn a new learner from scratch
                 self.init_learner()
@@ -241,14 +268,14 @@ class Learner(object):
         pad_config = self.config['pad']
         if pad_config['show_learning_progress']:
 
+            # those are constants and should be defined outside this scope but we prefer to define them here as they are only relevant here
+            MEANING_TO_COLOR = {}
+            MEANING_TO_COLOR[True] = 'flash'
+            MEANING_TO_COLOR[False] = 'noflash'
+
             learner_config = self.config['learner']
             if learner_config['type'] == 'discrete':
                 known_symbols = learner_config['known_symbols']
-
-                # those are constants and shoudl be defined outside this scope but we prefer to define them here as they are only relevant here
-                MEANING_TO_COLOR = {}
-                MEANING_TO_COLOR[True] = 'flash'
-                MEANING_TO_COLOR[False] = 'noflash'
 
                 button_color = ['neutral' for _ in range(pad_config['n_pad'])]
                 for button_number, button_meaning in known_symbols.items():
@@ -256,10 +283,32 @@ class Learner(object):
 
                 update_pad_info['button_color'] = button_color
 
-            elif learner_config['type'] == 'continous':
-                pass
+            elif learner_config['type'] == 'continuous':
+                # as many point as iteration
+                point_color = ['neutral' for _ in range(self.n_iteration)]
+                for i in range(0, self.n_iteration_at_last_solved):
+                    # labels have been propagated so up to self.n_iteration_at_last_solved iteration all labels are the same
+                    label_for_ith_point = self.learner.hypothesis_labels[0][i]
+                    point_color[i] = MEANING_TO_COLOR[label_for_ith_point]
 
+                update_pad_info['point_color'] = point_color
 
+                if self.classifier_last_solved:
+                    classifier_map = generate_map_from_classifier(self.classifier_last_solved, bounds=(0, 1))
+
+                    save_map_to_file(classifier_map, 'classifier_map.png')
+
+                    with open('classifier_map.png', 'rb') as f:
+                        map_image_base64 = base64.b64encode(f.read()).decode()
+
+                    classifier_map_for_web = 'data:image/png;base64,{}'.format(map_image_base64)
+
+                    update_pad_info['classifier_map'] = classifier_map_for_web
+
+                    # we put classifier_last_solved back to None to not recompute and send again each iteration, but each time we update it
+                    self.classifier_last_solved = None
+
+            ##
             self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
 
 
