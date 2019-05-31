@@ -9,6 +9,8 @@ import sys
 openvault_path = os.path.join(HERE_PATH, '..', '..')
 sys.path.append(openvault_path)
 
+import time
+
 from flask import request
 from flask_socketio import Namespace, emit
 
@@ -32,6 +34,7 @@ class LearnerManager(Namespace):
         if room_id in self.learners:
             self.kill(room_id)
         self.learners[room_id] = Learner(self.socketio, room_id, config_filename, client_ip, user_agent)
+        self.learners[room_id].initialize()
 
     def kill(self, room_id):
         if room_id in self.learners:
@@ -41,16 +44,20 @@ class LearnerManager(Namespace):
         room_id = request.sid
         print('[{}] {}'.format(room_id, data))
 
-    def on_is_spawn(self):
-        room_id = request.sid
-        emit('spawn_state', room_id in self.learners)
-
     def on_spawn_learner(self, config_filename):
         room_id = request.sid
         full_config_filename = os.path.join(CONFIG_FOLDER, config_filename)
         client_ip = request.remote_addr
         user_agent = request.user_agent
         self.spawn(room_id, full_config_filename, client_ip, user_agent)
+
+    def on_pad_state(self, pad_state):
+        room_id = request.sid
+        if room_id in self.learners:
+            if pad_state:
+                self.learners[room_id].is_pad_ready = True
+            else:
+                self.learners[room_id].ask_pad_state()
 
     def on_reset(self):
         room_id = request.sid
@@ -74,17 +81,36 @@ class Learner(object):
         self.config_filename = config_filename
         self.client_ip = client_ip
         self.user_agent = user_agent
-        ##
+
+    def initialize(self):
         print('[{}] Starting learner from {}'.format(self.room_id, self.config_filename))
+        ##  read config
         self.config = read_config(self.config_filename)
         self.code_manager = CodeManager(self.config['code'])
-        ##
+        ## init a Logger
         self.logger = Logger()
         self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
-        ##
-        self.init_pad()
+        ## initialize the algortihm
         self.init_learner()
-        self.start()
+        ## make sure all element are correctly displayed
+        self.init_pad()
+        self.update_iteration(new_iteration_value=0)
+        self.update_code(apply_pause=False)
+        self.update_pad()
+        self.update_flash_pattern()
+
+    def init_pad(self):
+        self.is_pad_ready = False
+        # send client message to init pad
+        pad_info = self.config['pad']
+        self.socketio.emit('init_pad', pad_info, room=self.room_id)
+        # ask and wait for confirmation that pad is ready
+        self.ask_pad_state()
+        while not self.is_pad_ready:
+            time.sleep(0.1)
+
+    def ask_pad_state(self):
+        self.socketio.emit('is_pad_ready', room=self.room_id)
 
     def init_learner(self):
         learner_info = self.config['learner']
@@ -101,12 +127,6 @@ class Learner(object):
             self.audio_transformer = AudioVaultSignal()
         else:
             raise Exception('Type of learner not defined in config file or not handled.')
-
-    def start(self):
-        self.update_iteration(new_iteration_value=0)
-        self.update_code(apply_pause=False)
-        self.update_pad()
-        self.update_flash_pattern()
 
     def step(self, feedback_info):
         if self.code_manager.is_code_decoded():
@@ -128,10 +148,11 @@ class Learner(object):
                 self.prepare_learner_for_next_digit()
 
             if self.code_manager.is_code_decoded():
-                if self.code_manager.is_code_valid():
-                    self.socketio.emit('check', 'valid', room=self.room_id)
-                else:
-                    self.socketio.emit('check', 'invalid', room=self.room_id)
+                if self.code_manager.is_check_procedure_required():
+                    if self.code_manager.is_code_valid():
+                        self.socketio.emit('check', 'valid', room=self.room_id)
+                    else:
+                        self.socketio.emit('check', 'invalid', room=self.room_id)
             else:
                 self.update_pad()
                 self.update_flash_pattern()
@@ -211,11 +232,6 @@ class Learner(object):
 
         self.socketio.emit('update_code', code_info, room=self.room_id)
 
-
-    def init_pad(self):
-        pad_info = self.config['pad']
-        self.socketio.emit('init_pad', pad_info, room=self.room_id)
-
     def update_pad(self):
         pad_info = self.config['pad']
         if pad_info['show_learning_progress']:
@@ -245,6 +261,9 @@ class CodeManager(object):
     def reset(self):
         self.decoded_code = [None for _ in self.secret_code]
         self.ongoing_digit_index = 0
+
+    def is_check_procedure_required(self):
+        return self.config['check_code']
 
     def add_new_digit(self, digit):
         self.decoded_code[self.ongoing_digit_index] = digit

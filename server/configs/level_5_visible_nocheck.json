@@ -1,9 +1,9 @@
 {
-  "name": "Level 5 - Visible",
+  "name": "Level 5 - Visible - No Check",
   "code": {
     "secret_code": [0, 0, 0, 0],
     "show_code": true,
-    "check_code": true
+    "check_code": false
   },
   "learner": {
     "type": "continuous",

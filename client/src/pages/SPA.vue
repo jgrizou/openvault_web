@@ -57,16 +57,12 @@ export default {
     };
   },
   sockets: {
-    connect: function () {
-      this.$socket.emit('is_spawn')
-    },
-    spawn_state: function (state) {
-      if (!state) {
-        this.spawn_learner()
-      }
-    },
     init_pad: function (pad_info) {
       this.pad_type = pad_info.type
+    },
+    is_pad_ready: function () {
+      var pad_state = this.$refs.pad != undefined
+      this.$socket.emit('pad_state', pad_state)
     },
     update_code: function (code_info) {
       if (code_info.apply_pause) {
@@ -139,6 +135,9 @@ export default {
       this.$refs.reset.force_hide = false
       this.reset()
     }
+  },
+  mounted: function () {
+    this.spawn_learner()
   }
 }
 </script>

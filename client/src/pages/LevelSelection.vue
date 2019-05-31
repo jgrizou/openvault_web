@@ -38,13 +38,13 @@ export default {
 
 .level-selector {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .level-button {
   display: inline-block;
-  width: 200px;
-  height: 50px;
+  width: 300px;
+  height: 40px;
   outline: none; /* remove contour when clicked */
   border: none;
   background-color: rgba(150, 150, 150, 1);

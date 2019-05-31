@@ -2,7 +2,8 @@
   "name": "Level 1",
   "code": {
     "secret_code": [0, 0, 0, 0],
-    "show_code": false
+    "show_code": false,
+    "check_code": true
   },
   "learner": {
     "type": "discrete",
