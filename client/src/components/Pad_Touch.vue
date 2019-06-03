@@ -19,8 +19,10 @@ export default {
   },
   data() {
     return {
+      stopped: false,
       paused: false,
       awaiting_flash: false,
+      awaiting_pad: false,
       click_history_location: [],
       click_history_color: [],
       click_history_container: undefined,
@@ -29,13 +31,29 @@ export default {
   },
   computed: {
     disabled: function () {
-      return this.paused || this.awaiting_flash
+      return this.stopped || this.paused || this.awaiting_flash || this.awaiting_pad
     },
     is_clean: function () {
       return this.click_history_location.length == 0
     }
   },
   methods: {
+    clean_pad: function () {
+      this.stopped = false
+      this.paused = false
+      this.awaiting_flash = false
+      this.awaiting_pad = false
+
+      this.click_history_location = []
+      this.click_history_color = []
+
+      var pad_elem = this.$refs.padtouch
+      if (this.click_history_container) {
+        pad_elem.removeChild(this.click_history_container);
+      }
+      this.click_history_container = undefined
+      this.classifier_map = undefined
+    },
     on_click: function (event) {
       // do not listen to clicks when pad is disabled
       if (this.disabled) {
@@ -63,17 +81,6 @@ export default {
       // RIPPLE EFFECT
       this.trigger_ripple(relative_click)
 
-    },
-    clean_pad: function () {
-      this.click_history_location = []
-      this.click_history_color = []
-
-      var pad_elem = this.$refs.padtouch
-      if (this.click_history_container) {
-        pad_elem.removeChild(this.click_history_container);
-      }
-      this.click_history_container = undefined
-      this.classifier_map = undefined
     },
     update_pad_info: function (pad_info) {
       if (pad_info.signal_color) {

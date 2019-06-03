@@ -20,7 +20,7 @@
       <Pad33 ref="pad" class="pad" :callback="discrete_pad_callback"></Pad33>
     </div>
     <div v-else-if="pad_type == 'touch'">
-      <PadTouch ref="pad" class="pad" :callback="continuous_pad_callback"></PadTouch>
+      <PadTouch ref="pad" class="pad" :callback="touch_pad_callback"></PadTouch>
     </div>
     <div v-else-if="pad_type == 'audio'">
       <PadAudio ref="pad" class="pad" :callback="audio_pad_callback"></PadAudio>
@@ -81,16 +81,23 @@ export default {
     update_code: function (code_info) {
       if (code_info.apply_pause) {
         this.$refs.digit.show_digit = false
-        this.$refs.pad.paused = true // disable the pad button
+        this.$refs.pad.paused = true // force disable the pad button for the time of this pause effect
 
         setTimeout( () => {
           this.$refs.display.code = code_info.code_json
-        }, 50);
+        }, 50)
 
         setTimeout( () => {
-          this.$refs.digit.show_digit = true
-          this.$refs.pad.paused = false // enable the pad button
-        }, 900);
+          this.$refs.pad.paused = false // allow pad button to be enabled again, which also depends on awaiting_flash and awaiting_pad status
+
+          // check every 10ms if we have received all the info we wanted from the server before showing the digit again
+          var timer = setInterval( () => {
+            if (!this.$refs.pad.awaiting_flash && !this.$refs.pad.awaiting_pad ) {
+              this.$refs.digit.show_digit = true
+              clearInterval(timer);
+            }
+          }, 10)
+        }, 900)
 
       } else {
         this.$refs.display.code = code_info.code_json
@@ -102,7 +109,14 @@ export default {
     },
     update_pad: function (pad_info) {
       this.$refs.pad.update_pad_info(pad_info)
-      console.log(pad_info)
+      this.$refs.pad.awaiting_pad = false
+    },
+    no_check: function () {
+      // when there is no check, we do not update the flashing update_flash_pattern and the update_code might get stuck into a setInterval
+      // just to be neat we will force awaiting_flash to true to stop that setInterval to run in the background
+      // but to ensure the pad can no more be used, we also force the pad to stop
+      this.$refs.pad.stopped = true  // yet another way to stop the pad to respond
+      this.$refs.pad.awaiting_flash = false
     },
     check: function (check_state) {
       this.show_check_panel(check_state)
@@ -116,16 +130,20 @@ export default {
     reset: function () {
       this.$socket.emit('reset')
     },
-    discrete_pad_callback: function (click_info) {
+    disable_pad_while_waiting_from_server_update: function () {
       this.$refs.pad.awaiting_flash = true // disable the pad button
+      this.$refs.pad.awaiting_pad = true // disable the pad button
+    },
+    discrete_pad_callback: function (click_info) {
+      this.disable_pad_while_waiting_from_server_update()
 
       var feedback_info = {}
       feedback_info.symbol = click_info.button
       feedback_info.flash = this.$refs.digit.flash
       this.$socket.emit('feedback_info', feedback_info)
     },
-    continuous_pad_callback: function (click_info) {
-      this.$refs.pad.awaiting_flash = true // disable the pad
+    touch_pad_callback: function (click_info) {
+      this.disable_pad_while_waiting_from_server_update()
 
       var feedback_info = {}
       var x_click = click_info.relative_click.x
@@ -137,6 +155,8 @@ export default {
       this.$socket.emit('log', feedback_info)
     },
     audio_pad_callback: function (audio_info) {
+      this.disable_pad_while_waiting_from_server_update()
+
       var feedback_info = {}
       feedback_info.mp3 = audio_info.mp3
       feedback_info.flash = this.$refs.digit.flash

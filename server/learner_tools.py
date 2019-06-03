@@ -45,7 +45,8 @@ class LearnerManager(Namespace):
 
     def on_log(self, data):
         room_id = request.sid
-        print('[{}] {}'.format(room_id, data))
+        if room_id in self.learners:
+            print('[{}] {}'.format(self.learners[room_id].logger.log_folder, data))
 
     def on_spawn_learner(self, config_filename):
         room_id = request.sid
@@ -180,6 +181,8 @@ class Learner(object):
                         self.socketio.emit('check', 'valid', room=self.room_id)
                     else:
                         self.socketio.emit('check', 'invalid', room=self.room_id)
+                else:
+                    self.socketio.emit('no_check', room=self.room_id)
             else:
                 self.update_flash_pattern()
 
@@ -293,7 +296,7 @@ class Learner(object):
                 update_pad_info['signal_color'] = signal_color
 
                 if self.classifier_last_solved:
-                    classifier_map = classifier_tools.generate_map_from_classifier(self.classifier_last_solved, bounds=(0, 1))
+                    classifier_map = classifier_tools.generate_map_from_classifier(self.classifier_last_solved)
 
                     map_filename = self.logger.save_classifier_map_to_file(classifier_map)
 
@@ -307,8 +310,8 @@ class Learner(object):
                     # we put classifier_last_solved back to None to not recompute and send again each iteration, but each time we update it
                     self.classifier_last_solved = None
 
-            ##
-            self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
+        ## we send it everytime even if empty, just to be able to sync server and client in term of UI
+        self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
 
 
 class CodeManager(object):

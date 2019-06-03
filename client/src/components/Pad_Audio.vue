@@ -29,14 +29,16 @@ export default {
   },
   data() {
     return {
+      stopped: false,
       paused: false,
       awaiting_flash: false,
+      awaiting_pad: false,
       recorder: new MicRecorder()
     }
   },
   computed: {
     disabled: function () {
-      return this.paused || this.awaiting_flash
+      return this.stopped || this.paused || this.awaiting_flash || this.awaiting_pad
     },
     is_clean: function () {
       return true
@@ -44,6 +46,10 @@ export default {
   },
   methods: {
     clean_pad: function () {
+      this.stopped = false
+      this.paused = false
+      this.awaiting_flash = false
+      this.awaiting_pad = false
     },
     update_pad_info: function (pad_info) {
       console.log(pad_info)
