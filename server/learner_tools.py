@@ -286,8 +286,9 @@ class Learner(object):
                 update_pad_info['button_color'] = button_color
 
             elif learner_config['type'] == 'continuous':
-                # as many point as iteration
+                # as many point as iteration so far
                 signal_color = ['neutral' for _ in range(self.n_iteration)]
+                # but only the one that have already been identified are colored
                 for i in range(0, self.n_iteration_at_last_solved):
                     # labels have been propagated so up to self.n_iteration_at_last_solved iteration all labels are the same
                     label_for_ith_point = self.learner.hypothesis_labels[0][i]
@@ -295,6 +296,7 @@ class Learner(object):
 
                 update_pad_info['signal_color'] = signal_color
 
+                ## if classifier solved, plot it, save it and send it
                 if self.classifier_last_solved:
                     classifier_map = classifier_tools.generate_map_from_classifier(self.classifier_last_solved)
 

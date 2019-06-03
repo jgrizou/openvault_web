@@ -24,9 +24,9 @@ def index():
     return render_template('index.html')
 
 # if the page need to load files, this allow the server to server them for all urls
-@app.route('/<path:path>')
-def serve_static(path):
-    return app.send_from_directory('', path)
+# @app.route('/<path:path>')
+# def serve_static(path):
+    # return app.send_from_directory('', path)
 
 
 # on connect, join room, update database

@@ -1,23 +1,27 @@
 <template>
+
   <div
     ref="padaudio"
     class="padaudio"
   >
 
+    <div id="audio-feedback-panel" class="audio-feedback-panel">
+    </div>
+
     <button
-      class="btn_micro_ready"
-      v-on:click="on_click"
+      id="audio-btn-micro"
+      class="btn-micro-ready"
       v-on:mousedown="on_mousedown"
-      v-on:mouseup="on_mouseup"
     ></button>
 
-    <div> <div>
-
   </div>
+
 </template>
 
 <script>
 const MicRecorder = require('mic-recorder-to-mp3');
+const GreenAudioPlayer = require('green-audio-player');
+require('green-audio-player/dist/css/green-audio-player.min.css')
 
 export default {
   name: 'PadAudio',
@@ -33,12 +37,16 @@ export default {
       paused: false,
       awaiting_flash: false,
       awaiting_pad: false,
-      recorder: new MicRecorder()
+      awaiting_self: false,
+      recorder: new MicRecorder(),
+      audio_history_file: [],
+      audio_history_fileurl: [],
+      audio_history_color: []
     }
   },
   computed: {
     disabled: function () {
-      return this.stopped || this.paused || this.awaiting_flash || this.awaiting_pad
+      return this.stopped || this.paused || this.awaiting_flash || this.awaiting_pad || this.awaiting_self
     },
     is_clean: function () {
       return true
@@ -50,52 +58,101 @@ export default {
       this.paused = false
       this.awaiting_flash = false
       this.awaiting_pad = false
+      this.awaiting_self = false
+      this.audio_history_file = []
+      this.audio_history_fileurl = []
+      this.audio_history_color = []
+
+      var audioFeedbackPanel = document.getElementById("audio-feedback-panel");
+      audioFeedbackPanel.innerHTML = ''
+    },
+    show_audio_history: function () {
+
+      var audioFeedbackPanel = document.getElementById("audio-feedback-panel");
+      audioFeedbackPanel.innerHTML = ''
+
+      // loop over all recorded voice
+      this.audio_history_fileurl.forEach( (fileurl, index, array) => {
+
+        var audioPlayer = document.createElement("div")
+        audioPlayer.className = 'audio-player-' + index
+        audioPlayer.innerHTML = '<div class="audio-index">' + String(index).padStart(2, '0') + '</div><audio><source src="' + fileurl + '" type="audio/mp3"></audio>'
+
+        var audio_color = undefined
+        var color_name =  this.audio_history_color[index]
+        if (color_name == 'neutral') {
+          // keep default
+        } else if (color_name == 'flash') {
+          audio_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
+          audioPlayer.style.borderColor = audio_color
+        } else if (color_name == 'noflash') {
+          audio_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color');
+          audioPlayer.style.borderColor = audio_color
+        }
+        audioPlayer.style.backgroundColor = audio_color
+
+        // add to the feebdack panel
+        audioFeedbackPanel.appendChild(audioPlayer)
+
+        // initiate audio player instance
+        var audio_player = new GreenAudioPlayer('.' + audioPlayer.className, { stopOthersOnPlay: true });
+
+      })
     },
     update_pad_info: function (pad_info) {
-      console.log(pad_info)
-    },
-    on_click: function () {
+      if (pad_info.signal_color) {
+          this.audio_history_color = pad_info.signal_color
+      }
+      this.show_audio_history()
     },
     on_mousedown: function () {
-      this.recorder.start().then(() => {
-        // something else
-        // console.log("RECORDING")
-        // this.buffer_check = setInterval( () => {
-        //   var info = this.recorder.lameEncoder.dataBuffer
-        //   console.log(info)
-        // }, 1000);
 
+      if (! this.disabled) {
+        // awaiting that the sound is recorded to renable the pad
+        this.awaiting_self = true
+
+        var microphoneElement = document.getElementById("audio-btn-micro");
+        microphoneElement.classList.add("btn-micro-ready-active")
+
+        this.start_recording()
+
+        setTimeout( () => {
+          this.stop_recording()
+          microphoneElement.classList.remove("btn-micro-ready-active")
+          this.awaiting_self = false
+        }, 1500)
+
+      }
+
+    },
+    start_recording: function () {
+      //start recording
+      this.recorder.start().then(() => {
       }).catch((e) => {
+        alert('Voice recording is not working.');
         console.error(e);
       });
     },
-    on_mouseup: function () {
-
-      // clearInterval(this.buffer_check)
-
-      // Once you are done singing your best song, stop and get the mp3.
+    stop_recording: function () {
+      // stop recording
       this.recorder.stop().getMp3().then(([buffer, blob]) => {
-
-        // console.log("RECORDING STOPPED")
-
-        // do what ever you want with buffer and blob
-        // Example: Create a mp3 file and play
-        const file = new File(buffer, 'recording.mp3', {
+        // create mp3 file and push date to it
+        const file = new File(buffer, 'user_recording.mp3', {
           type: blob.type,
           lastModified: Date.now()
         });
-
+        // save it in history
+        this.audio_history_file.push(file)
+        this.audio_history_fileurl.push(URL.createObjectURL(file))
+        this.audio_history_color.push('neutral')
+        // send back to server
         var audio_info = {}
         audio_info.mp3 = file
-
         this.callback(audio_info)
 
-        // const player = new Audio(URL.createObjectURL(file));
-        // player.play();
-
       }).catch((e) => {
-        alert('We could not retrieve your message');
-        console.log(e);
+        alert('We could not retrieve your voice recording.');
+        console.error(e);
       });
     }
   }
@@ -105,6 +162,63 @@ export default {
 
 <style>
 /* global styles */
+
+span.controls__current-time {
+  display: none
+}
+
+span.controls__total-time {
+  display: none
+}
+
+.volume {
+  display: none
+}
+
+.green-audio-player .controls .controls__slider {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.green-audio-player .controls {
+  margin-left: 20px;
+  margin-right: -10px;
+}
+
+.green-audio-player .play-pause-btn {
+  margin-left: 15px;
+  margin-right: 0px;
+}
+
+.green-audio-player {
+  position: relative;
+  left: 120px;
+  width: 200px;
+  min-width: 100px;
+  height: 35px;
+  margin-top:2px;
+  margin-bottom:2px;
+  box-shadow: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgba(66, 65, 78, 0.35);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.audio-index {
+  position: absolute;
+  left: 5px;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.audio-feedback-panel {
+  overflow:auto;
+  top: 0px;
+  left: 0px;
+  width: var(--screen_width);
+  height: var(--pad_height);
+}
 
 :root {
   --micro_diameter: 150px;
@@ -119,8 +233,8 @@ export default {
 
 }
 
-.btn_micro_ready {
-  position: relative;
+.btn-micro-ready {
+  position: absolute;
   top: var(--micro_top);
   left: var(--micro_left);
   width: var(--micro_diameter);
@@ -135,21 +249,21 @@ export default {
   border: none;
 }
 
-.btn_micro_ready:hover {
-  top: var(--micro_top_hover);
+.btn-micro-ready:hover {
+  /* top: var(--micro_top_hover);
   left: var(--micro_left_hover);
   width: var(--micro_diameter_hover);
   height: var(--micro_diameter_hover);
-  height: var(--micro_diameter_hover);
+  height: var(--micro_diameter_hover); */
   background-color: rgba(109, 220, 111, 0.8);
-  background-size: var(--micro_logo_size_hover);
-  border-radius: calc(var(--micro_diameter_hover) / 2);
+  /* background-size: var(--micro_logo_size_hover);
+  border-radius: calc(var(--micro_diameter_hover) / 2); */
 }
 
-.btn_micro_ready:active {
+.btn-micro-ready-active {
   background-color: rgba(226, 73, 73, 1);
-  animation: recording 1.8s;
-  -webkit-animation:recording 1.8s infinite;
+  animation: recording 1.5s;
+  -webkit-animation:recording 1.5s infinite;
 }
 
 @-webkit-keyframes recording {
