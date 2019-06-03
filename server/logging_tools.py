@@ -13,8 +13,11 @@ import requests
 
 import tools
 
+from openvault import classifier_tools
+
 LOG_FOLDER = os.path.join(HERE_PATH, 'logs')
 MP3_FOLDER_NAME = 'mp3'
+MAP_FOLDER_NAME = 'maps'
 
 
 def generate_unique_log_folder():
@@ -63,6 +66,18 @@ class Logger(object):
 
         connection_info_filename = os.path.join(self.log_folder, 'connection_info.json')
         tools.save_json(connection_info_filename, connection_info)
+
+
+    def save_classifier_map_to_file(self, classifier_map):
+        map_folder = os.path.join(self.log_folder, MAP_FOLDER_NAME)
+        tools.ensure_dir(map_folder)
+
+        files = tools.list_files(map_folder, ['*.png'])
+        map_filename = os.path.join(map_folder, '{:04}.png'.format(len(files)))
+
+        classifier_tools.save_map_to_file(classifier_map, map_filename)
+
+        return map_filename
 
 
     def save_mp3_to_file(self, mp3_data):

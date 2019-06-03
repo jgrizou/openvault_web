@@ -19,10 +19,9 @@ from flask_socketio import Namespace, emit
 from tools import CONFIG_FOLDER, read_config
 from logging_tools import Logger
 
+from openvault import classifier_tools
 from openvault.discrete import DiscreteLearner
 from openvault.continuous import ContinuousLearner
-from openvault.classifier_tools import generate_map_from_classifier
-from openvault.classifier_tools import save_map_to_file
 
 from audio_features.openvault_tools import AudioVaultSignal
 
@@ -285,22 +284,22 @@ class Learner(object):
 
             elif learner_config['type'] == 'continuous':
                 # as many point as iteration
-                point_color = ['neutral' for _ in range(self.n_iteration)]
+                signal_color = ['neutral' for _ in range(self.n_iteration)]
                 for i in range(0, self.n_iteration_at_last_solved):
                     # labels have been propagated so up to self.n_iteration_at_last_solved iteration all labels are the same
                     label_for_ith_point = self.learner.hypothesis_labels[0][i]
-                    point_color[i] = MEANING_TO_COLOR[label_for_ith_point]
+                    signal_color[i] = MEANING_TO_COLOR[label_for_ith_point]
 
-                update_pad_info['point_color'] = point_color
+                update_pad_info['signal_color'] = signal_color
 
                 if self.classifier_last_solved:
-                    classifier_map = generate_map_from_classifier(self.classifier_last_solved, bounds=(0, 1))
+                    classifier_map = classifier_tools.generate_map_from_classifier(self.classifier_last_solved, bounds=(0, 1))
 
-                    save_map_to_file(classifier_map, 'classifier_map.png')
+                    map_filename = self.logger.save_classifier_map_to_file(classifier_map)
 
-                    with open('classifier_map.png', 'rb') as f:
+                    # read image and convert it to a format I can send to the webpage
+                    with open(map_filename, 'rb') as f:
                         map_image_base64 = base64.b64encode(f.read()).decode()
-
                     classifier_map_for_web = 'data:image/png;base64,{}'.format(map_image_base64)
 
                     update_pad_info['classifier_map'] = classifier_map_for_web

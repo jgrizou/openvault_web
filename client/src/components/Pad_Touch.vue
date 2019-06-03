@@ -76,8 +76,8 @@ export default {
       this.classifier_map = undefined
     },
     update_pad_info: function (pad_info) {
-      if (pad_info.point_color) {
-          this.click_history_color = pad_info.point_color
+      if (pad_info.signal_color) {
+          this.click_history_color = pad_info.signal_color
       }
       if (pad_info.classifier_map) {
           this.classifier_map = pad_info.classifier_map
