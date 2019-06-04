@@ -9,10 +9,9 @@ import sys
 openvault_path = os.path.join(HERE_PATH, '..', '..')
 sys.path.append(openvault_path)
 
-import time
-
 import base64
 
+import eventlet
 from flask import request
 from flask_socketio import Namespace, emit
 
@@ -95,7 +94,7 @@ class Learner(object):
         self.user_agent = user_agent
 
     def initialize(self):
-        print('[{}] Starting learner from {}'.format(self.room_id, self.config_filename))
+        print('[{}] Starting learner with room_id {}'.format(self.room_id, self.config_filename))
         ##  read config
         self.config = read_config(self.config_filename)
         self.code_manager = CodeManager(self.config['code'])
@@ -104,12 +103,14 @@ class Learner(object):
         self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
         ## make sure pad is loaded
         self.init_pad()
+        self.clean_pad()
         ## initialize the algortihm
+        print('Initializing learner...')
         self.init_learner()
+        print('Learner initialized.')
         ## make sure all element are correctly displayed
         self.classifier_last_solved = None
         self.n_iteration_at_last_solved = 0
-        self.clean_pad()
         self.update_iteration(new_iteration_value=0)
         self.update_code(apply_pause=False)
         self.update_pad()
@@ -123,7 +124,7 @@ class Learner(object):
         # ask and wait for confirmation that pad is ready
         self.ask_pad_ready()
         while not self.is_pad_ready:
-            time.sleep(0.1)
+            eventlet.sleep(0.1)
 
     def ask_pad_ready(self):
         self.socketio.emit('is_pad_ready', room=self.room_id)
@@ -135,24 +136,29 @@ class Learner(object):
         # ask and wait for confirmation that pad is ready
         self.ask_pad_clean()
         while not self.is_pad_clean:
-            time.sleep(0.1)
+            eventlet.sleep(0.1)
 
     def ask_pad_clean(self):
         self.socketio.emit('is_pad_clean', room=self.room_id)
 
     def init_learner(self):
+        pad_config = self.config['pad']
         learner_config = self.config['learner']
+
         if learner_config['type'] == 'discrete':
             self.learner = DiscreteLearner(
                 learner_config['n_hypothesis'],
                 learner_config['known_symbols'])
+
         elif learner_config['type'] == 'continuous':
             self.learner = ContinuousLearner(
                 learner_config['n_hypothesis'],
                 proba_decision_threshold=0.95,
                 proba_assigned_to_label_valid=0.95)
-            # only used for audi level but we will init it here anyway
-            self.audio_transformer = AudioVaultSignal()
+
+            if pad_config['type'] == 'audio':
+                self.audio_transformer = AudioVaultSignal()
+
         else:
             raise Exception('Type of learner not defined in config file or not handled.')
 

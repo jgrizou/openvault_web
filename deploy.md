@@ -24,8 +24,11 @@ sudo nano /etc/ssh/sshd_config
 $ sudo apt-get install -y ufw
 $ sudo ufw allow ssh
 $ sudo ufw allow http
+$ sudo ufw allow 5000  # if needed for debugging flask, not needed
+$ sudo ufw allow from 127.0.0.1 to any port 5001 # this is for docker in audio embedding
 $ sudo ufw --force enable
-$ sudo ufw status
+$ sudo ufw status numbered
+// $ sudo ufw delete 0
 
 $ sudo apt-get -y update
 $ sudo apt-get -y install supervisor nginx
@@ -61,20 +64,24 @@ conda install -c conda-forge umap-learn
 conda install -c conda-forge librosa
 conda install -c roebel pysndfile
 
+## install docker
+
+https://www.digitalocean.com/community/tutorials/comment-installer-et-utiliser-docker-sur-ubuntu-18-04-fr
+
 
 ## flask
 
 // create .env in flask server folder with SERVER_KEY
 
-touch .env // in /home/jgrizou/workspace/openvault_rpi/app/server
+touch .env // in /home/jgrizou/workspace/openvault_web/server
 
 // generate Secret Key
 python3 -c "import uuid; print(uuid.uuid4().hex)"
 
 echo "SECRET_KEY=135d12a08cae4b97aaf4148b67de4b3a" >> .env
 
-//
-echo "export FLASK_APP=app.py" >> ~/.profile
+// set FLASK_APP in ~/.profile
+echo "export FLASK_APP=$HOME/workspace/openvault_web/server/app.py" >> ~/.profile
 
 
 ## App
@@ -106,6 +113,9 @@ killasgroup=true
 // -w 1 is for 1 worker but this is mandatory when using websocket
 
 sudo supervisorctl tail openvault stdout
+sudo supervisorctl tail -f openvault stdout
+sudo supervisorctl restart openvault
+
 
 systemctl status supervisor
 systemctl stop supervisor
@@ -149,4 +159,5 @@ server {
 
 sudo service nginx reload
 
+systemctl status nginx
 systemctl restart nginx

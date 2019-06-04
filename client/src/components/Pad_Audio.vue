@@ -95,17 +95,17 @@ export default {
       var audioFeedbackPanel = document.getElementById("audio-feedback-panel");
       audioFeedbackPanel.innerHTML = ''
 
-      // just starting and stopping a recroding to initiate the MicRecorder/// otherwise the first recorded sound is a bit truncated
-      this.recorder.start().then(() => {
-        this.recorder.stop().getMp3().then(([buffer, blob]) => {
-        }).catch((e) => {
-          alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
-          console.error(e);
-        });
-      }).catch((e) => {
-        alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
-        console.error(e);
-      });
+      // // just starting and stopping a recroding to initiate the MicRecorder/// otherwise the first recorded sound is a bit truncated
+      // this.recorder.start().then(() => {
+      //   this.recorder.stop().getMp3().then(([buffer, blob]) => {
+      //   }).catch((e) => {
+      //     alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
+      //     console.error(e);
+      //   });
+      // }).catch((e) => {
+      //   alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
+      //   console.error(e);
+      // });
     },
     show_audio_history: function () {
 
