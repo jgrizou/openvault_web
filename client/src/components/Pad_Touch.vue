@@ -4,6 +4,12 @@
     class="padtouch"
     v-on:click="on_click"
   >
+
+    <div
+      ref="padborder"
+      class="padborder"
+    ></div>
+
   </div>
 </template>
 
@@ -123,7 +129,9 @@ export default {
         var color_name =  this.click_history_color[index]
         if (color_name == 'neutral') {
           clickLocator.style.borderWidth = '0px'
-          point_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
+          point_color = "rgba(255, 255, 255, 1)"
+          point_color = "rgba(50, 50, 50, 1)"
+          // point_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
         } else if (color_name == 'flash') {
           point_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
         } else if (color_name == 'noflash') {
@@ -196,8 +204,25 @@ export default {
 <style>
 /* global styles */
 
+:root {
+  --pad_height_shrink: 30px;
+  --pad_border_width: 2px;
+}
+
 .padtouch {
-  background-color: rgba(255, 255, 255, 1);
+  position: absolute;
+  top: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
+  height: calc( var(--pad_height) - var(--pad_height_shrink) );
+  background-color: rgba(66, 65, 78, 0.1);
+}
+
+.padborder {
+  position: absolute;
+  top: 0;
+  width: calc( var(--screen_width));
+  height: var(--pad_border_width);
+  background-color: rgba(66, 65, 78, 0.5);
+  z-index: 1;
 }
 
 .history-container {

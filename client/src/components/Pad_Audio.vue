@@ -5,14 +5,38 @@
     class="padaudio"
   >
 
-    <div id="audio-feedback-panel" class="audio-feedback-panel">
-    </div>
-
     <button
       id="audio-btn-micro"
       class="btn-micro-ready"
       v-on:mousedown="on_mousedown"
     ></button>
+
+    <button
+      class="btn-show-feedback-panel"
+      v-show="feedback_show_btn_active"
+      v-on:click="on_show_feedback_panel"
+    >Show history</button>
+
+    <transition name="slide-feedback">
+
+      <div v-show="feedback_panel_active">
+
+        <div
+          id="audio-feedback-panel"
+          class="audio-feedback-panel"
+        >
+        </div>
+
+        <button
+          class="btn-show-feedback-panel"
+          v-show="feedback_show_btn_active"
+          v-on:click="on_hide_feedback_panel"
+        >Hide history</button>
+
+      </div>
+
+    </transition>
+
 
   </div>
 
@@ -39,6 +63,7 @@ export default {
       awaiting_pad: false,
       awaiting_self: false,
       recorder: new MicRecorder(),
+      feedback_panel_active: false,
       audio_history_file: [],
       audio_history_fileurl: [],
       audio_history_color: []
@@ -49,7 +74,10 @@ export default {
       return this.stopped || this.paused || this.awaiting_flash || this.awaiting_pad || this.awaiting_self
     },
     is_clean: function () {
-      return true
+      return this.audio_history_file.length == 0
+    },
+    feedback_show_btn_active: function () {
+      return !this.is_clean
     }
   },
   methods: {
@@ -59,12 +87,25 @@ export default {
       this.awaiting_flash = false
       this.awaiting_pad = false
       this.awaiting_self = false
+      this.feedback_panel_active = false
       this.audio_history_file = []
       this.audio_history_fileurl = []
       this.audio_history_color = []
 
       var audioFeedbackPanel = document.getElementById("audio-feedback-panel");
       audioFeedbackPanel.innerHTML = ''
+
+      // just starting and stopping a recroding to initiate the MicRecorder/// otherwise the first recorded sound is a bit truncated
+      this.recorder.start().then(() => {
+        this.recorder.stop().getMp3().then(([buffer, blob]) => {
+        }).catch((e) => {
+          alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
+          console.error(e);
+        });
+      }).catch((e) => {
+        alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
+        console.error(e);
+      });
     },
     show_audio_history: function () {
 
@@ -81,7 +122,7 @@ export default {
         var audio_color = undefined
         var color_name =  this.audio_history_color[index]
         if (color_name == 'neutral') {
-          // keep default
+          audio_color = "rgba(255, 255, 255, 1)"
         } else if (color_name == 'flash') {
           audio_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
           audioPlayer.style.borderColor = audio_color
@@ -108,20 +149,26 @@ export default {
     on_mousedown: function () {
 
       if (! this.disabled) {
+
+        this.start_recording()
+
         // awaiting that the sound is recorded to renable the pad
         this.awaiting_self = true
 
         var microphoneElement = document.getElementById("audio-btn-micro");
-        microphoneElement.classList.add("btn-micro-ready-active")
 
-        this.start_recording()
+        setTimeout( () => {
+          microphoneElement.classList.add("btn-micro-ready-active")
+        }, 250)
+
+        setTimeout( () => {
+          microphoneElement.classList.remove("btn-micro-ready-active")
+        }, 1750)
 
         setTimeout( () => {
           this.stop_recording()
-          microphoneElement.classList.remove("btn-micro-ready-active")
           this.awaiting_self = false
-        }, 1500)
-
+        }, 2000)
       }
 
     },
@@ -154,6 +201,12 @@ export default {
         alert('We could not retrieve your voice recording.');
         console.error(e);
       });
+    },
+    on_show_feedback_panel: function () {
+      this.feedback_panel_active = true
+    },
+    on_hide_feedback_panel: function () {
+      this.feedback_panel_active = false
     }
   }
 }
@@ -163,62 +216,7 @@ export default {
 <style>
 /* global styles */
 
-span.controls__current-time {
-  display: none
-}
-
-span.controls__total-time {
-  display: none
-}
-
-.volume {
-  display: none
-}
-
-.green-audio-player .controls .controls__slider {
-  margin-left: 0px;
-  margin-right: 0px;
-}
-
-.green-audio-player .controls {
-  margin-left: 20px;
-  margin-right: -10px;
-}
-
-.green-audio-player .play-pause-btn {
-  margin-left: 15px;
-  margin-right: 0px;
-}
-
-.green-audio-player {
-  position: relative;
-  left: 120px;
-  width: 200px;
-  min-width: 100px;
-  height: 35px;
-  margin-top:2px;
-  margin-bottom:2px;
-  box-shadow: none;
-  border-style: solid;
-  border-width: 1px;
-  border-color: rgba(66, 65, 78, 0.35);
-  background-color: rgba(255, 255, 255, 1);
-}
-
-.audio-index {
-  position: absolute;
-  left: 5px;
-  font-weight: 600;
-  font-size: 20px;
-}
-
-.audio-feedback-panel {
-  overflow:auto;
-  top: 0px;
-  left: 0px;
-  width: var(--screen_width);
-  height: var(--pad_height);
-}
+/* Recording button css */
 
 :root {
   --micro_diameter: 150px;
@@ -273,7 +271,98 @@ span.controls__total-time {
 }
 
 
+/* Feedback sounds css */
 
+
+span.controls__current-time {
+  display: none
+}
+
+span.controls__total-time {
+  display: none
+}
+
+.volume {
+  display: none
+}
+
+.green-audio-player .controls .controls__slider {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.green-audio-player .controls {
+  margin-left: 20px;
+  margin-right: -10px;
+}
+
+.green-audio-player .play-pause-btn {
+  margin-left: 15px;
+  margin-right: 0px;
+}
+
+.green-audio-player {
+  position: relative;
+  left: 120px;
+  width: 200px;
+  min-width: 100px;
+  height: 35px;
+  margin-top:2px;
+  margin-bottom:2px;
+  box-shadow: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgba(66, 65, 78, 0.35);
+}
+
+.audio-index {
+  position: absolute;
+  left: 5px;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+/* Feedback panel animation css */
+
+.audio-feedback-panel {
+  position: absolute;
+  overflow:auto;
+  top: 0px;
+  left: 0px;
+  width: var(--screen_width);
+  height: var(--pad_height);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.slide-feedback-enter-active, .slide-feedback-leave-active {
+  transition: all .5s ease-in-out;
+}
+
+.slide-feedback-enter, .slide-feedback-leave-to {
+  transform: translateY(var(--pad_height));
+}
+
+.btn-show-feedback-panel {
+  position: absolute;
+  top: 400px;
+  left: 390px;
+  width: 60px;
+  height: 40px;
+  border-radius: 20px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 12px;
+  font-weight: 400;
+  outline: none; /* remove contour when clicked */
+  box-shadow: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgba(66, 65, 78, 0.35);
+}
+
+.btn-show-feedback-panel:active {
+  background-color: rgba(150, 150, 150, 1);
+}
 
 
 </style>

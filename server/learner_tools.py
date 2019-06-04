@@ -242,8 +242,8 @@ class Learner(object):
                 solution_index = self.learner.get_solution_index()
                 self.learner.propagate_labels_from_hypothesis(solution_index)
                 # if we accumulate the info, we change this variable that is used to update the pad with learned information up to the current iteration
-                self.classifier_last_solved = self.learner.hypothesis_classifier_infos[solution_index]['clf']
                 self.n_iteration_at_last_solved = self.n_iteration
+                self.classifier_last_solved = self.learner.hypothesis_classifier_infos[solution_index]['clf']
             else:
                 # spawn a new learner from scratch
                 self.init_learner()
@@ -298,21 +298,23 @@ class Learner(object):
 
                 ## if classifier solved, plot it, save it and send it
                 if self.classifier_last_solved:
-                    classifier_map = classifier_tools.generate_map_from_classifier(self.classifier_last_solved)
+                    # only for touch pad for now
+                    if pad_config['type'] == 'touch':
+                        classifier_map = classifier_tools.generate_map_from_classifier(self.classifier_last_solved)
 
-                    map_filename = self.logger.save_classifier_map_to_file(classifier_map)
+                        map_filename = self.logger.save_classifier_map_to_file(classifier_map)
 
-                    # read image and convert it to a format I can send to the webpage
-                    with open(map_filename, 'rb') as f:
-                        map_image_base64 = base64.b64encode(f.read()).decode()
-                    classifier_map_for_web = 'data:image/png;base64,{}'.format(map_image_base64)
+                        # read image and convert it to a format I can send to the webpage, a base64 encoded png file.
+                        with open(map_filename, 'rb') as f:
+                            map_image_base64 = base64.b64encode(f.read()).decode()
+                        classifier_map_for_web = 'data:image/png;base64,{}'.format(map_image_base64)
 
-                    update_pad_info['classifier_map'] = classifier_map_for_web
+                        update_pad_info['classifier_map'] = classifier_map_for_web
 
-                    # we put classifier_last_solved back to None to not recompute and send again each iteration, but each time we update it
+                    # we put classifier_last_solved back to None to not recompute and send again each iteration, but only each time we update it in prepare_learner_for_next_digit()
                     self.classifier_last_solved = None
 
-        ## we send it everytime even if empty, just to be able to sync server and client in term of UI
+        ## we send it everytime even if empty, just to be able to sync server and client in terms of UI
         self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
 
 
