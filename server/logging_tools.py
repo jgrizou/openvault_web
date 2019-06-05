@@ -12,8 +12,7 @@ import json
 import requests
 
 import tools
-
-from openvault import classifier_tools
+import web_tools
 
 LOG_FOLDER = os.path.join(HERE_PATH, 'logs')
 MP3_FOLDER_NAME = 'mp3'
@@ -76,7 +75,7 @@ class Logger(object):
         files = tools.list_files(map_folder, ['*.png'])
         map_filename = os.path.join(map_folder, '{:04}.png'.format(len(files)))
 
-        classifier_tools.save_map_to_file(classifier_map, map_filename)
+        web_tools.save_map_to_file(classifier_map, map_filename)
 
         return map_filename
 

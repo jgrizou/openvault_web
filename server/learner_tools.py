@@ -9,14 +9,15 @@ import sys
 openvault_path = os.path.join(HERE_PATH, '..', '..')
 sys.path.append(openvault_path)
 
-import base64
 
 import eventlet
 from flask import request
 from flask_socketio import Namespace, emit
 
+import web_tools
+import logging_tools
 from tools import CONFIG_FOLDER, read_config
-from logging_tools import Logger
+
 
 from openvault import classifier_tools
 from openvault.discrete import DiscreteLearner
@@ -99,20 +100,22 @@ class Learner(object):
         self.config = read_config(self.config_filename)
         self.code_manager = CodeManager(self.config['code'])
         ## init a Logger
-        self.logger = Logger()
+        self.logger = logging_tools.Logger()
         self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
-        ## make sure pad is loaded
+        ## make sure pad is loaded before starting
         self.init_pad()
-        self.clean_pad()
         ## initialize the algortihm
         print('Initializing learner...')
         self.init_learner()
         print('Learner initialized.')
+
         ## make sure all element are correctly displayed
         self.classifier_last_solved = None
         self.n_iteration_at_last_solved = 0
         self.update_iteration(new_iteration_value=0)
         self.update_code(apply_pause=False)
+        #
+        self.clean_pad()
         self.update_pad()
         self.update_flash_pattern()
 
@@ -292,30 +295,46 @@ class Learner(object):
                 update_pad_info['button_color'] = button_color
 
             elif learner_config['type'] == 'continuous':
+
+                ## LABELS / COLORS
+
                 # as many point as iteration so far
                 signal_color = ['neutral' for _ in range(self.n_iteration)]
                 # but only the one that have already been identified are colored
-                for i in range(0, self.n_iteration_at_last_solved):
+                for i in range(self.n_iteration_at_last_solved):
                     # labels have been propagated so up to self.n_iteration_at_last_solved iteration all labels are the same
                     label_for_ith_point = self.learner.hypothesis_labels[0][i]
                     signal_color[i] = MEANING_TO_COLOR[label_for_ith_point]
 
                 update_pad_info['signal_color'] = signal_color
 
+                ## SIGNALS in 2D space for display if needed
+                # signal scaler is used to generate the classifier map according to the scaling mapping we might apply
+                if pad_config['type'] == 'touch':
+                    # we do not scale as 2D data are already collected from the interface
+                    signal_location = self.learner.signal_history
+                    signal_scaler = None
+                else:
+                    # in all other cases, we rescale the data between 0.1 and 0.9 for plotting if needed
+                    if len(self.learner.signal_history):
+                        signal_location, signal_scaler = web_tools.scale_data_to_view_windows(self.learner.signal_history, view_bounds=(0.1, 0.9))
+                    else:
+                        signal_location = self.learner.signal_history
+                        signal_scaler = None
+
+                update_pad_info['signal_location'] = signal_location
+
                 ## if classifier solved, plot it, save it and send it
                 if self.classifier_last_solved:
-                    # only for touch pad for now
-                    if pad_config['type'] == 'touch':
-                        classifier_map = classifier_tools.generate_map_from_classifier(self.classifier_last_solved)
 
-                        map_filename = self.logger.save_classifier_map_to_file(classifier_map)
+                    classifier_map = web_tools.generate_map_from_classifier(self.classifier_last_solved, scaler=signal_scaler)
 
-                        # read image and convert it to a format I can send to the webpage, a base64 encoded png file.
-                        with open(map_filename, 'rb') as f:
-                            map_image_base64 = base64.b64encode(f.read()).decode()
-                        classifier_map_for_web = 'data:image/png;base64,{}'.format(map_image_base64)
+                    classifier_map_web = web_tools.flip_map_for_web(classifier_map)
 
-                        update_pad_info['classifier_map'] = classifier_map_for_web
+                    map_filename = self.logger.save_classifier_map_to_file(classifier_map_web)
+
+                    ## encode png map file for web display
+                    update_pad_info['classifier_map'] = web_tools.encode_png_base64(map_filename)
 
                     # we put classifier_last_solved back to None to not recompute and send again each iteration, but only each time we update it in prepare_learner_for_next_digit()
                     self.classifier_last_solved = None

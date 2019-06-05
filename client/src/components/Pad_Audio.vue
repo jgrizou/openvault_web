@@ -12,27 +12,45 @@
     ></button>
 
     <button
-      class="btn-show-feedback-panel"
+      class="btn-show-feedback-panel btn-soundtracks"
       v-show="feedback_show_btn_active"
-      v-on:click="on_show_feedback_panel"
+      v-on:click="feedback_panel_soundtracks_active = true"
     >Show history</button>
+
+    <button
+      class="btn-show-feedback-panel btn-embedding"
+      v-show="feedback_show_btn_active"
+      v-on:click="feedback_panel_embedding_active = true"
+    >Show embedding</button>
 
     <transition name="slide-feedback">
 
-      <div v-show="feedback_panel_active">
-
+      <div v-show="feedback_panel_soundtracks_active">
         <div
-          id="audio-feedback-panel"
-          class="audio-feedback-panel"
+          id="soundtracks-feedback-panel"
+          class="soundtracks-feedback-panel"
         >
         </div>
-
         <button
-          class="btn-show-feedback-panel"
-          v-show="feedback_show_btn_active"
-          v-on:click="on_hide_feedback_panel"
+          class="btn-show-feedback-panel btn-soundtracks"
+          v-on:click="feedback_panel_soundtracks_active = false"
         >Hide history</button>
+      </div>
 
+    </transition>
+
+    <transition name="slide-feedback">
+
+      <div v-show="feedback_panel_embedding_active">
+        <div
+          id="embedding-feedback-panel"
+          class="embedding-feedback-panel"
+        >
+        </div>
+        <button
+          class="btn-show-feedback-panel btn-embedding"
+          v-on:click="feedback_panel_embedding_active = false"
+        >Hide embedding</button>
       </div>
 
     </transition>
@@ -63,7 +81,9 @@ export default {
       awaiting_pad: false,
       awaiting_self: false,
       recorder: new MicRecorder(),
-      feedback_panel_active: false,
+      feedback_panel_soundtracks_active: false,
+      feedback_panel_embedding_active: false,
+      feedback_show_btn_active: false,
       audio_history_file: [],
       audio_history_fileurl: [],
       audio_history_color: []
@@ -75,9 +95,6 @@ export default {
     },
     is_clean: function () {
       return this.audio_history_file.length == 0
-    },
-    feedback_show_btn_active: function () {
-      return !this.is_clean
     }
   },
   methods: {
@@ -87,12 +104,14 @@ export default {
       this.awaiting_flash = false
       this.awaiting_pad = false
       this.awaiting_self = false
-      this.feedback_panel_active = false
+      this.feedback_panel_soundtracks_active = false
+      this.feedback_panel_embedding_active = false
+      this.feedback_show_btn_active = false
       this.audio_history_file = []
       this.audio_history_fileurl = []
       this.audio_history_color = []
 
-      var audioFeedbackPanel = document.getElementById("audio-feedback-panel");
+      var audioFeedbackPanel = document.getElementById("soundtracks-feedback-panel");
       audioFeedbackPanel.innerHTML = ''
 
       // // just starting and stopping a recroding to initiate the MicRecorder/// otherwise the first recorded sound is a bit truncated
@@ -107,9 +126,25 @@ export default {
       //   console.error(e);
       // });
     },
+    update_pad_info: function (pad_info) {
+      console.log(pad_info)
+      if (pad_info.signal_color) {
+          this.audio_history_color = pad_info.signal_color
+      }
+      this.show_audio_history()
+    },
     show_audio_history: function () {
 
-      var audioFeedbackPanel = document.getElementById("audio-feedback-panel");
+      this.show_soundtracks()
+
+      // enable button to show feedback panel
+      if (this.audio_history_fileurl.length) {
+        this.feedback_show_btn_active = true
+      }
+    },
+    show_soundtracks: function () {
+
+      var audioFeedbackPanel = document.getElementById("soundtracks-feedback-panel");
       audioFeedbackPanel.innerHTML = ''
 
       // loop over all recorded voice
@@ -137,14 +172,8 @@ export default {
 
         // initiate audio player instance
         var audio_player = new GreenAudioPlayer('.' + audioPlayer.className, { stopOthersOnPlay: true });
-
       })
-    },
-    update_pad_info: function (pad_info) {
-      if (pad_info.signal_color) {
-          this.audio_history_color = pad_info.signal_color
-      }
-      this.show_audio_history()
+
     },
     on_mousedown: function () {
 
@@ -203,10 +232,10 @@ export default {
       });
     },
     on_show_feedback_panel: function () {
-      this.feedback_panel_active = true
+      this.feedback_panel_soundtracks_active = true
     },
     on_hide_feedback_panel: function () {
-      this.feedback_panel_active = false
+      this.feedback_panel_soundtracks_active = false
     }
   }
 }
@@ -324,16 +353,6 @@ span.controls__total-time {
 
 /* Feedback panel animation css */
 
-.audio-feedback-panel {
-  position: absolute;
-  overflow:auto;
-  top: 0px;
-  left: 0px;
-  width: var(--screen_width);
-  height: var(--pad_height);
-  background-color: rgba(255, 255, 255, 1);
-}
-
 .slide-feedback-enter-active, .slide-feedback-leave-active {
   transition: all .5s ease-in-out;
 }
@@ -345,7 +364,6 @@ span.controls__total-time {
 .btn-show-feedback-panel {
   position: absolute;
   top: 400px;
-  left: 390px;
   width: 60px;
   height: 40px;
   border-radius: 20px;
@@ -364,6 +382,38 @@ span.controls__total-time {
   background-color: rgba(150, 150, 150, 1);
 }
 
+/* soundtrack panel */
+
+.soundtracks-feedback-panel {
+  position: absolute;
+  overflow:auto;
+  top: 0px;
+  left: 0px;
+  width: var(--screen_width);
+  height: var(--pad_height);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.btn-soundtracks {
+  left: 390px;
+}
+
+
+/* embedding panel */
+
+.embedding-feedback-panel {
+  position: absolute;
+  overflow:auto;
+  top: 0px;
+  left: 0px;
+  width: var(--screen_width);
+  height: var(--pad_height);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.btn-embedding {
+  left: 10px;
+}
 
 </style>
 
