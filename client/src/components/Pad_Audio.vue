@@ -21,11 +21,15 @@
       class="btn-show-feedback-panel btn-embedding"
       v-show="feedback_show_btn_active"
       v-on:click="feedback_panel_embedding_active = true"
-    >Show embedding</button>
+    >Show map</button>
 
     <transition name="slide-feedback">
 
       <div v-show="feedback_panel_soundtracks_active">
+        <div
+          ref="padborder"
+          class="padborder"
+        ></div>
         <div
           id="soundtracks-feedback-panel"
           class="soundtracks-feedback-panel"
@@ -43,6 +47,10 @@
 
       <div v-show="feedback_panel_embedding_active">
         <div
+          ref="padborder"
+          class="padborder"
+        ></div>
+        <div
           id="embedding-feedback-panel"
           class="embedding-feedback-panel"
         >
@@ -50,7 +58,7 @@
         <button
           class="btn-show-feedback-panel btn-embedding"
           v-on:click="feedback_panel_embedding_active = false"
-        >Hide embedding</button>
+        >Hide map</button>
       </div>
 
     </transition>
@@ -86,7 +94,9 @@ export default {
       feedback_show_btn_active: false,
       audio_history_file: [],
       audio_history_fileurl: [],
-      audio_history_color: []
+      audio_history_color: [],
+      audio_history_location: [],
+      classifier_map: undefined
     }
   },
   computed: {
@@ -110,6 +120,8 @@ export default {
       this.audio_history_file = []
       this.audio_history_fileurl = []
       this.audio_history_color = []
+      this.audio_history_location = []
+      this.classifier_map = undefined
 
       var audioFeedbackPanel = document.getElementById("soundtracks-feedback-panel");
       audioFeedbackPanel.innerHTML = ''
@@ -131,16 +143,86 @@ export default {
       if (pad_info.signal_color) {
           this.audio_history_color = pad_info.signal_color
       }
-      this.show_audio_history()
+      if (pad_info.signal_location) {
+          this.audio_history_location = pad_info.signal_location
+      }
+      if (pad_info.classifier_map) {
+          this.classifier_map = pad_info.classifier_map
+      }
+      // update feedback panels in background
+      setTimeout( () => {
+        this.show_audio_history()
+      }, 0)
     },
     show_audio_history: function () {
 
       this.show_soundtracks()
+      this.show_embedding()
 
       // enable button to show feedback panel
       if (this.audio_history_fileurl.length) {
         this.feedback_show_btn_active = true
       }
+    },
+    show_embedding: function () {
+
+      var pad_elem = this.$refs.padaudio
+      var pad_width = pad_elem.offsetWidth
+      var pad_height = pad_elem.offsetHeight
+
+      var embeddingFeedbackPanel = document.getElementById("embedding-feedback-panel");
+      embeddingFeedbackPanel.innerHTML = ''
+
+      if (this.classifier_map) {
+          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" alt=""/>'
+          // as the mapping is changing all the time due to umap, we only plot it for one step
+          this.classifier_map = undefined
+      }
+
+      this.audio_history_fileurl.forEach( (fileurl, index, array) => {
+
+        var audioEmbedding = document.createElement("div")
+
+        var signal_position = this.audio_history_location[index]
+
+        var point_center_X = signal_position[0] * pad_width
+        var point_center_Y = signal_position[1] * pad_height
+        var point_radius = 14 // in px
+
+        var signalLocator = document.createElement("div");
+        signalLocator.className = 'signal-locator'
+        signalLocator.style.left = point_center_X - point_radius + "px";
+        signalLocator.style.top = point_center_Y - point_radius+ "px";
+        signalLocator.style.width = point_radius * 2 + "px";
+        signalLocator.style.height = point_radius * 2 + "px";
+
+        var point_color = undefined
+        var color_name =  this.audio_history_color[index]
+        if (color_name == 'neutral') {
+          point_color = "rgba(255, 255, 255, 1)"
+          // point_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
+        } else if (color_name == 'flash') {
+          point_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
+        } else if (color_name == 'noflash') {
+          point_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color');
+        }
+        signalLocator.style.backgroundColor = point_color
+
+        embeddingFeedbackPanel.appendChild(signalLocator)
+
+        // overlay sound
+        var signalLocatorAudio = document.createElement("div");
+        signalLocatorAudio.className = 'audio-dot-player-' + index
+        signalLocatorAudio.style.position = 'absolute';
+        signalLocatorAudio.style.left = point_center_X - 30.75 + "px";
+        signalLocatorAudio.style.top = point_center_Y + 1.75 + "px";
+        signalLocatorAudio.innerHTML = '<audio><source src="' + fileurl + '" type="audio/mp3"></audio>'
+
+        embeddingFeedbackPanel.appendChild(signalLocatorAudio)
+
+        // initiate audio player instance
+        var audio_player = new GreenAudioPlayer('.' + signalLocatorAudio.className, { stopOthersOnPlay: false });
+      })
     },
     show_soundtracks: function () {
 
@@ -258,11 +340,19 @@ export default {
   --micro_top_hover: calc( (var(--pad_height) - var(--micro_diameter_hover)) / 2);
   --micro_left_hover: calc( (var(--screen_width) - var(--micro_diameter_hover)) / 2);
 
+  --pad_height_shrink: 30px;
+  --pad_border_width: 2px;
+}
+
+.padaudio {
+  position: absolute;
+  top: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
+  height: calc( var(--pad_height) - var(--pad_height_shrink) );
 }
 
 .btn-micro-ready {
   position: absolute;
-  top: var(--micro_top);
+  top: calc( var(--micro_top) - var(--pad_height_shrink) );
   left: var(--micro_left);
   width: var(--micro_diameter);
   height: var(--micro_diameter);
@@ -299,38 +389,37 @@ export default {
 100%   {background-color: rgba(226, 73, 73, 1);}
 }
 
-
 /* Feedback sounds css */
 
 
-span.controls__current-time {
+.soundtracks-feedback-panel span.controls__current-time {
   display: none
 }
 
-span.controls__total-time {
+.soundtracks-feedback-panel span.controls__total-time {
   display: none
 }
 
-.volume {
+.soundtracks-feedback-panel .volume {
   display: none
 }
 
-.green-audio-player .controls .controls__slider {
+.soundtracks-feedback-panel .green-audio-player .controls .controls__slider {
   margin-left: 0px;
   margin-right: 0px;
 }
 
-.green-audio-player .controls {
+.soundtracks-feedback-panel .green-audio-player .controls {
   margin-left: 20px;
   margin-right: -10px;
 }
 
-.green-audio-player .play-pause-btn {
+.soundtracks-feedback-panel .green-audio-player .play-pause-btn {
   margin-left: 15px;
   margin-right: 0px;
 }
 
-.green-audio-player {
+.soundtracks-feedback-panel .green-audio-player {
   position: relative;
   left: 120px;
   width: 200px;
@@ -344,12 +433,13 @@ span.controls__total-time {
   border-color: rgba(66, 65, 78, 0.35);
 }
 
-.audio-index {
+.soundtracks-feedback-panel .audio-index {
   position: absolute;
   left: 5px;
   font-weight: 600;
   font-size: 20px;
 }
+
 
 /* Feedback panel animation css */
 
@@ -403,16 +493,78 @@ span.controls__total-time {
 
 .embedding-feedback-panel {
   position: absolute;
-  overflow:auto;
   top: 0px;
   left: 0px;
   width: var(--screen_width);
   height: var(--pad_height);
-  background-color: rgba(255, 255, 255, 1);
+  background-color: rgba(240, 240, 240, 1);
 }
 
 .btn-embedding {
   left: 10px;
+}
+
+.embedding-map-container {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* embedding css */
+
+.embedding-feedback-panel span.controls__current-time {
+  display: none
+}
+
+.embedding-feedback-panel span.controls__total-time {
+  display: none
+}
+
+.embedding-feedback-panel .volume {
+  display: none
+}
+
+.embedding-feedback-panel .green-audio-player .controls {
+  display: none
+}
+
+.embedding-feedback-panel .green-audio-player .play-pause-btn {
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+.embedding-feedback-panel .green-audio-player {
+  width: 0px;
+  height: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  box-shadow: none;
+}
+
+.embedding-feedback-panel .audio-index {
+  position: absolute;
+  left: 5px;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.signal-locator {
+    position: absolute;
+    border-radius: 10%;
+    border-style: solid;
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, 0.85);
+    pointer-events: none;
+}
+
+
+.padborder {
+  position: absolute;
+  top: 0;
+  width: calc( var(--screen_width));
+  height: var(--pad_border_width);
+  background-color: rgba(66, 65, 78, 0.5);
+  z-index: 1;
 }
 
 </style>

@@ -315,9 +315,9 @@ class Learner(object):
                     signal_location = self.learner.signal_history
                     signal_scaler = None
                 else:
-                    # in all other cases, we rescale the data between 0.1 and 0.9 for plotting if needed
+                    # in all other cases, we rescale the data between 0.2 and 0.8 for plotting if needed
                     if len(self.learner.signal_history):
-                        signal_location, signal_scaler = web_tools.scale_data_to_view_windows(self.learner.signal_history, view_bounds=(0.1, 0.9))
+                        signal_location, signal_scaler = web_tools.scale_data_to_view_windows(self.learner.signal_history, view_bounds=(0.2, 0.8))
                     else:
                         signal_location = self.learner.signal_history
                         signal_scaler = None
