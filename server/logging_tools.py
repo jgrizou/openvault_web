@@ -30,11 +30,15 @@ def generate_unique_log_folder():
 
 def get_ip_information(ip_address):
     api_url = 'http://ip-api.com/json/{}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,reverse,mobile,proxy,query'
-    response = requests.get(api_url.format(ip_address))
 
-    if response.ok:
-        return json.loads(response.content)
-    else:
+    try:
+        response = requests.get(api_url.format(ip_address))
+
+        if response.ok:
+            return json.loads(response.content)
+        else:
+            return {} # empty dict signify api call did not work properly
+    except:
         return {} # empty dict signify api call did not work properly
 
 class Logger(object):
