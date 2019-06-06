@@ -227,7 +227,7 @@ export default {
     show_soundtracks: function () {
 
       var audioFeedbackPanel = document.getElementById("soundtracks-feedback-panel");
-      audioFeedbackPanel.innerHTML = ''
+      audioFeedbackPanel.innerHTML = '<div class="audio-spacer"></div>'
 
       // loop over all recorded voice
       this.audio_history_fileurl.forEach( (fileurl, index, array) => {
@@ -481,7 +481,7 @@ export default {
   left: 0px;
   width: var(--screen_width);
   height: var(--pad_height);
-  background-color: rgba(255, 255, 255, 1);
+  background-color: rgba(240, 240, 240, 1);
 }
 
 .btn-soundtracks {
@@ -565,6 +565,11 @@ export default {
   height: var(--pad_border_width);
   background-color: rgba(66, 65, 78, 0.5);
   z-index: 1;
+}
+
+
+.audio-spacer {
+  height: 20px;
 }
 
 </style>
