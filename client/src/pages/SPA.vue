@@ -22,6 +22,9 @@
     <div v-else-if="pad_type == 'touch'">
       <PadTouch ref="pad" class="pad" :callback="touch_pad_callback"></PadTouch>
     </div>
+    <div v-else-if="pad_type == 'draw'">
+      <PadDraw ref="pad" class="pad" :callback="draw_pad_callback"></PadDraw>
+    </div>
     <div v-else-if="pad_type == 'audio'">
       <PadAudio ref="pad" class="pad" :callback="audio_pad_callback"></PadAudio>
     </div>
@@ -46,11 +49,12 @@ import Pad12 from './../components/Pad_1x2.vue'
 import Pad12Random from './../components/Pad_1x2_RandomPadColor.vue'
 import Pad33 from './../components/Pad_3x3.vue'
 import PadTouch from './../components/Pad_Touch.vue'
+import PadDraw from './../components/Pad_Draw.vue'
 import PadAudio from './../components/Pad_Audio.vue'
 
 export default {
   name: 'SPA',
-  components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadAudio },
+  components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio },
   data() {
     return {
       pad_type: undefined
@@ -152,7 +156,17 @@ export default {
       feedback_info.flash = this.$refs.digit.flash
       this.$socket.emit('feedback_info', feedback_info)
 
-      this.$socket.emit('log', feedback_info)
+      // this.$socket.emit('log', feedback_info)
+    },
+    draw_pad_callback: function (draw_info) {
+      this.disable_pad_while_waiting_from_server_update()
+
+      var feedback_info = {}
+      feedback_info.drawing = draw_info.drawing
+      feedback_info.flash = this.$refs.digit.flash
+      this.$socket.emit('feedback_info', feedback_info)
+
+      // this.$socket.emit('log', feedback_info)
     },
     audio_pad_callback: function (audio_info) {
       this.disable_pad_while_waiting_from_server_update()

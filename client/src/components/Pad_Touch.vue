@@ -129,9 +129,7 @@ export default {
         var color_name =  this.click_history_color[index]
         if (color_name == 'neutral') {
           clickLocator.style.borderWidth = '0px'
-          point_color = "rgba(255, 255, 255, 1)"
           point_color = "rgba(50, 50, 50, 1)"
-          // point_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
         } else if (color_name == 'flash') {
           point_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
         } else if (color_name == 'noflash') {

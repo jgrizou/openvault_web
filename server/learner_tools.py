@@ -231,6 +231,15 @@ class Learner(object):
                 self.learner.signal_history = feedback_signals[:-1]
                 self.learner.update(displayed_flash_patterns, feedback_signals[-1])
 
+            elif 'drawing' in feedback_info:
+                drawing_data = feedback_info['drawing']
+
+                drawing_filename = self.logger.save_drawing_to_file(drawing_data)
+
+                feedback_signal = drawing_data[0]
+
+                self.learner.update(displayed_flash_patterns, feedback_signal)
+
             else:
                 raise Exception('Not enough info to process in feedback_info.')
 

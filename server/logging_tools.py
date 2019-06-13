@@ -17,6 +17,7 @@ import web_tools
 LOG_FOLDER = os.path.join(HERE_PATH, 'logs')
 MP3_FOLDER_NAME = 'mp3'
 MAP_FOLDER_NAME = 'maps'
+DRAWING_FOLDER_NAME = 'drawings'
 
 
 def generate_unique_log_folder():
@@ -93,3 +94,14 @@ class Logger(object):
         with open(mp3_filename, 'wb') as f:
             f.write(mp3_data)
         return mp3_filename
+
+
+    def save_drawing_to_file(self, drawing_data):
+        drawing_folder = os.path.join(self.log_folder, DRAWING_FOLDER_NAME)
+        tools.ensure_dir(drawing_folder)
+
+        drawing_files = tools.list_files(drawing_folder, ['*.json'])
+        drawing_filename = os.path.join(drawing_folder, '{:04}.json'.format(len(drawing_files)))
+        tools.save_json(drawing_filename, drawing_data)
+
+        return drawing_filename

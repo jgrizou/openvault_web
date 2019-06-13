@@ -259,28 +259,30 @@ export default {
     },
     on_mousedown: function () {
 
-      if (! this.disabled) {
-
-        this.start_recording()
-
-        // awaiting that the sound is recorded to renable the pad
-        this.awaiting_self = true
-
-        var microphoneElement = document.getElementById("audio-btn-micro");
-
-        setTimeout( () => {
-          microphoneElement.classList.add("btn-micro-ready-active")
-        }, 250)
-
-        setTimeout( () => {
-          microphoneElement.classList.remove("btn-micro-ready-active")
-        }, 1750)
-
-        setTimeout( () => {
-          this.stop_recording()
-          this.awaiting_self = false
-        }, 2000)
+      // do not listen to clicks when pad is disabled
+      if (this.disabled) {
+          return
       }
+
+      this.start_recording()
+
+      // awaiting that the sound is recorded to renable the pad
+      this.awaiting_self = true
+
+      var microphoneElement = document.getElementById("audio-btn-micro");
+
+      setTimeout( () => {
+        microphoneElement.classList.add("btn-micro-ready-active")
+      }, 250)
+
+      setTimeout( () => {
+        microphoneElement.classList.remove("btn-micro-ready-active")
+      }, 1750)
+
+      setTimeout( () => {
+        this.stop_recording()
+        this.awaiting_self = false
+      }, 2000)
 
     },
     start_recording: function () {
@@ -312,12 +314,6 @@ export default {
         alert('We could not retrieve your voice recording.');
         console.error(e);
       });
-    },
-    on_show_feedback_panel: function () {
-      this.feedback_panel_soundtracks_active = true
-    },
-    on_hide_feedback_panel: function () {
-      this.feedback_panel_soundtracks_active = false
     }
   }
 }
@@ -330,29 +326,28 @@ export default {
 /* Recording button css */
 
 :root {
-  --micro_diameter: 150px;
-  --micro_logo_size: calc( var(--micro_diameter) / 3 );
-  --micro_top: calc( (var(--pad_height) - var(--micro_diameter)) / 2);
-  --micro_left: calc( (var(--screen_width) - var(--micro_diameter)) / 2);
-
-  --micro_diameter_hover: 200px;
-  --micro_logo_size_hover: calc( var(--micro_diameter_hover) / 3 );
-  --micro_top_hover: calc( (var(--pad_height) - var(--micro_diameter_hover)) / 2);
-  --micro_left_hover: calc( (var(--screen_width) - var(--micro_diameter_hover)) / 2);
-
   --pad_height_shrink: 30px;
   --pad_border_width: 2px;
+
+  --pad_top_with_shrink: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
+  --pad_height_with_shrink: calc( var(--pad_height) - var(--pad_height_shrink) );
+
+  --micro_diameter: 150px;
+  --micro_logo_size: calc( var(--micro_diameter) / 3 );
+  --micro_top: calc( (var(--pad_height_with_shrink) - var(--micro_diameter)) / 2);
+  --micro_left: calc( (var(--screen_width) - var(--micro_diameter)) / 2);
+
 }
 
 .padaudio {
   position: absolute;
-  top: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
-  height: calc( var(--pad_height) - var(--pad_height_shrink) );
+  top: var(--pad_top_with_shrink);
+  height: var(--pad_height_with_shrink);
 }
 
 .btn-micro-ready {
   position: absolute;
-  top: calc( var(--micro_top) - var(--pad_height_shrink) );
+  top: var(--micro_top);
   left: var(--micro_left);
   width: var(--micro_diameter);
   height: var(--micro_diameter);
@@ -367,14 +362,7 @@ export default {
 }
 
 .btn-micro-ready:hover {
-  /* top: var(--micro_top_hover);
-  left: var(--micro_left_hover);
-  width: var(--micro_diameter_hover);
-  height: var(--micro_diameter_hover);
-  height: var(--micro_diameter_hover); */
   background-color: rgba(109, 220, 111, 0.8);
-  /* background-size: var(--micro_logo_size_hover);
-  border-radius: calc(var(--micro_diameter_hover) / 2); */
 }
 
 .btn-micro-ready-active {
@@ -448,12 +436,12 @@ export default {
 }
 
 .slide-feedback-enter, .slide-feedback-leave-to {
-  transform: translateY(var(--pad_height));
+  transform: translateY(var(--pad_height_with_shrink));
 }
 
 .btn-show-feedback-panel {
   position: absolute;
-  top: 400px;
+  top: 370px;
   width: 60px;
   height: 40px;
   border-radius: 20px;
@@ -480,7 +468,7 @@ export default {
   top: 0px;
   left: 0px;
   width: var(--screen_width);
-  height: var(--pad_height);
+  height: var(--pad_height_with_shrink);
   background-color: rgba(240, 240, 240, 1);
 }
 
@@ -496,7 +484,7 @@ export default {
   top: 0px;
   left: 0px;
   width: var(--screen_width);
-  height: var(--pad_height);
+  height: var(--pad_height_with_shrink);
   background-color: rgba(240, 240, 240, 1);
 }
 
