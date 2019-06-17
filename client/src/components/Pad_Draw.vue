@@ -27,6 +27,12 @@
       v-on:click="feedback_panel_soundtracks_active = true"
     >Show history</button>
 
+    <button
+      class="btn-show-feedback-panel btn-embedding"
+      v-show="feedback_show_btn_active"
+      v-on:click="feedback_panel_embedding_active = true"
+    >Show map</button>
+
 
     <transition name="slide-feedback">
 
@@ -44,6 +50,26 @@
           class="btn-show-feedback-panel btn-sketches"
           v-on:click="feedback_panel_soundtracks_active = false"
         >Hide history</button>
+      </div>
+
+    </transition>
+
+    <transition name="slide-feedback">
+
+      <div v-show="feedback_panel_embedding_active">
+        <div
+          ref="padborder"
+          class="padborder"
+        ></div>
+        <div
+          id="embedding-feedback-panel"
+          class="embedding-feedback-panel"
+        >
+        </div>
+        <button
+          class="btn-show-feedback-panel btn-embedding"
+          v-on:click="feedback_panel_embedding_active = false"
+        >Hide map</button>
       </div>
 
     </transition>
@@ -74,8 +100,9 @@ export default {
       drawing_history_color: [],
       drawing_history_location: [],
       classifier_map: undefined,
-      feedback_show_btn_active: true,
-      feedback_panel_soundtracks_active: false
+      feedback_show_btn_active: false,
+      feedback_panel_soundtracks_active: false,
+      feedback_panel_embedding_active: false
     }
   },
   computed: {
@@ -100,6 +127,10 @@ export default {
       this.drawing_history_color = []
       this.drawing_history_location = []
       this.classifier_map = undefined
+
+      this.feedback_show_btn_active = false
+      this.feedback_panel_soundtracks_active = false
+      this.feedback_panel_embedding_active = false
     },
     update_pad_info: function (pad_info) {
       if (pad_info.signal_color) {
@@ -113,7 +144,7 @@ export default {
       }
       // update feedback panels in background
       setTimeout( () => {
-        this.show_sketches()
+        this.show_sketches_history()
       }, 0)
 
       // redraw in different color to indicate they can draw again
@@ -218,6 +249,15 @@ export default {
     on_mouseleave: function (event) {
       this.stop_recording()
     },
+    show_sketches_history: function () {
+      this.show_sketches()
+      this.show_embedding()
+
+      // enable button to show feedback panel
+      if (this.drawing_history.length) {
+        this.feedback_show_btn_active = true
+      }
+    },
     show_sketches: function () {
       var sketchesFeedbackPanel = document.getElementById("sketches-feedback-panel");
       sketchesFeedbackPanel.innerHTML = '<div class="sketch-spacer"></div>'
@@ -225,14 +265,13 @@ export default {
       // loop over all recorded voice
       this.drawing_history.forEach( (drawing, index, array) => {
 
-
         // sketchCanvas.innerHTML = '<div class="audio-index">' + String(index).padStart(2, '0') + '</div>'
 
         var sketchCanvas = document.createElement("canvas")
         sketchCanvas.className = 'sketch-canvas'
         sketchCanvas.id = 'sketch-canvas-' + index
-        sketchCanvas.width = 1000
-        sketchCanvas.height = 1000
+        sketchCanvas.width = 200
+        sketchCanvas.height = 200
 
         var sketch_color = undefined
         var color_name =  this.drawing_history_color[index]
@@ -247,13 +286,65 @@ export default {
 
 
         var context = sketchCanvas.getContext("2d");
-        context.font = "200px Arial";
-        context.fillText(String(index).padStart(2, '0'), 10, 200);
+        context.font = "40px arial sans-serif";
+        context.fillText(String(index).padStart(2, '0'), 2, 34);
 
 
-        this.draw_trajectory_to_canvas(sketchCanvas, drawing, 40, '#000000')
+        this.draw_trajectory_to_canvas(sketchCanvas, drawing, 8, '#000000')
 
         sketchesFeedbackPanel.appendChild(sketchCanvas)
+      })
+    },
+    show_embedding: function () {
+
+      var pad_elem = this.$refs.paddraw
+      var pad_width = pad_elem.offsetWidth
+      var pad_height = pad_elem.offsetHeight
+
+      var embeddingFeedbackPanel = document.getElementById("embedding-feedback-panel");
+      embeddingFeedbackPanel.innerHTML = ''
+
+      if (this.classifier_map) {
+          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" alt=""/>'
+          // as the mapping is changing all the time due to umap, we only plot it for one step
+          this.classifier_map = undefined
+      }
+
+      this.drawing_history.forEach( (drawing, index, array) => {
+
+        var sketchEmbedding = document.createElement("div")
+
+        var signal_position = this.drawing_history_location[index]
+
+        var point_center_X = signal_position[0] * pad_width
+        var point_center_Y = signal_position[1] * pad_height
+        var point_radius = 25 // in px
+
+        var sketchCanvas = document.createElement("canvas")
+        sketchCanvas.className = 'signal-locator'
+        sketchCanvas.width = 100
+        sketchCanvas.height = 100
+
+        sketchCanvas.style.left = point_center_X - point_radius + "px";
+        sketchCanvas.style.top = point_center_Y - point_radius+ "px";
+        sketchCanvas.style.width = point_radius * 2 + "px";
+        sketchCanvas.style.height = point_radius * 2 + "px";
+
+        var point_color = undefined
+        var color_name =  this.drawing_history_color[index]
+        if (color_name == 'neutral') {
+          point_color = "rgba(255, 255, 255, 0)"
+        } else if (color_name == 'flash') {
+          point_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
+        } else if (color_name == 'noflash') {
+          point_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color');
+        }
+        sketchCanvas.style.backgroundColor = point_color
+
+        this.draw_trajectory_to_canvas(sketchCanvas, drawing, 4, '#000000')
+
+        embeddingFeedbackPanel.appendChild(sketchCanvas)
+
       })
     }
   }
@@ -314,6 +405,10 @@ export default {
   border-width: 1px;
   border-color: rgba(66, 65, 78, 0.35);
   background-color: rgba(255, 255, 255, 1);
+}
+
+.sketch-canvas-embedding {
+  position: absolute;
 }
 
 </style>

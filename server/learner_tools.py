@@ -25,6 +25,8 @@ from openvault.continuous import ContinuousLearner
 
 from audio_features.openvault_tools import AudioVaultSignal
 
+from sketch_features.openvault_tools import SketchVaultSignal
+
 
 class LearnerManager(Namespace):
 
@@ -155,12 +157,21 @@ class Learner(object):
 
         elif learner_config['type'] == 'continuous':
             self.learner = ContinuousLearner(
-                learner_config['n_hypothesis'],
-                proba_decision_threshold=0.95,
-                proba_assigned_to_label_valid=0.95)
+            learner_config['n_hypothesis'],
+            proba_decision_threshold=0.99,
+            proba_assigned_to_label_valid=0.95)
 
-            if pad_config['type'] == 'audio':
+            if pad_config['type'] == 'touch':
+                pass
+
+            elif pad_config['type'] == 'audio':
                 self.audio_transformer = AudioVaultSignal()
+
+            elif pad_config['type'] == 'draw':
+                self.sketch_transformer = SketchVaultSignal()
+
+            else:
+                raise Exception('Type of continuous pad learner not handled: {}'.format(pad_config['type']))
 
         else:
             raise Exception('Type of learner not defined in config file or not handled.')
@@ -232,13 +243,13 @@ class Learner(object):
                 self.learner.update(displayed_flash_patterns, feedback_signals[-1])
 
             elif 'drawing' in feedback_info:
-                drawing_data = feedback_info['drawing']
+                drawing_file = self.logger.save_drawing_to_file(feedback_info['drawing'])
 
-                drawing_filename = self.logger.save_drawing_to_file(drawing_data)
+                self.sketch_transformer.add_feedback_sketch(drawing_file)
+                feedback_signals, _ = self.sketch_transformer.get_feedback_signals()
 
-                feedback_signal = drawing_data[0]
-
-                self.learner.update(displayed_flash_patterns, feedback_signal)
+                self.learner.signal_history = feedback_signals[:-1]
+                self.learner.update(displayed_flash_patterns, feedback_signals[-1])
 
             else:
                 raise Exception('Not enough info to process in feedback_info.')
