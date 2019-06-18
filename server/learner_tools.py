@@ -156,18 +156,27 @@ class Learner(object):
                 learner_config['known_symbols'])
 
         elif learner_config['type'] == 'continuous':
-            self.learner = ContinuousLearner(
-            learner_config['n_hypothesis'],
-            proba_decision_threshold=0.99,
-            proba_assigned_to_label_valid=0.95)
 
             if pad_config['type'] == 'touch':
-                pass
+                self.learner = ContinuousLearner(
+                learner_config['n_hypothesis'],
+                proba_decision_threshold=0.99,
+                proba_assigned_to_label_valid=0.95)
 
             elif pad_config['type'] == 'audio':
+                self.learner = ContinuousLearner(
+                learner_config['n_hypothesis'],
+                proba_decision_threshold=0.95,
+                proba_assigned_to_label_valid=0.95)
+
                 self.audio_transformer = AudioVaultSignal()
 
             elif pad_config['type'] == 'draw':
+                self.learner = ContinuousLearner(
+                learner_config['n_hypothesis'],
+                proba_decision_threshold=0.95,
+                proba_assigned_to_label_valid=0.95)
+
                 self.sketch_transformer = SketchVaultSignal()
 
             else:

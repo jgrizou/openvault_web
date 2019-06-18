@@ -1,0 +1,17 @@
+{
+  "name": "Level 6",
+  "code": {
+    "secret_code": [0, 0, 0, 0],
+    "show_code": false,
+    "check_code": false
+  },
+  "learner": {
+    "type": "continuous",
+    "n_hypothesis": 10,
+    "accumulate_info_between_numbers": true
+  },
+  "pad": {
+    "type": "draw",
+    "show_learning_progress": false
+  }
+}
