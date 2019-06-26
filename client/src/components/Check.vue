@@ -159,6 +159,7 @@ export default {
   width: var(--screen_width);
   height: calc( var(--screen_height) - var(--display_height) );
   background-color: var(--neutral_color);
+  z-index: 9999;
 }
 
 .slide-check-enter-active, .slide-check-leave-active {

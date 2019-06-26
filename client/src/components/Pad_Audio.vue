@@ -155,12 +155,10 @@ export default {
       }, 0)
     },
     show_audio_history: function () {
-
-      this.show_soundtracks()
-      this.show_embedding()
-
-      // enable button to show feedback panel
-      if (this.audio_history_fileurl.length) {
+      if (this.audio_history_color.length) {
+        this.show_soundtracks()
+        this.show_embedding()
+        // enable button to show feedback panel
         this.feedback_show_btn_active = true
       }
     },
@@ -304,7 +302,7 @@ export default {
         // save it in history
         this.audio_history_file.push(file)
         this.audio_history_fileurl.push(URL.createObjectURL(file))
-        this.audio_history_color.push('neutral')
+
         // send back to server
         var audio_info = {}
         audio_info.mp3 = file

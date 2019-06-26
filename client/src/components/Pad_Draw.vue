@@ -250,11 +250,10 @@ export default {
       this.stop_recording()
     },
     show_sketches_history: function () {
-      this.show_sketches()
-      this.show_embedding()
-
-      // enable button to show feedback panel
-      if (this.drawing_history.length) {
+      if (this.drawing_history_color.length) {
+        this.show_sketches()
+        this.show_embedding()
+        // enable button to show feedback panel
         this.feedback_show_btn_active = true
       }
     },
