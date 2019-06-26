@@ -28,6 +28,17 @@ from audio_features.openvault_tools import AudioVaultSignal
 from sketch_features.openvault_tools import SketchVaultSignal
 
 
+MEANING_TO_COLOR = {}
+MEANING_TO_COLOR[True] = 'flash'
+MEANING_TO_COLOR[False] = 'noflash'
+
+def hypothesis_labels_to_hypothesis_colors(hypothesis_labels):
+    hypothesis_colors = []
+    for labels_list in hypothesis_labels:
+        hypothesis_colors.append([MEANING_TO_COLOR[label] for label in labels_list])
+    return hypothesis_colors
+
+
 class LearnerManager(Namespace):
 
     def __init__(self, socketio, namespace='/'):
@@ -119,6 +130,7 @@ class Learner(object):
         #
         self.clean_pad()
         self.update_pad()
+        self.update_hood()
         self.update_flash_pattern()
 
     def init_pad(self):
@@ -203,6 +215,7 @@ class Learner(object):
                 self.prepare_learner_for_next_digit()
 
             self.update_pad()
+            self.update_hood()
 
             if self.code_manager.is_code_decoded():
                 if self.code_manager.is_check_procedure_required():
@@ -311,11 +324,6 @@ class Learner(object):
         pad_config = self.config['pad']
         if pad_config['show_learning_progress']:
 
-            # those are constants and should be defined outside this scope but we prefer to define them here as they are only relevant here
-            MEANING_TO_COLOR = {}
-            MEANING_TO_COLOR[True] = 'flash'
-            MEANING_TO_COLOR[False] = 'noflash'
-
             learner_config = self.config['learner']
             if learner_config['type'] == 'discrete':
                 known_symbols = learner_config['known_symbols']
@@ -373,6 +381,65 @@ class Learner(object):
 
         ## we send it everytime even if empty, just to be able to sync server and client in terms of UI
         self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
+
+    def update_hood(self):
+
+        update_hood_info = {}
+        update_hood_info['hypothesis_labels'] = self.learner.hypothesis_labels
+        update_hood_info['hypothesis_colors'] =  hypothesis_labels_to_hypothesis_colors(self.learner.hypothesis_labels)
+
+        # learner type dependant
+        pad_config = self.config['pad']
+        learner_config = self.config['learner']
+        if learner_config['type'] == 'discrete':
+
+            known_symbols = learner_config['known_symbols']
+            known_symbols_colors = {}
+            for symbol, label in known_symbols.items():
+                known_symbols_colors[symbol] = MEANING_TO_COLOR[label]
+
+            update_hood_info['known_symbols'] = known_symbols
+            update_hood_info['known_symbols_colors'] = known_symbols_colors
+
+            update_hood_info['symbol_history'] = self.learner.symbol_history
+            update_hood_info['hypothesis_validity'] = self.learner.hypothesis_validity
+
+        elif learner_config['type'] == 'continuous':
+
+            update_hood_info['hypothesis_probability'] = self.learner.hypothesis_probability
+
+            ## SIGNALS in 2D space for display if needed
+            # signal scaler is used to generate the classifier map according to the scaling mapping we might apply
+            if pad_config['type'] == 'touch':
+                # we do not scale as 2D data are already collected from the interface
+                signal_location = self.learner.signal_history
+                signal_scaler = None
+            else:
+                # in all other cases, we rescale the data between 0.2 and 0.8 for plotting if needed
+                if len(self.learner.signal_history):
+                    signal_location, signal_scaler = web_tools.scale_data_to_view_windows(self.learner.signal_history, view_bounds=(0.2, 0.8))
+                else:
+                    signal_location = self.learner.signal_history
+                    signal_scaler = None
+
+            update_hood_info['signal_location'] = signal_location
+
+            ## classifier maps
+            hypothesis_classifier_maps = []
+            for hyp_class_info in self.learner.hypothesis_classifier_infos:
+                encoded_map = ''
+                if 'clf' in hyp_class_info:
+                    encoded_map = web_tools.generate_web_classifier_map(hyp_class_info['clf'], signal_scaler)
+
+                hypothesis_classifier_maps.append(encoded_map)
+
+            update_hood_info['hypothesis_classifier_maps'] = hypothesis_classifier_maps
+
+
+
+        ## we send it everytime even if empty, just to be able to sync server and client in terms of UI
+        self.socketio.emit('update_hood', update_hood_info, room=self.room_id)
+
 
 
 class CodeManager(object):

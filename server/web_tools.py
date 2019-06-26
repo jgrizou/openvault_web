@@ -1,4 +1,7 @@
+import os
+import uuid
 import base64
+import tempfile
 
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
@@ -16,7 +19,7 @@ def scale_data_to_view_windows(data, view_bounds=(0.1, 0.9)):
     return scaled_data, scaler
 
 
-def generate_map_from_classifier(clf, bounds=(0., 1.), scaler=None, resolution=1000j):
+def generate_map_from_classifier(clf, bounds=(0., 1.), scaler=None, resolution=100j):
     grid_x, grid_y = np.mgrid[bounds[0]:bounds[1]:resolution, bounds[0]:bounds[1]:resolution]
     # trick on coordinate for imshow to display as a scatter plot
     X_flat_grid = np.vstack((grid_y.flatten(), 1 - grid_x.flatten())).T
@@ -70,3 +73,16 @@ def encode_png_base64(png_filename):
         png_image_base64 = base64.b64encode(f.read()).decode()
 
     return 'data:image/png;base64,{}'.format(png_image_base64)
+
+
+def generate_web_classifier_map(classifier, signal_scaler):
+
+    classifier_map = generate_map_from_classifier(classifier, scaler=signal_scaler)
+    classifier_map_web = flip_map_for_web(classifier_map)
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        tmp_map_filename = os.path.join(tmpdirname, '{}.png'.format(uuid.uuid4()))
+        save_map_to_file(classifier_map_web, tmp_map_filename)
+        encoded_map = encode_png_base64(tmp_map_filename)
+
+    return encoded_map

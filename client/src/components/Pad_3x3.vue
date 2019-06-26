@@ -58,6 +58,7 @@ export default {
       this.callback(click_info)
     },
     update_pad_info: function (pad_info) {
+      console.log(pad_info)
       if (pad_info.button_color) {
           this.button_color = pad_info.button_color
       }

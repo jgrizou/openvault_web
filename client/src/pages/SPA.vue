@@ -35,6 +35,10 @@
     <!-- check panel appears only when needed -->
     <Check ref="check" :callback="hide_check_panel"></Check>
 
+    <!-- hood panel appear once pad_type defined -->
+    <div v-if="pad_type">
+      <Hood ref="hood" :pad_type="pad_type"></Hood>
+    </div>
 
   </div>
 </template>
@@ -51,10 +55,11 @@ import Pad33 from './../components/Pad_3x3.vue'
 import PadTouch from './../components/Pad_Touch.vue'
 import PadDraw from './../components/Pad_Draw.vue'
 import PadAudio from './../components/Pad_Audio.vue'
+import Hood from './../components/Hood.vue'
 
 export default {
   name: 'SPA',
-  components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio },
+  components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, Hood},
   data() {
     return {
       pad_type: undefined
@@ -114,6 +119,9 @@ export default {
     update_pad: function (pad_info) {
       this.$refs.pad.update_pad_info(pad_info)
       this.$refs.pad.awaiting_pad = false
+    },
+    update_hood: function (hood_info) {
+      this.$refs.hood.update_hood_info(hood_info)
     },
     no_check: function () {
       // when there is no check, we do not update the flashing update_flash_pattern and the update_code might get stuck into a setInterval
