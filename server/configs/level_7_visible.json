@@ -1,8 +1,8 @@
 {
-  "name": "Level 6",
+  "name": "Level 7 - Visible",
   "code": {
     "secret_code": [0, 0, 0, 0],
-    "show_code": false,
+    "show_code": true,
     "check_code": true
   },
   "learner": {
@@ -11,7 +11,7 @@
     "accumulate_info_between_numbers": true
   },
   "pad": {
-    "type": "draw",
+    "type": "audio",
     "show_learning_progress": false
   }
 }
