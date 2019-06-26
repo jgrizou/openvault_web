@@ -15,9 +15,10 @@ import tools
 import web_tools
 
 LOG_FOLDER = os.path.join(HERE_PATH, 'logs')
-MP3_FOLDER_NAME = 'mp3'
-MAP_FOLDER_NAME = 'maps'
-DRAWING_FOLDER_NAME = 'drawings'
+MP3_FOLDERNAME = 'mp3'
+MAP_FOLDERNAME = 'maps'
+DRAWING_FOLDERNAME = 'drawings'
+LEARNER_LOGS_FOLDERNAME = 'learner_logs'
 
 
 def generate_unique_log_folder():
@@ -73,8 +74,20 @@ class Logger(object):
         tools.save_json(connection_info_filename, connection_info)
 
 
+    def save_learner_logs_to_file(self, learner_logs):
+        learner_logs_folder = os.path.join(self.log_folder, LEARNER_LOGS_FOLDERNAME)
+        tools.ensure_dir(learner_logs_folder)
+
+        files = tools.list_files(learner_logs_folder, ['*.json'])
+        learner_logs_filename = os.path.join(learner_logs_folder, '{:04}.json'.format(len(files)))
+
+        tools.save_json(learner_logs_filename, learner_logs)
+
+        return learner_logs_filename
+
+
     def save_classifier_map_to_file(self, classifier_map):
-        map_folder = os.path.join(self.log_folder, MAP_FOLDER_NAME)
+        map_folder = os.path.join(self.log_folder, MAP_FOLDERNAME)
         tools.ensure_dir(map_folder)
 
         files = tools.list_files(map_folder, ['*.png'])
@@ -86,7 +99,7 @@ class Logger(object):
 
 
     def save_mp3_to_file(self, mp3_data):
-        mp3_folder = os.path.join(self.log_folder, MP3_FOLDER_NAME)
+        mp3_folder = os.path.join(self.log_folder, MP3_FOLDERNAME)
         tools.ensure_dir(mp3_folder)
 
         files = tools.list_files(mp3_folder, ['*.mp3'])
@@ -97,7 +110,7 @@ class Logger(object):
 
 
     def save_drawing_to_file(self, drawing_data):
-        drawing_folder = os.path.join(self.log_folder, DRAWING_FOLDER_NAME)
+        drawing_folder = os.path.join(self.log_folder, DRAWING_FOLDERNAME)
         tools.ensure_dir(drawing_folder)
 
         drawing_files = tools.list_files(drawing_folder, ['*.json'])

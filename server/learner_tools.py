@@ -263,6 +263,9 @@ class Learner(object):
             else:
                 raise Exception('Not enough info to process in feedback_info.')
 
+        ## log current learner state
+        self.logger.save_learner_logs_to_file(self.learner.get_logs())
+
 
     def prepare_learner_for_next_digit(self):
 
