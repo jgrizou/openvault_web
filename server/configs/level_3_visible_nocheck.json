@@ -18,6 +18,6 @@
   },
   "hood": {
     "show_hood": false,
-    "show_label_propagation": true
+    "show_label_propagation": false
   }
 }

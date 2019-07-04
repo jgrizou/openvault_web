@@ -78,7 +78,7 @@ export default {
           if (this.pad_type == '3x3') {
             this.hood_display_3x3(i)
           } else {
-            console.log(i)
+            this.hood_display_1x2(i)
           }
         } else if (this.continuous_pad_list.includes(this.pad_type)) {
           this.hood_display_continuous(i)
@@ -86,7 +86,95 @@ export default {
 
       }
     },
+    hood_display_1x2: function (i) {
+      // get container
+      var historyContainer = document.getElementById("hood_display_" + (i+1));
+      historyContainer.innerHTML = ''
+
+      var padContainer = document.createElement("div");
+      padContainer.className = 'hood_pad_container';
+      historyContainer.appendChild(padContainer)
+
+      var pad_display_width = padContainer.offsetWidth
+      var pad_display_height = padContainer.offsetHeight
+
+      // create the grid
+      for (var col = 0; col < 2; col++) {
+
+        var pad_position = col
+        var margin = 2
+
+        var buttonLocator = document.createElement("div");
+        buttonLocator.className = 'hood_button_locator';
+        buttonLocator.id = 'hood_button_locator_' + i + '_' + pad_position;
+        buttonLocator.style.top = margin + 'px';
+        buttonLocator.style.left = col*pad_display_width/2 + margin + 'px';
+        buttonLocator.style.width = pad_display_width/2 - 2*margin + 'px';
+        buttonLocator.style.height = pad_display_height - 2*margin + 'px';
+
+        // color per known symbols
+        var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
+        var color_name =  this.hood_info.known_symbols_colors[''+pad_position]
+        if (color_name == 'flash') {
+          button_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
+        } else if (color_name == 'noflash') {
+          button_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color');
+        }
+        buttonLocator.style.backgroundColor = button_color
+
+        // add to container
+        padContainer.appendChild(buttonLocator)
+      }
+
+      //add info in grid
+
+      var n_dot_per_position = new Array(9).fill(0);
+
+      this.hood_info.symbol_history.forEach( (pad_position, index, array) => {
+
+        var gridElem = document.getElementById('hood_button_locator_' + i + '_' + pad_position)
+
+        var pad_width = gridElem.offsetWidth
+        var pad_height = gridElem.offsetHeight
+
+        var dotLocator = document.createElement("div");
+        dotLocator.className = 'hood_dot_locator';
+
+        var margin = 2
+        var border_width = 1
+        var dot_width = Math.floor(pad_width/2) - border_width - margin
+        var dot_height = dot_width
+
+        var row_position = n_dot_per_position[pad_position] %  2
+        var column_position = Math.floor(n_dot_per_position[pad_position] / 2)
+
+        dotLocator.style.top = column_position * (dot_height + border_width + margin) + 'px';
+        dotLocator.style.left = row_position * (dot_width + margin) + 'px';
+        dotLocator.style.width = dot_width + 'px';
+        dotLocator.style.height = dot_height + 'px';
+        dotLocator.style.borderRadius = '50%';
+        dotLocator.style.borderStyle = 'solid';
+        dotLocator.style.borderWidth = border_width + 'px';
+
+        // color per click
+        var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
+        var color_name =  this.hood_info.hypothesis_colors[i][index]
+        if (color_name == 'flash') {
+          button_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
+        } else if (color_name == 'noflash') {
+          button_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color');
+        }
+        dotLocator.style.backgroundColor = button_color;
+
+        gridElem.appendChild(dotLocator)
+
+        // increment number of dot in this button
+        n_dot_per_position[pad_position] += 1
+      })
+
+    },
     hood_display_3x3: function (i) {
+
       // get container
       var historyContainer = document.getElementById("hood_display_" + (i+1));
       historyContainer.innerHTML = ''
@@ -112,17 +200,19 @@ export default {
           buttonLocator.style.top = row*pad_display_height/3 + margin + 'px';
           buttonLocator.style.left = col*pad_display_width/3 + margin + 'px';
           buttonLocator.style.width = pad_display_width/3 - 2*margin + 'px';
-          buttonLocator.style.height = pad_display_height/3 -2*margin + 'px';
+          buttonLocator.style.height = pad_display_height/3 - 2*margin + 'px';
 
           // color per known symbols
-          var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
+          var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color')
           var color_name =  this.hood_info.known_symbols_colors[''+pad_position]
           if (color_name == 'flash') {
-            button_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
+            button_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color')
           } else if (color_name == 'noflash') {
-            button_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color');
+            button_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color')
           }
           buttonLocator.style.backgroundColor = button_color
+
+
 
           // add to container
           padContainer.appendChild(buttonLocator)
@@ -256,6 +346,8 @@ export default {
   --hyp_panel_height: calc( var(--hood_height) / 5 );
 
   --hood_pad_margin: 8px;
+  --hood_pad_container_width: calc( var(--hyp_panel_width) - var(--digit_spacing) - 2*var(--hood_pad_margin));
+  --hood_pad_container_height: calc( var(--hyp_panel_height) - 2*var(--hood_pad_margin));
 }
 
 .hood_pause_button {
@@ -391,8 +483,8 @@ export default {
   position: absolute;
   top: var(--hood_pad_margin);
   left: var(--hood_pad_margin);
-  width: calc( var(--hyp_panel_width) - var(--digit_spacing) - 2*var(--hood_pad_margin));
-  height: calc( var(--hyp_panel_height) - 2*var(--hood_pad_margin));
+  width: var(--hood_pad_container_width);
+  height: var(--hood_pad_container_height);
 }
 
 .hood_dot_locator {

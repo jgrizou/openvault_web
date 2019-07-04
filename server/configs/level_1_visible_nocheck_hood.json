@@ -1,5 +1,5 @@
 {
-  "name": "Level 1 - Visible - No Check",
+  "name": "Level 1 - Visible - No Check - hood_digit",
   "code": {
     "secret_code": [0, 0, 0, 0],
     "show_code": true,
@@ -20,7 +20,7 @@
     "show_learning_progress": false
   },
   "hood": {
-    "show_hood": false,
-    "show_label_propagation": false
+    "show_hood": true,
+    "show_label_propagation": true
   }
 }
