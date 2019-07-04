@@ -123,6 +123,9 @@ export default {
     update_hood: function (hood_info) {
       this.$refs.hood.update_hood_info(hood_info)
     },
+    pause_hood: function() {
+      this.$refs.hood.apply_pause()
+    },
     no_check: function () {
       // when there is no check, we do not update the flashing update_flash_pattern and the update_code might get stuck into a setInterval
       // just to be neat we will force awaiting_flash to true to stop that setInterval to run in the background

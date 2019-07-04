@@ -1,5 +1,5 @@
 {
-  "name": "Level 5 - Visible - No Check",
+  "name": "Level 5 - Visible - No Check - Hood",
   "code": {
     "secret_code": [0, 0, 0, 0],
     "show_code": true,
@@ -15,7 +15,7 @@
     "show_learning_progress": true
   },
   "hood": {
-    "show_hood": false,
+    "show_hood": true,
     "show_label_propagation": true
   }
 }

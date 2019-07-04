@@ -84,6 +84,11 @@ class LearnerManager(Namespace):
             else:
                 self.learners[room_id].ask_pad_clean()
 
+    def on_hood_pause_end(self):
+        room_id = request.sid
+        if room_id in self.learners:
+            self.learners[room_id].is_hood_paused = False
+
     def on_reset(self):
         room_id = request.sid
         if room_id in self.learners:
@@ -204,6 +209,7 @@ class Learner(object):
             self.update_iteration(self.n_iteration + 1)
 
             self.update_learner(feedback_info)
+            self.update_hood()
 
             if self.learner.is_inconsistent():
                 self.socketio.emit('check', 'inconsistent', room=self.room_id)
@@ -213,9 +219,14 @@ class Learner(object):
                 self.update_code()
                 # prepare learner for next digit
                 self.prepare_learner_for_next_digit()
-
-            self.update_pad()
-            self.update_hood()
+                # show new learner information
+                self.update_pad()
+                # pause and update hood when user ready to show the propagation of labels that happened
+                if self.config['hood']['show_label_propagation']:
+                    self.pause_hood()
+                    self.update_hood()
+            else:
+                self.update_pad()
 
             if self.code_manager.is_code_decoded():
                 if self.code_manager.is_check_procedure_required():
@@ -224,6 +235,7 @@ class Learner(object):
                     else:
                         self.socketio.emit('check', 'invalid', room=self.room_id)
                 else:
+                    ## this is required for cleaning some UI things neatly on the client side
                     self.socketio.emit('no_check', room=self.room_id)
             else:
                 self.update_flash_pattern()
@@ -383,63 +395,75 @@ class Learner(object):
         self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
 
     def update_hood(self):
+        # setting this variable used ot sync client and server when we propagate the label and need to pause the interface
+        self.is_hood_paused = False
 
-        update_hood_info = {}
-        update_hood_info['hypothesis_labels'] = self.learner.hypothesis_labels
-        update_hood_info['hypothesis_colors'] =  hypothesis_labels_to_hypothesis_colors(self.learner.hypothesis_labels)
+        hood_config = self.config['hood']
+        if hood_config['show_hood']:
 
-        # learner type dependant
-        pad_config = self.config['pad']
-        learner_config = self.config['learner']
-        if learner_config['type'] == 'discrete':
+            ## we compute all this only when show_hood is true
 
-            known_symbols = learner_config['known_symbols']
-            known_symbols_colors = {}
-            for symbol, label in known_symbols.items():
-                known_symbols_colors[symbol] = MEANING_TO_COLOR[label]
+            update_hood_info = {}
+            update_hood_info['hypothesis_labels'] = self.learner.hypothesis_labels
+            update_hood_info['hypothesis_colors'] =  hypothesis_labels_to_hypothesis_colors(self.learner.hypothesis_labels)
 
-            update_hood_info['known_symbols'] = known_symbols
-            update_hood_info['known_symbols_colors'] = known_symbols_colors
+            # learner type dependant
+            pad_config = self.config['pad']
+            learner_config = self.config['learner']
+            if learner_config['type'] == 'discrete':
 
-            update_hood_info['symbol_history'] = self.learner.symbol_history
-            update_hood_info['hypothesis_validity'] = self.learner.hypothesis_validity
+                known_symbols = learner_config['known_symbols']
+                known_symbols_colors = {}
+                for symbol, label in known_symbols.items():
+                    known_symbols_colors[symbol] = MEANING_TO_COLOR[label]
 
-        elif learner_config['type'] == 'continuous':
+                update_hood_info['known_symbols'] = known_symbols
+                update_hood_info['known_symbols_colors'] = known_symbols_colors
 
-            update_hood_info['hypothesis_probability'] = self.learner.hypothesis_probability
+                update_hood_info['symbol_history'] = self.learner.symbol_history
+                update_hood_info['hypothesis_validity'] = self.learner.hypothesis_validity
 
-            ## SIGNALS in 2D space for display if needed
-            # signal scaler is used to generate the classifier map according to the scaling mapping we might apply
-            if pad_config['type'] == 'touch':
-                # we do not scale as 2D data are already collected from the interface
-                signal_location = self.learner.signal_history
-                signal_scaler = None
-            else:
-                # in all other cases, we rescale the data between 0.2 and 0.8 for plotting if needed
-                if len(self.learner.signal_history):
-                    signal_location, signal_scaler = web_tools.scale_data_to_view_windows(self.learner.signal_history, view_bounds=(0.2, 0.8))
-                else:
+            elif learner_config['type'] == 'continuous':
+
+                update_hood_info['hypothesis_probability'] = self.learner.hypothesis_probability
+
+                ## SIGNALS in 2D space for display if needed
+                # signal scaler is used to generate the classifier map according to the scaling mapping we might apply
+                if pad_config['type'] == 'touch':
+                    # we do not scale as 2D data are already collected from the interface
                     signal_location = self.learner.signal_history
                     signal_scaler = None
+                else:
+                    # in all other cases, we rescale the data between 0.2 and 0.8 for plotting if needed
+                    if len(self.learner.signal_history):
+                        signal_location, signal_scaler = web_tools.scale_data_to_view_windows(self.learner.signal_history, view_bounds=(0.2, 0.8))
+                    else:
+                        signal_location = self.learner.signal_history
+                        signal_scaler = None
 
-            update_hood_info['signal_location'] = signal_location
+                update_hood_info['signal_location'] = signal_location
 
-            ## classifier maps
-            hypothesis_classifier_maps = []
-            for hyp_class_info in self.learner.hypothesis_classifier_infos:
-                encoded_map = ''
-                if 'clf' in hyp_class_info:
-                    encoded_map = web_tools.generate_web_classifier_map(hyp_class_info['clf'], signal_scaler)
+                ## classifier maps
+                hypothesis_classifier_maps = []
+                for hyp_class_info in self.learner.hypothesis_classifier_infos:
+                    encoded_map = ''
+                    if 'clf' in hyp_class_info:
+                        encoded_map = web_tools.generate_web_classifier_map(hyp_class_info['clf'], signal_scaler)
 
-                hypothesis_classifier_maps.append(encoded_map)
+                    hypothesis_classifier_maps.append(encoded_map)
 
-            update_hood_info['hypothesis_classifier_maps'] = hypothesis_classifier_maps
+                update_hood_info['hypothesis_classifier_maps'] = hypothesis_classifier_maps
 
+            ## we send it only when show_hood is true
+            self.socketio.emit('update_hood', update_hood_info, room=self.room_id)
 
+    def pause_hood(self):
+        self.socketio.emit('pause_hood', room=self.room_id)
 
-        ## we send it everytime even if empty, just to be able to sync server and client in terms of UI
-        self.socketio.emit('update_hood', update_hood_info, room=self.room_id)
-
+        # return only once user clicked the hood button
+        self.is_hood_paused = True
+        while self.is_hood_paused:
+            eventlet.sleep(0.1)
 
 
 class CodeManager(object):

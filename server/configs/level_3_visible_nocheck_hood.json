@@ -1,21 +1,23 @@
 {
-  "name": "Level 5 - Visible - No Check",
+  "name": "Level 3 - Visible - No Check - Hood",
   "code": {
     "secret_code": [0, 0, 0, 0],
     "show_code": true,
     "check_code": false
   },
   "learner": {
-    "type": "continuous",
+    "type": "discrete",
     "n_hypothesis": 10,
-    "accumulate_info_between_numbers": true
+    "known_symbols": {},
+    "accumulate_known_symbols_between_numbers": true
   },
   "pad": {
-    "type": "touch",
+    "type": "3x3",
+    "n_pad": 9,
     "show_learning_progress": true
   },
   "hood": {
-    "show_hood": false,
+    "show_hood": true,
     "show_label_propagation": true
   }
 }

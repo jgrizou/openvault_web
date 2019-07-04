@@ -15,5 +15,9 @@
     "type": "3x3",
     "n_pad": 9,
     "show_learning_progress": true
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": true
   }
 }
