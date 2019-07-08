@@ -18,5 +18,9 @@
     "type": "1x2",
     "n_pad": 2,
     "show_learning_progress": false
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false
   }
 }

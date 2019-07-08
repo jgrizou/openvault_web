@@ -13,5 +13,10 @@
   "pad": {
     "type": "audio",
     "show_learning_progress": true
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false,
+    "show_classifier_maps": false
   }
 }

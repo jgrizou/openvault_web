@@ -62,15 +62,25 @@ export default {
   components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, Hood},
   data() {
     return {
-      pad_type: undefined
+      pad_type: undefined,
+      app_width: 480, // hardcoded value for screen_width
+      app_height: 800 // hardcoded value for screen_height
     };
   },
   mounted: function () {
+    // ask server for a new learner
     this.spawn_learner()
+    // setup responsiveness
+    window.addEventListener('resize', this.handleResize)
+    this.handleResize()
+  },
+  beforeDestroy: function () {
+    window.removeEventListener('resize', this.handleResize)
   },
   sockets: {
     init_pad: function (pad_info) {
       this.pad_type = pad_info.type
+      this.$refs.reset.force_hide = false
     },
     is_pad_ready: function () {
       var pad_ready_state = this.$refs.pad != undefined
@@ -121,6 +131,10 @@ export default {
       this.$refs.pad.awaiting_pad = false
     },
     update_hood: function (hood_info) {
+      // if received hood info, rescale the window
+      this.app_width = 480 + 480  // hardcoded for screen_width + hood_width
+      this.handleResize()
+      // and update hood
       this.$refs.hood.update_hood_info(hood_info)
     },
     pause_hood: function() {
@@ -138,11 +152,41 @@ export default {
     }
   },
   methods: {
+    handleResize: function (event) {
+
+      // iframe detection
+      // if ( window.location !== window.parent.location ) {
+      //   // The page is in an iframe
+      //   console.log('IFRAME')
+      //   current_width = window.innerWidth
+      //   current_height = window.innerHeight
+      // } else {
+      //   // The page is not in an iframe
+      //   console.log('DIRECT')
+      // }
+
+      var current_width = document.documentElement.clientWidth
+      var current_height= document.documentElement.clientHeight
+
+      var scale_factor_width = current_width / this.app_width
+      var scale_factor_height= current_height / this.app_height
+      var scale_factor = Math.min(scale_factor_width, scale_factor_height)
+
+      var translateX = (current_width - scale_factor * this.app_width ) / (2 * scale_factor)
+      var translateY = (current_height - scale_factor * this.app_height ) / (2 * scale_factor)
+      var translateY = 0 // on top of the page, looks nicer than in the middle
+
+      var app_elem = document.getElementById("app")
+      app_elem.style.transform = "scale(" + scale_factor + ") translateX(" + translateX + "px) translateY(" + translateY + "px)";
+      app_elem.style.transformOrigin = "0px 0px"
+      
+    },
     spawn_learner: function () {
       // spawn the learner given link given in url
       this.$socket.emit('spawn_learner', this.$route.params.pathMatch)
     },
     reset: function () {
+      this.$refs.reset.force_hide = true
       this.$socket.emit('reset')
     },
     disable_pad_while_waiting_from_server_update: function () {
@@ -192,7 +236,6 @@ export default {
       this.$refs.check.start(check_state)
     },
     hide_check_panel: function () {
-      this.$refs.reset.force_hide = false
       this.reset()
     }
   }

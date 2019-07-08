@@ -1,19 +1,81 @@
 <!DOCTYPE html>
 <html>
+<style>
+
+  .resp-vault {
+      position: relative;
+      overflow: hidden;
+      padding-top: 166.67%;
+  }
+
+  .resp-vault-hood {
+      position: relative;
+      overflow: hidden;
+      padding-top: 83.34%;
+  }
+
+  .resp-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+  }
+
+
+</style>
 <body>
 
-<!-- <iframe
+  <!-- <iframe
     width="480"
-    height="800"
-    src="http://openvault.jgrizou.com/#/ui/level_1_visible.json">
-</iframe> -->
-
-<iframe
-    width="480"
-    height="800"
+    height="400"
     frameBorder="0"
-    src="http://127.0.0.1:1234">
-</iframe>
+    src="http://127.0.0.1:1234/#/ui/level_1_visible_nocheck_hood.json">
+  </iframe>
+
+  <div style="height: 100px"></div>
+
+  <iframe
+    width="480"
+    height="400"
+    frameBorder="0"
+    src="http://127.0.0.1:1234/#/ui/level_3_visible_nocheck_hood.json">
+  </iframe>
+
+  <div style="height: 100px"></div>
+
+  <iframe
+    width="480"
+    height="400"
+    frameBorder="0"
+    src="http://127.0.0.1:1234/#/ui/level_5_visible_nocheck_hood.json">
+  </iframe> -->
+
+  <div class="resp-vault-hood">
+    <iframe class="resp-iframe"  src="http://127.0.0.1:1234/#/ui/level_1_visible_nocheck_hood.json"></iframe>
+  </div>
+
+  <div style="height: 100px"></div>
+
+  <div class="resp-vault-hood">
+    <iframe class="resp-iframe"  src="http://127.0.0.1:1234/#/ui/level_3_visible_nocheck_hood.json"></iframe>
+  </div>
+
+  <div style="height: 100px"></div>
+
+  <div class="resp-vault-hood">
+    <iframe class="resp-iframe"  src="http://127.0.0.1:1234/#/ui/level_5_visible_nocheck_hood.json"></iframe>
+  </div>
+
+  <!-- <div class="resp-vault">
+    <iframe class="resp-iframe"  src="http://127.0.0.1:1234/#/ui/level_3_visible_nocheck.json"></iframe>
+  </div>
+
+  <div class="resp-vault-hood">
+    <iframe class="resp-iframe"  src="http://127.0.0.1:1234/#/ui/level_5_visible_nocheck_hood.json"></iframe>
+  </div> -->
+
 
 </body>
 </html>

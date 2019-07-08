@@ -9,8 +9,11 @@
           Experience started
         </div>
 
-        <button class="reset-btn" v-on:click="on_click">
-          Restart
+        <button
+          class="reset-btn"
+          v-on:click="on_click"
+          :disabled="!active">
+            Restart
         </button>
 
       </div>
@@ -107,7 +110,7 @@ export default {
 }
 
 .slide-reset-enter, .slide-reset-leave-to {
-  transform: translateY(-35px);
+  transform: translateY(-20px);
 }
 
 </style>

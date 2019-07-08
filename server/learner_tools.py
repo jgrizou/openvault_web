@@ -221,7 +221,7 @@ class Learner(object):
                 self.prepare_learner_for_next_digit()
                 # show new learner information
                 self.update_pad()
-                # pause and update hood when user ready to show the propagation of labels that happened
+                # pause to ask user action before updating hood to show the propagation of labels
                 if self.config['hood']['show_hood'] and self.config['hood']['show_label_propagation']:
                     self.pause_hood()
                     self.update_hood()
@@ -444,15 +444,17 @@ class Learner(object):
                 update_hood_info['signal_location'] = signal_location
 
                 ## classifier maps
-                hypothesis_classifier_maps = []
-                for hyp_class_info in self.learner.hypothesis_classifier_infos:
-                    encoded_map = ''
-                    if 'clf' in hyp_class_info:
-                        encoded_map = web_tools.generate_web_classifier_map(hyp_class_info['clf'], signal_scaler)
+                if hood_config['show_classifier_maps']:
+                    hypothesis_classifier_maps = []
+                    for hyp_class_info in self.learner.hypothesis_classifier_infos:
+                        encoded_map = ''
+                        if 'clf' in hyp_class_info:
+                            encoded_map = web_tools.generate_web_classifier_map(hyp_class_info['clf'], signal_scaler)
 
-                    hypothesis_classifier_maps.append(encoded_map)
+                        hypothesis_classifier_maps.append(encoded_map)
 
-                update_hood_info['hypothesis_classifier_maps'] = hypothesis_classifier_maps
+                    update_hood_info['hypothesis_classifier_maps'] = hypothesis_classifier_maps
+
 
             ## we send it only when show_hood is true
             self.socketio.emit('update_hood', update_hood_info, room=self.room_id)

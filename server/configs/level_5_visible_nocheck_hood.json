@@ -16,6 +16,7 @@
   },
   "hood": {
     "show_hood": true,
-    "show_label_propagation": true
+    "show_label_propagation": true,
+    "show_classifier_maps": true
   }
 }

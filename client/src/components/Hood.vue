@@ -98,6 +98,14 @@ export default {
       var pad_display_width = padContainer.offsetWidth
       var pad_display_height = padContainer.offsetHeight
 
+      // hack needed somehow for the first display as it seems the pad_display_width using the calc() in css has not yet been computed from the browser, workaround possible but not worth the time for now
+      if (pad_display_width == 0) {
+        pad_display_width = 148
+      }
+      if (pad_display_height == 0) {
+        pad_display_height = 144
+      }
+
       // create the grid
       for (var col = 0; col < 2; col++) {
 
@@ -185,6 +193,14 @@ export default {
 
       var pad_display_width = padContainer.offsetWidth
       var pad_display_height = padContainer.offsetHeight
+
+      // hack needed somehow for the first display as it seems the pad_display_width using the calc() in css has not yet been computed from the browser, workaround possible but not worth the time for now
+      if (pad_display_width == 0) {
+        pad_display_width = 148
+      }
+      if (pad_display_height == 0) {
+        pad_display_height = 144
+      }
 
       // create the grid
       for (var col = 0; col < 3; col++) {
@@ -274,8 +290,10 @@ export default {
       var hood_display_width = historyContainer.offsetWidth
       var hood_display_height = historyContainer.offsetHeight
 
-      if (this.hood_info.hypothesis_classifier_maps[i]) {
-          historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '") class="map-container" alt=""/>'
+      if (this.hood_info.hypothesis_classifier_maps) {
+        if (this.hood_info.hypothesis_classifier_maps[i]) {
+            historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '") class="map-container" alt=""/>'
+        }
       }
 
       // add points one by one
@@ -327,7 +345,7 @@ export default {
     },
     hood_text_innerHTML_continuous: function(i) {
       var likelihood = this.hood_info.hypothesis_probability[i]
-      var likelihood_with2Decimals_floored = likelihood.toString().match(/^-?\d+(?:\.\d{0,2})?/)[0]
+      var likelihood_with2Decimals_floored = likelihood.toString().match(/^-?\d+(?:\.\d{0,3})?/)[0]
       return likelihood_with2Decimals_floored
     }
   }
@@ -339,7 +357,8 @@ export default {
 /* global styles */
 
 :root {
-  --hood_width: var(--screen_width);
+  --hood_border_width: 4px;
+  --hood_width: calc( var(--screen_width) - var(--hood_border_width));
   --hood_height: var(--screen_height);
 
   --hyp_panel_width: calc( var(--hood_width) / 2 );
@@ -370,14 +389,14 @@ export default {
   background-color: rgba(200, 200, 200, 1);
 }
 
-
 .hood {
   position: absolute;
   top: 0px;
-  left: var(--hood_width);
+  left: var(--screen_width);
   width: var(--hood_width);
   height: var(--hood_height);
   /* background-color: rgba(255, 0, 0, 1); */
+  border-left: var(--hood_border_width) solid rgba(66, 65, 78, 0.5);
 }
 
 .hyp {
@@ -462,7 +481,7 @@ export default {
   font-size: 20px;
   font-weight: 500;
   line-height: calc( var(--hyp_panel_height) - var(--digit_spacing) );
-  background-color: rgba(100, 100, 100, 0.5);
+  background-color: rgba(255, 255, 255, 1);
 }
 
 .hood_click_locator {

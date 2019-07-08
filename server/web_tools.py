@@ -62,7 +62,7 @@ def save_map_to_file(map_grid, filename, bounds=(0., 1.), fig_width_inches=1):
         color_list.append([v1, v1, v1, alpha])
 
     c_class_map = matplotlib.colors.ListedColormap(color_list)
-    plt.imshow(map_grid, cmap=c_class_map, extent=(0, 1, 0, 1))
+    plt.imshow(map_grid, cmap=c_class_map, extent=(0, 1, 0, 1), vmin=0, vmax=1)
     plt.savefig(filename, dpi=100)
     plt.close(fig)
 
