@@ -18,6 +18,7 @@
   "author": "Jonathan Grizou",
   "license": "ISC",
   "dependencies": {
+    "color-interpolate": "^1.0.4",
     "green-audio-player": "^1.0.9",
     "mic-recorder-to-mp3": "^2.2.1",
     "vue": "^2.6.6",

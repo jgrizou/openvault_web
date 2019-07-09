@@ -17,16 +17,15 @@
             <div class="hood_pad_container" :id="'hood_pad_container_' + index"></div>
           </div>
 
-
         </div>
       </div>
     </div>
 
     <div v-if="show_button">
       <button class="hood_pause_button" v-on:click="on_unpause_click">
-        New digit identified
+        Digit found
         <br><br>
-        Click here to propagate the labels
+        Click here to continue
       </button>
     </div>
 
@@ -35,6 +34,7 @@
 </template>
 
 <script>
+const Interpolator = require('color-interpolate');
 
 export default {
   name: "Hood",
@@ -88,42 +88,28 @@ export default {
 
       }
     },
-    get_padContainer: function (i) {
-      // get container
-      var padContainer = document.getElementById("hood_pad_container_" + (i+1));
-      padContainer.innerHTML = ''
-
-      var pad_display_width = padContainer.offsetWidth
-      var pad_display_height = padContainer.offsetHeight
-
-      // hack needed somehow for the first display as it seems the pad_display_width using the calc() in css has not yet been computed from the browser, workaround possible but not worth the time for now
-      if (pad_display_width == 0) {
-        pad_display_width = 147
-      }
-      if (pad_display_height == 0) {
-        pad_display_height = 140
-      }
-
-      return [padContainer, pad_display_width, pad_display_height]
-    },
     hood_display_1x2: function (i) {
 
       // get container
-      var [padContainer, pad_display_width, pad_display_height] = this.get_padContainer(i)
+      var padContainer = document.getElementById("hood_pad_container_" + (i+1));
+      padContainer.innerHTML = ''
 
       // create the grid
       for (var col = 0; col < 2; col++) {
 
         var pad_position = col
-        var margin = 2
+        var pad_width_str = "var(--hood_pad_container_width)"
+        var pad_height_str = "var(--hood_pad_container_height)"
+        var margin_str = "var(--hood_pad_button_margin)"
 
         var buttonLocator = document.createElement("div");
         buttonLocator.className = 'hood_button_locator';
         buttonLocator.id = 'hood_button_locator_' + i + '_' + pad_position;
-        buttonLocator.style.top = margin + 'px';
-        buttonLocator.style.left = col*pad_display_width/2 + margin + 'px';
-        buttonLocator.style.width = pad_display_width/2 - 2*margin + 'px';
-        buttonLocator.style.height = pad_display_height - 2*margin + 'px';
+        buttonLocator.style.top = margin_str;
+        buttonLocator.style.left = "calc(" + col + "*" + pad_width_str + "/2 + " + margin_str + ")"
+        buttonLocator.style.width = "calc(" + pad_width_str + "/2 - 2*" + margin_str + ")"
+        buttonLocator.style.height = "calc(" + pad_height_str +  " - 2*" + margin_str + ")"
+        buttonLocator.style.zIndex = 10;
 
         // color per known symbols
         var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
@@ -168,6 +154,7 @@ export default {
         dotLocator.style.borderRadius = '50%';
         dotLocator.style.borderStyle = 'solid';
         dotLocator.style.borderWidth = border_width + 'px';
+        buttonLocator.style.zIndex = 20;
 
         // color per click
         var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
@@ -188,7 +175,8 @@ export default {
     },
     hood_display_3x3: function (i) {
       // get container
-      var [padContainer, pad_display_width, pad_display_height] = this.get_padContainer(i)
+      var padContainer = document.getElementById("hood_pad_container_" + (i+1));
+      padContainer.innerHTML = ''
 
       // create the grid
       for (var col = 0; col < 3; col++) {
@@ -196,15 +184,19 @@ export default {
 
 
           var pad_position = row*3 + col
-          var margin = 2
+          var pad_width_str = "var(--hood_pad_container_width)"
+          var pad_height_str = "var(--hood_pad_container_height)"
+          var margin_str = "var(--hood_pad_button_margin)"
 
           var buttonLocator = document.createElement("div");
           buttonLocator.className = 'hood_button_locator';
           buttonLocator.id = 'hood_button_locator_' + i + '_' + pad_position;
-          buttonLocator.style.top = row*pad_display_height/3 + margin + 'px';
-          buttonLocator.style.left = col*pad_display_width/3 + margin + 'px';
-          buttonLocator.style.width = pad_display_width/3 - 2*margin + 'px';
-          buttonLocator.style.height = pad_display_height/3 - 2*margin + 'px';
+          buttonLocator.style.top = "calc(" + row + "*" + pad_height_str + "/3 + " + margin_str + ")"
+          buttonLocator.style.left = "calc(" + col + "*" + pad_width_str +"/3 + " + margin_str + ")"
+          buttonLocator.style.width = "calc(" + pad_width_str + "/3 - 2*" + margin_str + ")"
+          buttonLocator.style.height = "calc(" + pad_height_str + "/3 - 2*" + margin_str + ")"
+          buttonLocator.style.zIndex = 10;
+
 
           // color per known symbols
           var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color')
@@ -236,19 +228,20 @@ export default {
         dotLocator.className = 'hood_dot_locator';
 
         var border_width = 1
-        var dot_width = Math.floor(pad_width/3) - border_width
-        var dot_height = Math.floor(pad_height/3) - border_width
+        var dot_width = Math.floor(pad_width/3)
+        var dot_height = Math.floor(pad_height/3)
 
         var row_position = n_dot_per_position[pad_position] %  3
         var column_position = Math.floor(n_dot_per_position[pad_position] / 3)
 
         dotLocator.style.top = column_position * dot_height + 'px';
         dotLocator.style.left = row_position * dot_width + 'px';
-        dotLocator.style.width = dot_width + 'px';
-        dotLocator.style.height = dot_height + 'px';
+        dotLocator.style.width = dot_width - 2*border_width + 'px';
+        dotLocator.style.height = dot_height - 2*border_width + 'px';
         dotLocator.style.borderRadius = '50%';
         dotLocator.style.borderStyle = 'solid';
         dotLocator.style.borderWidth = border_width + 'px';
+        dotLocator.style.zIndex = 20;
 
         // color per click
         var button_color = getComputedStyle(document.documentElement).getPropertyValue('--neutral_color');
@@ -279,6 +272,8 @@ export default {
       if (this.hood_info.hypothesis_classifier_maps) {
         if (this.hood_info.hypothesis_classifier_maps[i]) {
             historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '") class="map-container" alt=""/>'
+        } else {
+          historyContainer.style.backgroundColor = 'rgba(240, 240, 240, 1)'
         }
       }
 
@@ -330,21 +325,81 @@ export default {
       digitElem.innerHTML = '' + i
 
       if (this.hood_info.hypothesis_validity[i]) {
-        digitElem.className = 'hood_green_light';
+        digitElem.className = 'hood_green_digit';
         hyp_elem.classList.add('valid_hyp');
       } else {
-        digitElem.className = 'hood_red_light';
+        digitElem.className = 'hood_red_digit';
         hyp_elem.classList.add('invalid_hyp');
       }
 
       hood_info_elem.appendChild(digitElem)
     },
     populate_hood_text_continuous: function(i) {
-      var likelihood = this.hood_info.hypothesis_probability[i]
-      var likelihood_with2Decimals_floored = likelihood.toString().match(/^-?\d+(?:\.\d{0,3})?/)[0]
+
+      var hyp_elem = document.getElementById('hyp_' + (i+1))
+      hyp_elem.classList.remove('default_hyp');
 
       var hood_info_elem = document.getElementById('hood_info_' + (i+1))
-      hood_info_elem.innerHTML = likelihood_with2Decimals_floored
+      hood_info_elem.innerHTML = ''
+
+      function likelihood_to_multiplier(x) {
+        if (x <= 0.5) {
+          return x
+        } else {
+          var exposant = 2
+          return (Math.pow((x-0.5), exposant) / Math.pow((1-0.5), exposant)) / 2 + 0.5
+        }
+      }
+
+      // console.log('#######')
+      // for (var x = 0; x < 1; x += 0.1) {
+      //   console.log(likelihood_to_multiplier(x).toFixed(2))
+      // }
+
+      var likelihood = this.hood_info.hypothesis_probability[i]
+      var hyp_multiplier = likelihood_to_multiplier(likelihood)
+
+      var max_digit_diameter = 72
+      var min_digit_diameter = 40
+      var diff_digit_diameter = max_digit_diameter - min_digit_diameter
+      var digit_diameter_str = diff_digit_diameter * hyp_multiplier + min_digit_diameter + 'px'
+
+      var max_digit_fontsize = 30
+      var min_digit_fontsize = 18
+      var diff_digit_fontsize = max_digit_fontsize - min_digit_fontsize
+      var digit_fontsize_str = diff_digit_fontsize * hyp_multiplier + min_digit_fontsize + 'px'
+
+      var digitElem = document.createElement("div");
+      digitElem.innerHTML = '' + i
+      digitElem.className = 'hood_default_digit';
+
+      digitElem.style.top =  "calc( (var(--hyp_container_height) - " + digit_diameter_str + ") / 2)";
+      digitElem.style.left =  "calc( (var(--hood_text_width) - " + digit_diameter_str + ") / 2)";
+      digitElem.style.width = digit_diameter_str
+      digitElem.style.height = digit_diameter_str
+
+      digitElem.style.fontSize = digit_fontsize_str
+      digitElem.style.lineHeight = digit_diameter_str
+
+      var digit_colormap = Interpolator(['rgba(255, 65, 54, 0.5)', 'rgba(255, 175, 116, 0.5)', 'rgba(46, 204, 64, 0.5)']);
+      var digit_color = digit_colormap(hyp_multiplier)
+      digitElem.style.backgroundColor = digit_color
+
+      hood_info_elem.appendChild(digitElem)
+
+      // add background color
+      hyp_elem.classList.add('default_hyp');
+      var hyp_colormap = Interpolator(['rgba(255, 65, 54, 0.1)', 'rgba(255, 175, 116, 0.1)', 'rgba(46, 204, 64, 0.1)']);
+      var hyp_colormap = Interpolator(['rgba(255, 65, 54, 0.5)', 'rgba(255, 175, 116, 0.5)', 'rgba(46, 204, 64, 0.5)']);
+      var hyp_color = hyp_colormap(hyp_multiplier)
+      hyp_elem.style.backgroundColor = hyp_color
+
+      // scale the all thing
+      var max_scale = 1
+      var min_scale = 0.8
+      var diff_scale = max_scale - min_scale
+      var hyp_scale = diff_scale * hyp_multiplier + min_scale
+      hyp_elem.style.transform = "scale(" + hyp_scale + ")"
     }
   }
 }
@@ -372,6 +427,7 @@ export default {
   --hood_pad_margin: 8px;
   --hood_pad_container_width: calc( var(--hood_display_width) - 2*var(--hood_pad_margin));
   --hood_pad_container_height: calc( var(--hyp_container_height) - 2*var(--hood_pad_margin));
+  --hood_pad_button_margin: 2px;
 }
 
 .hood_pause_button {
@@ -473,7 +529,6 @@ export default {
   font-size: 20px;
   font-weight: 500;
   line-height: calc( var(--hyp_container_height) / 3 );
-  background-color: rgba(66, 65, 78, 0);
   /* z-index: 9999; */
   box-sizing: border-box;
   /* border-right: 2px solid rgba(66, 65, 78, 0.5); */
@@ -485,7 +540,6 @@ export default {
   left: var(--hood_text_width);
   width: var(--hood_display_width);
   height: var(--hyp_container_height);
-  /* background-color: rgba(100, 0, 0, 1); */
 }
 
 
@@ -518,57 +572,83 @@ export default {
 
 
 :root {
-  --green_light_width: calc( 0.9 * var(--hood_text_width));
-  --red_light_width: calc( 0.75 * var(--green_light_width) );
+  --green_digit_fontsize: 30px;
+  --green_digit_width: calc( 0.9 * var(--hood_text_width));
+  --green_light_color_icon: rgba(46, 204, 64, 0.5);
+  --green_light_color_background: rgba(46, 204, 64, 0.1);
+
+  --red_digit_fontsize: calc( 0.9 * var(--green_digit_fontsize));
+  --red_digit_width: calc( 0.9 * var(--green_digit_width) );
+  --red_light_color_icon: rgba(255, 65, 54, 0.5);
+  --red_light_color_background: rgba(255, 65, 54, 0.1);
 }
 
-
-
-.hood_green_light {
+.hood_green_digit {
   position: absolute;
-  top: calc( (var(--hyp_container_height) - var(--green_light_width)) / 2);
-  left: calc( (var(--hood_text_width) - var(--green_light_width)) / 2);
-  width: var(--green_light_width);
-  height: var(--green_light_width);
+  top: calc( (var(--hyp_container_height) - var(--green_digit_width)) / 2);
+  left: calc( (var(--hood_text_width) - var(--green_digit_width)) / 2);
+  width: var(--green_digit_width);
+  height: var(--green_digit_width);
   border-radius: 50%;
   text-align: center;
   vertical-align: middle;
-  font-size: 30px;
+  font-size: var(--green_digit_fontsize);
   font-weight: 600;
-  line-height: calc( var(--green_light_width) );
-  background-color: rgba(0, 255, 0, 1);
+  line-height: calc( var(--green_digit_width) );
+  background-color: var(--green_light_color_icon);
+  z-index: 10;
 }
 
-.hood_red_light {
+.hood_red_digit {
   position: absolute;
-  top: calc( (var(--hyp_container_height) - var(--red_light_width)) / 2);
-  left: calc( (var(--hood_text_width) - var(--red_light_width)) / 2);
-  width: var(--red_light_width);
-  height: var(--red_light_width);
+  top: calc( (var(--hyp_container_height) - var(--red_digit_width)) / 2);
+  left: calc( (var(--hood_text_width) - var(--red_digit_width)) / 2);
+  width: var(--red_digit_width);
+  height: var(--red_digit_width);
   border-radius: 50%;
   text-align: center;
   vertical-align: middle;
-  font-size: 22px;
+  font-size: var(--red_digit_fontsize);
   font-weight: 600;
-  line-height: calc( var(--red_light_width) );
-  background-color: rgba(255, 0, 0, 1);
+  line-height: calc( var(--red_digit_width) );
+  background-color: var(--red_light_color_icon);
+  z-index: 10;
 }
+
+.hood_default_digit {
+  position: absolute;
+  border-radius: 50%;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: 600;
+  z-index: 10;
+}
+
 
 .valid_hyp {
   filter: blur(0px);
   -webkit-filter: blur(0px);
-  background-color: rgba(0, 255, 0, 0.05);
+  background-color: var(--green_light_color_background);
   transform: scale(0.95);
   transform-origin: 50% 50%;
+  z-index: 0;
 }
 
 .invalid_hyp {
   filter: blur(0px);
   -webkit-filter: blur(0px);
-  background-color: rgba(255, 0, 0, 0.05);
-  transform: scale(0.9);
+  background-color: var(--red_light_color_background);
+  transform: scale(0.8);
   transform-origin: 50% 50%;
-  /* z-index: -1; */
+  z-index: 0;
+}
+
+.default_hyp {
+  filter: blur(0px);
+  -webkit-filter: blur(0px);
+  transform: scale(0.8);
+  transform-origin: 50% 50%;
+  z-index: 0;
 }
 
 /* width: var(--hyp_container_width); */
