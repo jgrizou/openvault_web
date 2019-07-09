@@ -8,13 +8,15 @@
           'hyp': true,
           ['hyp' + index]: true
           }"
+          :id="'hyp_' + index"
         >
 
-          <div class="round hood_digit">{{ index - 1 }}</div>
+          <div class="hood_info" :id="'hood_info_' + index"></div>
 
-          <div class="hood_display" :id="'hood_display_' + index"></div>
+          <div class="hood_display" :id="'hood_display_' + index">
+            <div class="hood_pad_container" :id="'hood_pad_container_' + index"></div>
+          </div>
 
-          <div class="hood_text" :id="'hood_text_' + index"></div>
 
         </div>
       </div>
@@ -86,25 +88,28 @@ export default {
 
       }
     },
-    hood_display_1x2: function (i) {
+    get_padContainer: function (i) {
       // get container
-      var historyContainer = document.getElementById("hood_display_" + (i+1));
-      historyContainer.innerHTML = ''
-
-      var padContainer = document.createElement("div");
-      padContainer.className = 'hood_pad_container';
-      historyContainer.appendChild(padContainer)
+      var padContainer = document.getElementById("hood_pad_container_" + (i+1));
+      padContainer.innerHTML = ''
 
       var pad_display_width = padContainer.offsetWidth
       var pad_display_height = padContainer.offsetHeight
 
       // hack needed somehow for the first display as it seems the pad_display_width using the calc() in css has not yet been computed from the browser, workaround possible but not worth the time for now
       if (pad_display_width == 0) {
-        pad_display_width = 148
+        pad_display_width = 147
       }
       if (pad_display_height == 0) {
-        pad_display_height = 144
+        pad_display_height = 140
       }
+
+      return [padContainer, pad_display_width, pad_display_height]
+    },
+    hood_display_1x2: function (i) {
+
+      // get container
+      var [padContainer, pad_display_width, pad_display_height] = this.get_padContainer(i)
 
       // create the grid
       for (var col = 0; col < 2; col++) {
@@ -182,25 +187,8 @@ export default {
 
     },
     hood_display_3x3: function (i) {
-
       // get container
-      var historyContainer = document.getElementById("hood_display_" + (i+1));
-      historyContainer.innerHTML = ''
-
-      var padContainer = document.createElement("div");
-      padContainer.className = 'hood_pad_container';
-      historyContainer.appendChild(padContainer)
-
-      var pad_display_width = padContainer.offsetWidth
-      var pad_display_height = padContainer.offsetHeight
-
-      // hack needed somehow for the first display as it seems the pad_display_width using the calc() in css has not yet been computed from the browser, workaround possible but not worth the time for now
-      if (pad_display_width == 0) {
-        pad_display_width = 148
-      }
-      if (pad_display_height == 0) {
-        pad_display_height = 144
-      }
+      var [padContainer, pad_display_width, pad_display_height] = this.get_padContainer(i)
 
       // create the grid
       for (var col = 0; col < 3; col++) {
@@ -227,8 +215,6 @@ export default {
             button_color = getComputedStyle(document.documentElement).getPropertyValue('--off_color')
           }
           buttonLocator.style.backgroundColor = button_color
-
-
 
           // add to container
           padContainer.appendChild(buttonLocator)
@@ -324,29 +310,41 @@ export default {
       });
     },
     update_hood_text: function() {
-
       for (var i = 0; i < this.n_hypothesis; i++) {
-
-        var hood_text_elem = document.getElementById('hood_text_' + (i+1))
-
         if (this.discrete_pad_list.includes(this.pad_type)) {
-          hood_text_elem.innerHTML = this.hood_text_innerHTML_discrete(i)
+          this.populate_hood_text_discrete(i)
         } else if (this.continuous_pad_list.includes(this.pad_type)) {
-          hood_text_elem.innerHTML = this.hood_text_innerHTML_continuous(i)
+          this.populate_hood_text_continuous(i)
         }
       }
     },
-    hood_text_innerHTML_discrete: function(i) {
+    populate_hood_text_discrete: function(i) {
+
+      var hyp_elem = document.getElementById('hyp_' + (i+1))
+      hyp_elem.classList.remove('valid_hyp', 'invalid_hyp');
+
+      var hood_info_elem = document.getElementById('hood_info_' + (i+1))
+      hood_info_elem.innerHTML = ''
+
+      var digitElem = document.createElement("div");
+      digitElem.innerHTML = '' + i
+
       if (this.hood_info.hypothesis_validity[i]) {
-        return 'True'
+        digitElem.className = 'hood_green_light';
+        hyp_elem.classList.add('valid_hyp');
       } else {
-        return 'False'
+        digitElem.className = 'hood_red_light';
+        hyp_elem.classList.add('invalid_hyp');
       }
+
+      hood_info_elem.appendChild(digitElem)
     },
-    hood_text_innerHTML_continuous: function(i) {
+    populate_hood_text_continuous: function(i) {
       var likelihood = this.hood_info.hypothesis_probability[i]
       var likelihood_with2Decimals_floored = likelihood.toString().match(/^-?\d+(?:\.\d{0,3})?/)[0]
-      return likelihood_with2Decimals_floored
+
+      var hood_info_elem = document.getElementById('hood_info_' + (i+1))
+      hood_info_elem.innerHTML = likelihood_with2Decimals_floored
     }
   }
 }
@@ -357,16 +355,23 @@ export default {
 /* global styles */
 
 :root {
-  --hood_border_width: 4px;
+  --hood_border_width: 2px;
   --hood_width: calc( var(--screen_width) - var(--hood_border_width));
   --hood_height: var(--screen_height);
 
   --hyp_panel_width: calc( var(--hood_width) / 2 );
   --hyp_panel_height: calc( var(--hood_height) / 5 );
 
+  --hyp_border_width: 2px;
+  --hyp_container_width: calc( var(--hyp_panel_width) - 2*var(--hyp_border_width));
+  --hyp_container_height: calc( var(--hyp_panel_height) - 2*var(--hyp_border_width));
+
+  --hood_text_width: var(--digit_diameter);
+  --hood_display_width: calc( var(--hyp_container_width) - var(--hood_text_width) );
+
   --hood_pad_margin: 8px;
-  --hood_pad_container_width: calc( var(--hyp_panel_width) - var(--digit_spacing) - 2*var(--hood_pad_margin));
-  --hood_pad_container_height: calc( var(--hyp_panel_height) - 2*var(--hood_pad_margin));
+  --hood_pad_container_width: calc( var(--hood_display_width) - 2*var(--hood_pad_margin));
+  --hood_pad_container_height: calc( var(--hyp_container_height) - 2*var(--hood_pad_margin));
 }
 
 .hood_pause_button {
@@ -395,15 +400,15 @@ export default {
   left: var(--screen_width);
   width: var(--hood_width);
   height: var(--hood_height);
-  /* background-color: rgba(255, 0, 0, 1); */
-  border-left: var(--hood_border_width) solid rgba(66, 65, 78, 0.5);
+  background-color: rgba(255, 255, 255, 1);
+  border-left: var(--hyp_border_width) solid rgba(66, 65, 78, 0.5);
 }
 
 .hyp {
   position: absolute;
-  width: var(--hyp_panel_width);
-  height: var(--hyp_panel_height);
-  /* background-color: rgba(0, 255, 0, 0.5); */
+  width: var(--hyp_container_width);
+  height: var(--hyp_container_height);
+  border: var(--hyp_border_width) solid rgba(66, 65, 78, 0.1);
 }
 
 
@@ -457,40 +462,41 @@ export default {
   left: var(--hyp_panel_width);
 }
 
-.hood_digit {
-  background-color: rgba(255, 0, 0, 0.5);
+.hood_info {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: var(--hood_text_width);
+  height: var(--hyp_container_height);
+  text-align: center;
+  vertical-align: middle;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: calc( var(--hyp_container_height) / 3 );
+  background-color: rgba(66, 65, 78, 0);
+  /* z-index: 9999; */
+  box-sizing: border-box;
+  /* border-right: 2px solid rgba(66, 65, 78, 0.5); */
 }
 
 .hood_display {
   position: absolute;
   top: 0px;
-  left: var(--digit_spacing);
-  width: calc( var(--hyp_panel_width) - var(--digit_spacing));
-  height: var(--hyp_panel_height);
-  background-color: rgba(100, 100, 100, 0.1);
+  left: var(--hood_text_width);
+  width: var(--hood_display_width);
+  height: var(--hyp_container_height);
+  /* background-color: rgba(100, 0, 0, 1); */
 }
 
-.hood_text {
-  position: absolute;
-  top: var(--digit_spacing);
-  left: 0px;
-  width: var(--digit_spacing);
-  height: calc( var(--hyp_panel_height) - var(--digit_spacing));
-  text-align: center;
-  vertical-align: middle;
-  font-size: 20px;
-  font-weight: 500;
-  line-height: calc( var(--hyp_panel_height) - var(--digit_spacing) );
-  background-color: rgba(255, 255, 255, 1);
-}
+
 
 .hood_click_locator {
-    position: absolute;
-    border-radius: 50%;
-    border-style: solid;
-    border-width: 2px;
-    border-color: rgba(0, 0, 0, 0.85);
-    pointer-events: none;
+  position: absolute;
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 2px;
+  border-color: rgba(0, 0, 0, 0.85);
+  pointer-events: none;
 }
 
 .hood_button_locator {
@@ -511,6 +517,62 @@ export default {
 }
 
 
+:root {
+  --green_light_width: calc( 0.9 * var(--hood_text_width));
+  --red_light_width: calc( 0.75 * var(--green_light_width) );
+}
+
+
+
+.hood_green_light {
+  position: absolute;
+  top: calc( (var(--hyp_container_height) - var(--green_light_width)) / 2);
+  left: calc( (var(--hood_text_width) - var(--green_light_width)) / 2);
+  width: var(--green_light_width);
+  height: var(--green_light_width);
+  border-radius: 50%;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: calc( var(--green_light_width) );
+  background-color: rgba(0, 255, 0, 1);
+}
+
+.hood_red_light {
+  position: absolute;
+  top: calc( (var(--hyp_container_height) - var(--red_light_width)) / 2);
+  left: calc( (var(--hood_text_width) - var(--red_light_width)) / 2);
+  width: var(--red_light_width);
+  height: var(--red_light_width);
+  border-radius: 50%;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: calc( var(--red_light_width) );
+  background-color: rgba(255, 0, 0, 1);
+}
+
+.valid_hyp {
+  filter: blur(0px);
+  -webkit-filter: blur(0px);
+  background-color: rgba(0, 255, 0, 0.05);
+  transform: scale(0.95);
+  transform-origin: 50% 50%;
+}
+
+.invalid_hyp {
+  filter: blur(0px);
+  -webkit-filter: blur(0px);
+  background-color: rgba(255, 0, 0, 0.05);
+  transform: scale(0.9);
+  transform-origin: 50% 50%;
+  /* z-index: -1; */
+}
+
+/* width: var(--hyp_container_width); */
+/* height: var(--hyp_container_height); */
 
 
 </style>

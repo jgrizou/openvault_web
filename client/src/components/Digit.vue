@@ -38,7 +38,7 @@ export default {
 :root {
   --digit_diameter: 72px;
   --digit_margin: 50px;
-  --digit_spacing: calc((var(--screen_width) - 2*var(--digit_margin)) / 5);
+  --digit_spacing: calc( (var(--screen_width) - 2*var(--digit_margin)) / 5);
   --digit_offset: calc( (var(--digit_spacing) - var(--digit_diameter)) / 2);
   --digit_number_color: rgba(50, 50, 50, 1);
 }
@@ -60,7 +60,7 @@ export default {
   position: absolute;
   width: var(--digit_diameter);
   height: var(--digit_diameter);
-  border-radius: calc(var(--digit_diameter) / 2);
+  border-radius: 50%;
   text-align: center;
   vertical-align: middle;
   font-size: 40px;

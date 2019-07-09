@@ -179,7 +179,7 @@ export default {
       var app_elem = document.getElementById("app")
       app_elem.style.transform = "scale(" + scale_factor + ") translateX(" + translateX + "px) translateY(" + translateY + "px)";
       app_elem.style.transformOrigin = "0px 0px"
-      
+
     },
     spawn_learner: function () {
       // spawn the learner given link given in url
