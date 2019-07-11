@@ -6,9 +6,19 @@
   >
 
     <button
-      id="audio-btn-micro"
-      class="btn-micro-ready"
+      class="btn-micro btn-micro-ready"
       v-on:mousedown="on_mousedown"
+    ></button>
+
+    <button
+      class="btn-micro btn-micro-disabled"
+      v-show="disabled"
+    ></button>
+
+    <button
+      id="audio-btn-micro-active"
+      class="btn-micro btn-micro-active"
+      v-show="show_button_active"
     ></button>
 
     <button
@@ -88,6 +98,7 @@ export default {
       awaiting_flash: false,
       awaiting_pad: false,
       awaiting_self: false,
+      show_button_active: false,
       recorder: new MicRecorder(),
       feedback_panel_soundtracks_active: false,
       feedback_panel_embedding_active: false,
@@ -114,6 +125,7 @@ export default {
       this.awaiting_flash = false
       this.awaiting_pad = false
       this.awaiting_self = false
+      this.show_button_active = false
       this.feedback_panel_soundtracks_active = false
       this.feedback_panel_embedding_active = false
       this.feedback_show_btn_active = false
@@ -266,20 +278,12 @@ export default {
 
       // awaiting that the sound is recorded to renable the pad
       this.awaiting_self = true
-
-      var microphoneElement = document.getElementById("audio-btn-micro");
-
-      setTimeout( () => {
-        microphoneElement.classList.add("btn-micro-ready-active")
-      }, 250)
-
-      setTimeout( () => {
-        microphoneElement.classList.remove("btn-micro-ready-active")
-      }, 1750)
+      this.show_button_active = true
 
       setTimeout( () => {
         this.stop_recording()
         this.awaiting_self = false
+        this.show_button_active = false
       }, 2000)
 
     },
@@ -332,7 +336,7 @@ export default {
 
   --micro_diameter: 150px;
   --micro_logo_size: calc( var(--micro_diameter) / 3 );
-  --micro_top: calc( (var(--pad_height_with_shrink) - var(--micro_diameter)) / 2);
+  --micro_top: calc( (var(--pad_height_with_shrink) - var(--micro_diameter)) / 3);
   --micro_left: calc( (var(--screen_width) - var(--micro_diameter)) / 2);
 
 }
@@ -343,13 +347,13 @@ export default {
   height: var(--pad_height_with_shrink);
 }
 
-.btn-micro-ready {
+
+.btn-micro {
   position: absolute;
   top: var(--micro_top);
   left: var(--micro_left);
   width: var(--micro_diameter);
   height: var(--micro_diameter);
-  background-color: rgba(109, 220, 111, 1);
   background-image: url(../assets/microphone-solid.svg);
   background-repeat: no-repeat;
   background-position: center center;
@@ -359,21 +363,40 @@ export default {
   border: none;
 }
 
+.btn-micro-ready {
+  background-color: rgba(109, 220, 111, 1);
+}
+
 .btn-micro-ready:hover {
   background-color: rgba(109, 220, 111, 0.8);
 }
 
-.btn-micro-ready-active {
-  background-color: rgba(226, 73, 73, 1);
-  animation: recording 1.5s;
-  -webkit-animation:recording 1.5s infinite;
+.btn-micro-disabled {
+  background-color: rgba(240, 240, 240, 1);
 }
 
-@-webkit-keyframes recording {
-0%   {background-color: rgba(226, 73, 73, 1);}
-55%  {background-color: rgba(226, 73, 73, 0.2);}
-100%   {background-color: rgba(226, 73, 73, 1);}
+.btn-micro-active {
+  animation-duration: 1800ms;
+  animation-delay: 100ms;
+  animation-name: slidedown;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  animation-play-state: running;
 }
+
+@keyframes slidedown {
+  from {
+    background-color: rgba(226, 73, 73, 1);
+    clip-path: inset(0px 0px 0px 0px);
+  }
+
+  to {
+    background-color: rgba(226, 73, 73, 0.5);
+    clip-path: inset(var(--micro_diameter) 0px 0px 0px);
+  }
+}
+
+
 
 /* Feedback sounds css */
 
