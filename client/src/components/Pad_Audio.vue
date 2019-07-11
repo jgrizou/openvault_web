@@ -138,17 +138,18 @@ export default {
       var audioFeedbackPanel = document.getElementById("soundtracks-feedback-panel");
       audioFeedbackPanel.innerHTML = ''
 
-      // // just starting and stopping a recroding to initiate the MicRecorder/// otherwise the first recorded sound is a bit truncated
-      // this.recorder.start().then(() => {
-      //   this.recorder.stop().getMp3().then(([buffer, blob]) => {
-      //   }).catch((e) => {
-      //     alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
-      //     console.error(e);
-      //   });
-      // }).catch((e) => {
-      //   alert('Sound recording not allowed or disfunctioning, you need to activate it to try this level');
-      //   console.error(e);
-      // });
+      // just starting and stopping a recording to initiate the MicRecorder
+      // otherwise the first recorded sound is a bit truncated and permission request is ruinning the experience
+      this.recorder.start().then(() => {
+        this.recorder.stop().getMp3().then(([buffer, blob]) => {
+        }).catch((e) => {
+          alert('Sound recording not allowed or disfunctioning, you need to activate it to try the audio version');
+          console.error(e);
+        });
+      }).catch((e) => {
+        alert('Sound recording not allowed or disfunctioning, you need to activate it to try this audio version');
+        console.error(e);
+      });
     },
     update_pad_info: function (pad_info) {
       console.log(pad_info)

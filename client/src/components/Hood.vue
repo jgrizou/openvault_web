@@ -90,6 +90,9 @@ export default {
     },
     hood_display_1x2: function (i) {
 
+      var historyContainer = document.getElementById("hood_display_" + (i+1));
+      historyContainer.style.backgroundColor = 'rgba(255, 255, 255, 0)'
+
       // get container
       var padContainer = document.getElementById("hood_pad_container_" + (i+1));
       padContainer.innerHTML = ''
@@ -174,6 +177,11 @@ export default {
 
     },
     hood_display_3x3: function (i) {
+
+      var historyContainer = document.getElementById("hood_display_" + (i+1));
+      historyContainer.style.backgroundColor = 'rgba(255, 255, 255, 0)'
+
+
       // get container
       var padContainer = document.getElementById("hood_pad_container_" + (i+1));
       padContainer.innerHTML = ''
@@ -316,7 +324,7 @@ export default {
     populate_hood_text_discrete: function(i) {
 
       var hyp_elem = document.getElementById('hyp_' + (i+1))
-      hyp_elem.classList.remove('valid_hyp', 'invalid_hyp');
+      hyp_elem.classList.remove('valid_hyp', 'equally_valid_hyp', 'invalid_hyp');
 
       var hood_info_elem = document.getElementById('hood_info_' + (i+1))
       hood_info_elem.innerHTML = ''
@@ -325,14 +333,25 @@ export default {
       digitElem.innerHTML = '' + i
 
       if (this.hood_info.hypothesis_validity[i]) {
-        digitElem.className = 'hood_green_digit';
+
+        // if (this.hood_info.hypothesis_validity.filter(x => x).length == 1) {
+        //   digitElem.className = 'hood_default_digit hood_green_digit';
+        //   hyp_elem.classList.add('valid_hyp');
+        // } else {
+        //   digitElem.className = 'hood_default_digit hood_orange_digit';
+        //   hyp_elem.classList.add('equally_valid_hyp');
+        // }
+
+        digitElem.className = 'hood_default_digit hood_green_digit';
         hyp_elem.classList.add('valid_hyp');
+
       } else {
-        digitElem.className = 'hood_red_digit';
+        digitElem.className = 'hood_default_digit hood_red_digit';
         hyp_elem.classList.add('invalid_hyp');
       }
 
       hood_info_elem.appendChild(digitElem)
+
     },
     populate_hood_text_continuous: function(i) {
 
@@ -359,7 +378,7 @@ export default {
       var likelihood = this.hood_info.hypothesis_probability[i]
       var hyp_multiplier = likelihood_to_multiplier(likelihood)
 
-      var max_digit_diameter = 72
+      var max_digit_diameter = 0.9*72
       var min_digit_diameter = 40
       var diff_digit_diameter = max_digit_diameter - min_digit_diameter
       var digit_diameter_str = diff_digit_diameter * hyp_multiplier + min_digit_diameter + 'px'
@@ -390,12 +409,12 @@ export default {
       // add background color
       hyp_elem.classList.add('default_hyp');
       var hyp_colormap = Interpolator(['rgba(255, 65, 54, 0.1)', 'rgba(255, 175, 116, 0.1)', 'rgba(46, 204, 64, 0.1)']);
-      var hyp_colormap = Interpolator(['rgba(255, 65, 54, 0.5)', 'rgba(255, 175, 116, 0.5)', 'rgba(46, 204, 64, 0.5)']);
+      // var hyp_colormap = Interpolator(['rgba(255, 65, 54, 0.5)', 'rgba(255, 175, 116, 0.5)', 'rgba(46, 204, 64, 0.5)']);
       var hyp_color = hyp_colormap(hyp_multiplier)
       hyp_elem.style.backgroundColor = hyp_color
 
       // scale the all thing
-      var max_scale = 1
+      var max_scale = 0.9
       var min_scale = 0.8
       var diff_scale = max_scale - min_scale
       var hyp_scale = diff_scale * hyp_multiplier + min_scale
@@ -572,47 +591,23 @@ export default {
 
 
 :root {
+  --green_scale: 0.9;
   --green_digit_fontsize: 30px;
   --green_digit_width: calc( 0.9 * var(--hood_text_width));
-  --green_light_color_icon: rgba(46, 204, 64, 0.5);
-  --green_light_color_background: rgba(46, 204, 64, 0.1);
+  --green_color_icon: rgba(46, 204, 64, 0.5);
+  --green_color_background: rgba(46, 204, 64, 0.1);
 
-  --red_digit_fontsize: calc( 0.9 * var(--green_digit_fontsize));
-  --red_digit_width: calc( 0.9 * var(--green_digit_width) );
-  --red_light_color_icon: rgba(255, 65, 54, 0.5);
-  --red_light_color_background: rgba(255, 65, 54, 0.1);
-}
+  --orange_scale: 0.9;
+  --orange_digit_fontsize: 24px;
+  --orange_digit_width: calc( 0.775 * var(--hood_text_width));
+  --orange_color_icon: rgba(255, 175, 116, 0.5);
+  --orange_color_background: rgba(255, 175, 116, 0.1);
 
-.hood_green_digit {
-  position: absolute;
-  top: calc( (var(--hyp_container_height) - var(--green_digit_width)) / 2);
-  left: calc( (var(--hood_text_width) - var(--green_digit_width)) / 2);
-  width: var(--green_digit_width);
-  height: var(--green_digit_width);
-  border-radius: 50%;
-  text-align: center;
-  vertical-align: middle;
-  font-size: var(--green_digit_fontsize);
-  font-weight: 600;
-  line-height: calc( var(--green_digit_width) );
-  background-color: var(--green_light_color_icon);
-  z-index: 10;
-}
-
-.hood_red_digit {
-  position: absolute;
-  top: calc( (var(--hyp_container_height) - var(--red_digit_width)) / 2);
-  left: calc( (var(--hood_text_width) - var(--red_digit_width)) / 2);
-  width: var(--red_digit_width);
-  height: var(--red_digit_width);
-  border-radius: 50%;
-  text-align: center;
-  vertical-align: middle;
-  font-size: var(--red_digit_fontsize);
-  font-weight: 600;
-  line-height: calc( var(--red_digit_width) );
-  background-color: var(--red_light_color_icon);
-  z-index: 10;
+  --red_scale: 0.8;
+  --red_digit_fontsize: 18px;
+  --red_digit_width: calc( 0.55 * var(--hood_text_width));
+  --red_color_icon: rgba(255, 65, 54, 0.5);
+  --red_color_background: rgba(255, 65, 54, 0.1);
 }
 
 .hood_default_digit {
@@ -624,12 +619,51 @@ export default {
   z-index: 10;
 }
 
+.hood_green_digit {
+  top: calc( (var(--hyp_container_height) - var(--green_digit_width)) / 2);
+  left: calc( (var(--hood_text_width) - var(--green_digit_width)) / 2);
+  width: var(--green_digit_width);
+  height: var(--green_digit_width);
+  font-size: var(--green_digit_fontsize);
+  line-height: calc( var(--green_digit_width) );
+  background-color: var(--green_color_icon);
+}
+
+.hood_orange_digit {
+  top: calc( (var(--hyp_container_height) - var(--orange_digit_width)) / 2);
+  left: calc( (var(--hood_text_width) - var(--orange_digit_width)) / 2);
+  width: var(--orange_digit_width);
+  height: var(--orange_digit_width);
+  font-size: var(--orange_digit_fontsize);
+  line-height: calc( var(--orange_digit_width) );
+  background-color: var(--orange_color_icon);
+}
+
+.hood_red_digit {
+  top: calc( (var(--hyp_container_height) - var(--red_digit_width)) / 2);
+  left: calc( (var(--hood_text_width) - var(--red_digit_width)) / 2);
+  width: var(--red_digit_width);
+  height: var(--red_digit_width);
+  font-size: var(--red_digit_fontsize);
+  line-height: calc( var(--red_digit_width) );
+  background-color: var(--red_color_icon);
+}
+
 
 .valid_hyp {
   filter: blur(0px);
   -webkit-filter: blur(0px);
-  background-color: var(--green_light_color_background);
-  transform: scale(0.95);
+  background-color: var(--green_color_background);
+  transform: scale(var(--green_scale));
+  transform-origin: 50% 50%;
+  z-index: 0;
+}
+
+.equally_valid_hyp {
+  filter: blur(0px);
+  -webkit-filter: blur(0px);
+  background-color: var(--orange_color_background);
+  transform: scale(var(--orange_scale));
   transform-origin: 50% 50%;
   z-index: 0;
 }
@@ -637,8 +671,8 @@ export default {
 .invalid_hyp {
   filter: blur(0px);
   -webkit-filter: blur(0px);
-  background-color: var(--red_light_color_background);
-  transform: scale(0.8);
+  background-color: var(--red_color_background);
+  transform: scale(var(--red_scale));
   transform-origin: 50% 50%;
   z-index: 0;
 }
@@ -646,14 +680,9 @@ export default {
 .default_hyp {
   filter: blur(0px);
   -webkit-filter: blur(0px);
-  transform: scale(0.8);
   transform-origin: 50% 50%;
   z-index: 0;
 }
-
-/* width: var(--hyp_container_width); */
-/* height: var(--hyp_container_height); */
-
 
 </style>
 
