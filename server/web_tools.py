@@ -3,6 +3,7 @@ import uuid
 import base64
 import tempfile
 
+import scipy
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
@@ -32,6 +33,38 @@ def generate_map_from_classifier(clf, bounds=(0., 1.), scaler=None, resolution=1
     pred_y_grid = pred_y_flat_grid.reshape(grid_x.shape)
 
     return pred_y_grid
+
+
+def generate_map_from_dataset(points, labels, bounds=(0., 1.), scaler=None, resolution=100j):
+    grid_x, grid_y = np.mgrid[bounds[0]:bounds[1]:resolution, bounds[0]:bounds[1]:resolution]
+    # trick on coordinate for imshow to display as a scatter plot
+    X_flat_grid = np.vstack((grid_y.flatten(), 1 - grid_x.flatten())).T
+
+    # the map is between bounds but if a scaler is used we project these to back to the original space that the classifier has been trained on
+    if scaler:
+        X_flat_grid = scaler.inverse_transform(X_flat_grid)
+
+    pred_y_flat_grid = np.mean(X_flat_grid, axis=1)
+
+    sigma = 10
+    distances = scipy.spatial.distance.cdist(X_flat_grid, points)
+    rbf_values = np.exp(-np.power(sigma*distances, 2))
+    index = np.expand_dims(np.argmax(rbf_values, axis=1), axis=1)
+
+    color_intensity_for_map = 0.5  # must be less than 1
+    weights = np.array([color_intensity_for_map if x else -color_intensity_for_map for x in labels])
+    weighted_values = weights * rbf_values
+
+    pred_y_flat_grid = np.take_along_axis(weighted_values, index, axis=1)
+
+    # scale between 0 and 1 for later color mapping
+    pred_y_flat_grid = (pred_y_flat_grid + 1) / 2
+
+    # reshape to grid
+    pred_y_grid = pred_y_flat_grid.reshape(grid_x.shape)
+
+    return pred_y_grid
+
 
 def flip_map_for_web(map_grid):
     # we flip because image on web have the y axis fliped

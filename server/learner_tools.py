@@ -382,11 +382,20 @@ class Learner(object):
                 ## if classifier solved, plot it, save it and send it
                 if self.classifier_last_solved:
 
-                    classifier_map = web_tools.generate_map_from_classifier(self.classifier_last_solved, scaler=signal_scaler)
+                    if pad_config["show_classifier_map"]:
+                        # we show the exact classifier
+                        display_map = web_tools.generate_map_from_classifier(self.classifier_last_solved, scaler=signal_scaler)
 
-                    classifier_map_web = web_tools.flip_map_for_web(classifier_map)
+                    else:
+                        # we show only areas to guide the user
+                        point = self.learner.signal_history
+                        labels = self.learner.hypothesis_labels[0]
+                        display_map = web_tools.generate_map_from_dataset(point, labels, bounds=(0., 1.), scaler=None, resolution=100j)
 
-                    map_filename = self.logger.save_classifier_map_to_file(classifier_map_web)
+                    # flip for web display, origin is on top-left corner, x pointing right, y pointing down
+                    display_map_web = web_tools.flip_map_for_web(display_map)
+
+                    map_filename = self.logger.save_classifier_map_to_file(display_map_web)
 
                     ## encode png map file for web display
                     update_pad_info['classifier_map'] = web_tools.encode_png_base64(map_filename)
