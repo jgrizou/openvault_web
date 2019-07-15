@@ -12,7 +12,8 @@
   },
   "pad": {
     "type": "audio",
-    "show_learning_progress": true
+    "show_learning_progress": true,
+    "show_classifier_map": true
   },
   "hood": {
     "show_hood": true,

@@ -362,12 +362,15 @@ export default {
       hood_info_elem.innerHTML = ''
 
       function likelihood_to_multiplier(x) {
-        if (x <= 0.5) {
-          return x
-        } else {
-          var exposant = 2
-          return (Math.pow((x-0.5), exposant) / Math.pow((1-0.5), exposant)) / 2 + 0.5
-        }
+        return x
+
+        // old function when probabilisitc prediction were stronger
+        // if (x <= 0.5) {
+        //   return x
+        // } else {
+        //   var exposant = 2
+        //   return (Math.pow((x-0.5), exposant) / Math.pow((1-0.5), exposant)) / 2 + 0.5
+        // }
       }
 
       // console.log('#######')

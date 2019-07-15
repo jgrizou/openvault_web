@@ -128,7 +128,7 @@ class Learner(object):
         print('Learner initialized.')
 
         ## make sure all element are correctly displayed
-        self.classifier_last_solved = None
+        self.classifier_info_last_solved = None
         self.n_iteration_at_last_solved = 0
         self.update_iteration(new_iteration_value=0)
         self.update_code(apply_pause=False)
@@ -177,27 +177,27 @@ class Learner(object):
             if pad_config['type'] == 'touch':
                 self.learner = ContinuousLearner(
                 learner_config['n_hypothesis'],
-                proba_decision_threshold=0.99,
-                proba_assigned_to_label_valid=0.99,
+                proba_decision_threshold=0.9,
+                proba_assigned_to_label_valid=0.999,
                 use_leave_one_out_at_start=False)
-
-            elif pad_config['type'] == 'audio':
-                self.learner = ContinuousLearner(
-                learner_config['n_hypothesis'],
-                proba_decision_threshold=0.95,
-                proba_assigned_to_label_valid=0.95,
-                use_leave_one_out_at_start=False)
-
-                self.audio_transformer = AudioVaultSignal()
 
             elif pad_config['type'] == 'draw':
                 self.learner = ContinuousLearner(
                 learner_config['n_hypothesis'],
-                proba_decision_threshold=0.95,
-                proba_assigned_to_label_valid=0.95,
+                proba_decision_threshold=0.9,
+                proba_assigned_to_label_valid=0.99,
                 use_leave_one_out_at_start=False)
 
                 self.sketch_transformer = SketchVaultSignal()
+
+            elif pad_config['type'] == 'audio':
+                self.learner = ContinuousLearner(
+                learner_config['n_hypothesis'],
+                proba_decision_threshold=0.9,
+                proba_assigned_to_label_valid=0.99,
+                use_leave_one_out_at_start=False)
+
+                self.audio_transformer = AudioVaultSignal()
 
             else:
                 raise Exception('Type of continuous pad learner not handled: {}'.format(pad_config['type']))
@@ -212,6 +212,7 @@ class Learner(object):
             self.update_iteration(self.n_iteration + 1)
 
             self.update_learner(feedback_info)
+            print(self.learner.hypothesis_probability)
             self.update_hood()
 
             if self.learner.is_inconsistent():
@@ -242,6 +243,7 @@ class Learner(object):
                     self.socketio.emit('no_check', room=self.room_id)
             else:
                 self.update_flash_pattern()
+
 
     def update_iteration(self, new_iteration_value):
         self.n_iteration = new_iteration_value
@@ -312,7 +314,7 @@ class Learner(object):
                 self.learner.propagate_labels_from_hypothesis(solution_index)
                 # if we accumulate the info, we change this variable that is used to update the pad with learned information up to the current iteration
                 self.n_iteration_at_last_solved = self.n_iteration
-                self.classifier_last_solved = self.learner.hypothesis_classifier_infos[solution_index]['clf']
+                self.classifier_info_last_solved = self.learner.hypothesis_classifier_infos[solution_index]
             else:
                 # spawn a new learner from scratch
                 self.init_learner()
@@ -380,11 +382,11 @@ class Learner(object):
                 update_pad_info['signal_location'] = signal_location
 
                 ## if classifier solved, plot it, save it and send it
-                if self.classifier_last_solved:
+                if self.classifier_info_last_solved:
 
                     if pad_config["show_classifier_map"]:
                         # we show the exact classifier
-                        display_map = web_tools.generate_map_from_classifier(self.classifier_last_solved, scaler=signal_scaler)
+                        display_map = web_tools.generate_map_from_classifier(self.classifier_info_last_solved, scaler=signal_scaler)
 
                     else:
                         # we show only areas to guide the user
@@ -400,8 +402,8 @@ class Learner(object):
                     ## encode png map file for web display
                     update_pad_info['classifier_map'] = web_tools.encode_png_base64(map_filename)
 
-                    # we put classifier_last_solved back to None to not recompute and send again each iteration, but only each time we update it in prepare_learner_for_next_digit()
-                    self.classifier_last_solved = None
+                    # we put classifier_info_last_solved back to None to not recompute and send again each iteration, but only each time we update it in prepare_learner_for_next_digit()
+                    self.classifier_info_last_solved = None
 
         ## we send it everytime even if empty, just to be able to sync server and client in terms of UI
         self.socketio.emit('update_pad', update_pad_info, room=self.room_id)
@@ -461,7 +463,7 @@ class Learner(object):
                     for hyp_class_info in self.learner.hypothesis_classifier_infos:
                         encoded_map = ''
                         if 'clf' in hyp_class_info:
-                            encoded_map = web_tools.generate_web_classifier_map(hyp_class_info['clf'], signal_scaler)
+                            encoded_map = web_tools.generate_web_classifier_map(hyp_class_info, signal_scaler)
 
                         hypothesis_classifier_maps.append(encoded_map)
 

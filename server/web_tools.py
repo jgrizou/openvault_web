@@ -20,7 +20,7 @@ def scale_data_to_view_windows(data, view_bounds=(0.1, 0.9)):
     return scaled_data, scaler
 
 
-def generate_map_from_classifier(clf, bounds=(0., 1.), scaler=None, resolution=100j):
+def generate_map_from_classifier(classifier_info, bounds=(0., 1.), scaler=None, resolution=100j):
     grid_x, grid_y = np.mgrid[bounds[0]:bounds[1]:resolution, bounds[0]:bounds[1]:resolution]
     # trick on coordinate for imshow to display as a scatter plot
     X_flat_grid = np.vstack((grid_y.flatten(), 1 - grid_x.flatten())).T
@@ -29,7 +29,11 @@ def generate_map_from_classifier(clf, bounds=(0., 1.), scaler=None, resolution=1
     if scaler:
         X_flat_grid = scaler.inverse_transform(X_flat_grid)
 
-    pred_y_flat_grid = clf.predict_proba(X_flat_grid)[:, 1]
+    clf = classifier_info['clf']
+    ordered_classes = classifier_info['ordered_classes']
+    index_of_True_class = np.where(ordered_classes == True)[0][0]
+
+    pred_y_flat_grid = clf.predict_proba(X_flat_grid)[:, index_of_True_class]
     pred_y_grid = pred_y_flat_grid.reshape(grid_x.shape)
 
     return pred_y_grid
@@ -108,9 +112,9 @@ def encode_png_base64(png_filename):
     return 'data:image/png;base64,{}'.format(png_image_base64)
 
 
-def generate_web_classifier_map(classifier, signal_scaler):
+def generate_web_classifier_map(classifier_info, signal_scaler):
 
-    classifier_map = generate_map_from_classifier(classifier, scaler=signal_scaler)
+    classifier_map = generate_map_from_classifier(classifier_info, scaler=signal_scaler)
     classifier_map_web = flip_map_for_web(classifier_map)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
