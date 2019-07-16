@@ -178,14 +178,14 @@ class Learner(object):
                 self.learner = ContinuousLearner(
                 learner_config['n_hypothesis'],
                 proba_decision_threshold=0.9,
-                proba_assigned_to_label_valid=0.999,
+                proba_assigned_to_label_valid=1,
                 use_leave_one_out_at_start=False)
 
             elif pad_config['type'] == 'draw':
                 self.learner = ContinuousLearner(
                 learner_config['n_hypothesis'],
                 proba_decision_threshold=0.9,
-                proba_assigned_to_label_valid=0.99,
+                proba_assigned_to_label_valid=0.95,
                 use_leave_one_out_at_start=False)
 
                 self.sketch_transformer = SketchVaultSignal()
@@ -194,7 +194,7 @@ class Learner(object):
                 self.learner = ContinuousLearner(
                 learner_config['n_hypothesis'],
                 proba_decision_threshold=0.9,
-                proba_assigned_to_label_valid=0.99,
+                proba_assigned_to_label_valid=0.95,
                 use_leave_one_out_at_start=False)
 
                 self.audio_transformer = AudioVaultSignal()
