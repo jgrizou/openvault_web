@@ -22,13 +22,13 @@
     ></div>
 
     <button
-      class="btn-show-feedback-panel btn-sketches"
+      class="btn-show-feedback-panel noselect btn-sketches"
       v-show="feedback_show_btn_active"
       v-on:click="feedback_panel_soundtracks_active = true"
     >Show history</button>
 
     <button
-      class="btn-show-feedback-panel btn-embedding"
+      class="btn-show-feedback-panel noselect btn-embedding"
       v-show="feedback_show_btn_active"
       v-on:click="feedback_panel_embedding_active = true"
     >Show map</button>
@@ -47,7 +47,7 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel btn-sketches"
+          class="btn-show-feedback-panel noselect btn-sketches"
           v-on:click="feedback_panel_soundtracks_active = false"
         >Hide history</button>
       </div>
@@ -67,7 +67,7 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel btn-embedding"
+          class="btn-show-feedback-panel noselect btn-embedding"
           v-on:click="feedback_panel_embedding_active = false"
         >Hide map</button>
       </div>
@@ -304,7 +304,7 @@ export default {
       embeddingFeedbackPanel.innerHTML = ''
 
       if (this.classifier_map) {
-          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" alt=""/>'
+          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" draggable="false" alt=""/>'
           // as the mapping is changing all the time due to umap, we only plot it for one step
           this.classifier_map = undefined
       }
@@ -363,6 +363,7 @@ export default {
   top: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
   height: calc( var(--pad_height) - var(--pad_height_shrink) );
   background-color: rgba(240, 240, 240, 1);
+  cursor: url(../assets/pen.svg) 10 30, crosshair;
 }
 
 .drawing-canvas {
@@ -381,6 +382,7 @@ export default {
   width: var(--screen_width);
   height: calc( var(--pad_height) - var(--pad_height_shrink) );
   background-color: rgba(240, 240, 240, 1);
+  cursor: default;
 }
 
 .btn-show-feedback-panel.btn-sketches {

@@ -207,12 +207,11 @@ class Learner(object):
 
     def step(self, feedback_info):
         if self.code_manager.is_code_decoded():
-            raise Exception('Should never get there')
+            raise Exception('Should never get there, problem on web interface side sedning a step when it should be disabled')
         else:
             self.update_iteration(self.n_iteration + 1)
 
             self.update_learner(feedback_info)
-            print(self.learner.hypothesis_probability)
             self.update_hood()
 
             if self.learner.is_inconsistent():

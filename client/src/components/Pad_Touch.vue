@@ -212,6 +212,7 @@ export default {
   top: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
   height: calc( var(--pad_height) - var(--pad_height_shrink) );
   background-color: rgba(66, 65, 78, 0.1);
+  cursor: crosshair;
 }
 
 .padborder {

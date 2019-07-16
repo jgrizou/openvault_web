@@ -6,6 +6,7 @@
         ['c' + index]: true,
         'found': item['found'],
         'ongoing': item['ongoing'],
+        'noselect': true
         }"
       >
         {{ item['text'] }}

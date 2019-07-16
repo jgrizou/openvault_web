@@ -22,13 +22,13 @@
     ></button>
 
     <button
-      class="btn-show-feedback-panel btn-soundtracks"
+      class="btn-show-feedback-panel noselect btn-soundtracks"
       v-show="feedback_show_btn_active"
       v-on:click="feedback_panel_soundtracks_active = true"
     >Show history</button>
 
     <button
-      class="btn-show-feedback-panel btn-embedding"
+      class="btn-show-feedback-panel noselect btn-embedding"
       v-show="feedback_show_btn_active"
       v-on:click="feedback_panel_embedding_active = true"
     >Show map</button>
@@ -46,7 +46,7 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel btn-soundtracks"
+          class="btn-show-feedback-panel noselect btn-soundtracks"
           v-on:click="feedback_panel_soundtracks_active = false"
         >Hide history</button>
       </div>
@@ -66,7 +66,7 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel btn-embedding"
+          class="btn-show-feedback-panel noselect btn-embedding"
           v-on:click="feedback_panel_embedding_active = false"
         >Hide map</button>
       </div>
@@ -185,7 +185,7 @@ export default {
       embeddingFeedbackPanel.innerHTML = ''
 
       if (this.classifier_map) {
-          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" alt=""/>'
+          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" draggable="false" alt=""/>'
           // as the mapping is changing all the time due to umap, we only plot it for one step
           this.classifier_map = undefined
       }
@@ -397,7 +397,53 @@ export default {
   }
 }
 
+/* Feedback panel animation css */
 
+.slide-feedback-enter-active, .slide-feedback-leave-active {
+  transition: all .5s ease-in-out;
+}
+
+.slide-feedback-enter, .slide-feedback-leave-to {
+  transform: translateY(var(--pad_height_with_shrink));
+}
+
+.btn-show-feedback-panel {
+  position: absolute;
+  top: 370px;
+  width: 60px;
+  height: 40px;
+  border-radius: 20px;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 12px;
+  font-weight: 400;
+  outline: none; /* remove contour when clicked */
+  box-shadow: none;
+  border-style: solid;
+  border-width: 1px;
+  border-color: rgba(66, 65, 78, 0.35);
+}
+
+.btn-show-feedback-panel:active {
+  background-color: rgba(150, 150, 150, 1);
+}
+
+/* soundtrack panel */
+
+.soundtracks-feedback-panel {
+  position: absolute;
+  overflow:auto;
+  top: 0px;
+  left: 0px;
+  width: var(--screen_width);
+  height: var(--pad_height_with_shrink);
+  background-color: rgba(240, 240, 240, 1);
+  cursor: default;
+}
+
+.btn-soundtracks {
+  left: 390px;
+}
 
 /* Feedback sounds css */
 
@@ -450,55 +496,6 @@ export default {
   font-size: 20px;
 }
 
-
-/* Feedback panel animation css */
-
-.slide-feedback-enter-active, .slide-feedback-leave-active {
-  transition: all .5s ease-in-out;
-}
-
-.slide-feedback-enter, .slide-feedback-leave-to {
-  transform: translateY(var(--pad_height_with_shrink));
-}
-
-.btn-show-feedback-panel {
-  position: absolute;
-  top: 370px;
-  width: 60px;
-  height: 40px;
-  border-radius: 20px;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 12px;
-  font-weight: 400;
-  outline: none; /* remove contour when clicked */
-  box-shadow: none;
-  border-style: solid;
-  border-width: 1px;
-  border-color: rgba(66, 65, 78, 0.35);
-}
-
-.btn-show-feedback-panel:active {
-  background-color: rgba(150, 150, 150, 1);
-}
-
-/* soundtrack panel */
-
-.soundtracks-feedback-panel {
-  position: absolute;
-  overflow:auto;
-  top: 0px;
-  left: 0px;
-  width: var(--screen_width);
-  height: var(--pad_height_with_shrink);
-  background-color: rgba(240, 240, 240, 1);
-}
-
-.btn-soundtracks {
-  left: 390px;
-}
-
-
 /* embedding panel */
 
 .embedding-feedback-panel {
@@ -508,6 +505,7 @@ export default {
   width: var(--screen_width);
   height: var(--pad_height_with_shrink);
   background-color: rgba(240, 240, 240, 1);
+  cursor: default;
 }
 
 .btn-embedding {

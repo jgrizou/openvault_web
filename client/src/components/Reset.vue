@@ -3,7 +3,7 @@
 
     <transition name="slide-reset">
 
-      <div class="reset" v-show="active">
+      <div class="reset noselect" v-show="active">
 
         <div class="reset-text">
           Experience started

@@ -7,7 +7,8 @@
             'round': true,
             ['n' + index]: true,
             'digit-flash': value,
-            'digit-noflash': !value
+            'digit-noflash': !value,
+            'noselect': true
             }"
           >
             {{ index }}
@@ -43,8 +44,6 @@ export default {
   --digit_number_color: rgba(50, 50, 50, 1);
 }
 
-
-
 .digit-noflash {
   background-color: var(--off_color);
   color: var(--digit_number_color);
@@ -54,7 +53,6 @@ export default {
   background-color: var(--on_color);
   color: var(--digit_number_color);
 }
-
 
 .round {
   position: absolute;

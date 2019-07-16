@@ -4,7 +4,7 @@
 
     <transition name="slide-check">
 
-      <div class="check" v-show="active">
+      <div class="check noselect" v-show="active">
 
         <div :class="{
           'smiley': true,

@@ -48,9 +48,6 @@ export default {
   width: var(--screen_width);
   height: var(--screen_height);
   font-family: "Avenir";
-  /* transform: scale(1) rotate(270deg) translateX(160px) translateY(160px); */
-  /* transform-origin: 0 0; */
-  /* transform: scale(0.5); */
 }
 
 .noflash {
@@ -85,6 +82,7 @@ export default {
 
 .btn {
   border-radius: 15px;
+  /* cursor: pointer; */
 }
 
 .btn:active {
@@ -121,6 +119,16 @@ export default {
   width: var(--screen_width);
   height: var(--pad_height);
   background-color: rgba(255, 255, 255, 1);
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
 
 

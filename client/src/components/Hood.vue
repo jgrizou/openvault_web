@@ -13,7 +13,7 @@
 
           <div class="hood_info" :id="'hood_info_' + index"></div>
 
-          <div class="hood_display" :id="'hood_display_' + index">
+          <div class="hood_display noselect" :id="'hood_display_' + index">
             <div class="hood_pad_container" :id="'hood_pad_container_' + index"></div>
           </div>
 
@@ -22,7 +22,7 @@
     </div>
 
     <div v-if="show_button">
-      <button class="hood_pause_button" v-on:click="on_unpause_click">
+      <button class="hood_pause_button noselect" v-on:click="on_unpause_click">
         Digit found
         <br><br>
         Click here to continue
@@ -279,7 +279,7 @@ export default {
 
       if (this.hood_info.hypothesis_classifier_maps) {
         if (this.hood_info.hypothesis_classifier_maps[i]) {
-            historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '") class="map-container" alt=""/>'
+            historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '") class="map-container" draggable="false" alt=""/>'
         } else {
           historyContainer.style.backgroundColor = 'rgba(240, 240, 240, 1)'
         }
@@ -342,11 +342,11 @@ export default {
         //   hyp_elem.classList.add('equally_valid_hyp');
         // }
 
-        digitElem.className = 'hood_default_digit hood_green_digit';
+        digitElem.className = 'hood_default_digit noselect hood_green_digit';
         hyp_elem.classList.add('valid_hyp');
 
       } else {
-        digitElem.className = 'hood_default_digit hood_red_digit';
+        digitElem.className = 'hood_default_digit noselect hood_red_digit ';
         hyp_elem.classList.add('invalid_hyp');
       }
 
@@ -362,19 +362,16 @@ export default {
       hood_info_elem.innerHTML = ''
 
       function likelihood_to_multiplier(x) {
-        return x
-
-        // old function when probabilisitc prediction were stronger
-        // if (x <= 0.5) {
-        //   return x
-        // } else {
-        //   var exposant = 2
-        //   return (Math.pow((x-0.5), exposant) / Math.pow((1-0.5), exposant)) / 2 + 0.5
-        // }
+        var multiplier = 10
+        if (x <= 0.5) {
+          return Math.tanh(- multiplier * (0.25-x)) / 4 + 0.25
+        } else {
+          return Math.tanh(multiplier * (x-0.75)) / 4 + 0.75
+        }
       }
 
       // console.log('#######')
-      // for (var x = 0; x < 1; x += 0.1) {
+      // for (var x = 0; x < 1; x += 0.05) {
       //   console.log(likelihood_to_multiplier(x).toFixed(2))
       // }
 
@@ -393,7 +390,7 @@ export default {
 
       var digitElem = document.createElement("div");
       digitElem.innerHTML = '' + i
-      digitElem.className = 'hood_default_digit';
+      digitElem.className = 'hood_default_digit noselect';
 
       digitElem.style.top =  "calc( (var(--hyp_container_height) - " + digit_diameter_str + ") / 2)";
       digitElem.style.left =  "calc( (var(--hood_text_width) - " + digit_diameter_str + ") / 2)";
