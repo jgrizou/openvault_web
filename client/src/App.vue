@@ -82,11 +82,12 @@ export default {
 
 .btn {
   border-radius: 15px;
-  /* cursor: pointer; */
+  /* cursor: url(./assets/hand.svg) 10 10, pointer; */
 }
 
 .btn:active {
   transform: translateY(var(--shadow_diff));
+  /* cursor: url(./assets/hand_click.svg) 10 10, pointer; */
 }
 
 .fullscreen {

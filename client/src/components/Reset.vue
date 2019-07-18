@@ -90,6 +90,10 @@ export default {
   background-color: rgba(100, 100, 100, 1);
 }
 
+.reset-btn:hover {
+  background-color: rgba(120, 120, 120, 1);
+}
+
 .reset-btn:active {
   background-color: rgba(150, 150, 150, 1);
 }

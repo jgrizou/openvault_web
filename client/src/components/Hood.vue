@@ -22,10 +22,11 @@
     </div>
 
     <div v-if="show_button">
-      <button class="hood_pause_button noselect" v-on:click="on_unpause_click">
-        Digit found
-        <br><br>
-        Click here to continue
+      <div class="hide_digit"></div>
+      <button
+        class="hood_pause_button noselect"
+        v-on:click="on_unpause_click">
+        Continue
       </button>
     </div>
 
@@ -447,9 +448,16 @@ export default {
   --hood_pad_container_width: calc( var(--hood_display_width) - 2*var(--hood_pad_margin));
   --hood_pad_container_height: calc( var(--hyp_container_height) - 2*var(--hood_pad_margin));
   --hood_pad_button_margin: 2px;
+
+  --hood_pause_btn_margin_top: 15px;
+  --hood_pause_btn_margin_side: 60px;
+  --hood_pause_top: calc(var(--display_height) - var(--shadow_diff) + var(--hood_pause_btn_margin_top));
+  --hood_pause_left: var(--hood_pause_btn_margin_side);
+  --hood_pause_btn_width: calc(var(--screen_width) - 2*var(--hood_pause_btn_margin_side));
+  --hood_pause_btn_height: calc(var(--digit_height) - 2*var(--hood_pause_btn_margin_top));
 }
 
-.hood_pause_button {
+.hide_digit {
   position: absolute;
   top: var(--display_height);
   left: 0px;
@@ -457,16 +465,32 @@ export default {
   height: var(--digit_height);
   outline: none; /* remove contour when clicked */
   border: none;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.hood_pause_button {
+  position: absolute;
+  top: var(--hood_pause_top);
+  left: var(--hood_pause_left);
+  width: var(--hood_pause_btn_width);
+  height: var(--hood_pause_btn_height);
+  outline: none; /* remove contour when clicked */
+  border: none;
+  border-radius: 30px;
   text-align: center;
   vertical-align: middle;
-  font-size: 30px;
+  font-size: 50px;
   font-weight: 600;
-  color: rgba(0, 0, 0, 1);
+  color: rgba(50, 50, 50, 1);
   background-color: rgba(230, 230, 230, 1);
+  box-shadow: 0 var(--shadow_full) rgba(150, 150, 150, 1);
 }
 
 .hood_pause_button:active {
-  background-color: rgba(200, 200, 200, 1);
+  color: rgba(0, 0, 0, 1);
+  background-color: rgba(210, 210, 210, 1);
+  box-shadow: 0 var(--shadow_min) rgba(100, 100, 100, 1);
+  transform: translateY(var(--shadow_diff));
 }
 
 .hood {

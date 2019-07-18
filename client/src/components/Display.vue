@@ -40,9 +40,9 @@ export default {
 :root {
   --tile_width: 80px;
   --tile_height: 100px;
-  --top_offset: 50px;
-  --tile_offset: 70px;
-  --tile_spacing: calc( ( (var(--screen_width) - 2*var(--tile_offset)) - 4*var(--tile_width)) / 3 );
+  --tile_top_offset: 50px;
+  --tile_side_offset: 70px;
+  --tile_spacing: calc( ( (var(--screen_width) - 2*var(--tile_side_offset)) - 4*var(--tile_width)) / 3 );
   --tile_color: rgba(255, 204, 204, 1);
   --tile_border: 10px;
 }
@@ -75,23 +75,23 @@ export default {
 }
 
 .c0 {
-  top: var(--top_offset);
-  left: calc( var(--tile_offset) + 0 * (var(--tile_width) + var(--tile_spacing)) );
+  top: var(--tile_top_offset);
+  left: calc( var(--tile_side_offset) + 0 * (var(--tile_width) + var(--tile_spacing)) );
 }
 
 .c1 {
-  top: var(--top_offset);
-  left: calc( var(--tile_offset) + 1 * (var(--tile_width) + var(--tile_spacing)) );
+  top: var(--tile_top_offset);
+  left: calc( var(--tile_side_offset) + 1 * (var(--tile_width) + var(--tile_spacing)) );
 }
 
 .c2 {
-  top: var(--top_offset);
-  left: calc( var(--tile_offset) + 2 * (var(--tile_width) + var(--tile_spacing)) );
+  top: var(--tile_top_offset);
+  left: calc( var(--tile_side_offset) + 2 * (var(--tile_width) + var(--tile_spacing)) );
 }
 
 .c3 {
-  top: var(--top_offset);
-  left: calc( var(--tile_offset) + 3 * (var(--tile_width) + var(--tile_spacing)) );
+  top: var(--tile_top_offset);
+  left: calc( var(--tile_side_offset) + 3 * (var(--tile_width) + var(--tile_spacing)) );
 }
 
 
