@@ -274,6 +274,7 @@ export default {
       // get container
       var historyContainer = document.getElementById("hood_display_" + (i+1));
       historyContainer.innerHTML = ''
+      historyContainer.style.backgroundColor = 'rgba(240, 240, 240, 1)'
 
       var hood_display_width = historyContainer.offsetWidth
       var hood_display_height = historyContainer.offsetHeight
@@ -281,8 +282,6 @@ export default {
       if (this.hood_info.hypothesis_classifier_maps) {
         if (this.hood_info.hypothesis_classifier_maps[i]) {
             historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '") class="map-container" draggable="false" alt=""/>'
-        } else {
-          historyContainer.style.backgroundColor = 'rgba(240, 240, 240, 1)'
         }
       }
 

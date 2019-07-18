@@ -21,19 +21,23 @@
       v-show="show_button_active"
     ></button>
 
-    <button
-      class="btn-show-feedback-panel noselect btn-soundtracks"
-      v-show="feedback_show_btn_active"
-      v-on:click="feedback_panel_soundtracks_active = true"
-    >Show history</button>
+    <transition name="slide-feedback-btn">
+      <div v-show="feedback_show_btn_active">
 
-    <button
-      class="btn-show-feedback-panel noselect btn-embedding"
-      v-show="feedback_show_btn_active"
-      v-on:click="feedback_panel_embedding_active = true"
-    >Show map</button>
+        <button
+          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
+          v-on:click="feedback_panel_soundtracks_active = true"
+        >Show history</button>
 
-    <transition name="slide-feedback">
+        <button
+          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
+          v-on:click="feedback_panel_embedding_active = true"
+        >Show map</button>
+
+      </div>
+    </transition>
+
+    <transition name="slide-feedback-panel">
 
       <div v-show="feedback_panel_soundtracks_active">
         <div
@@ -46,14 +50,14 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel noselect btn-soundtracks"
+          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
           v-on:click="feedback_panel_soundtracks_active = false"
         >Hide history</button>
       </div>
 
     </transition>
 
-    <transition name="slide-feedback">
+    <transition name="slide-feedback-panel">
 
       <div v-show="feedback_panel_embedding_active">
         <div
@@ -66,7 +70,7 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel noselect btn-embedding"
+          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
           v-on:click="feedback_panel_embedding_active = false"
         >Hide map</button>
       </div>
@@ -331,6 +335,7 @@ export default {
 :root {
   --pad_height_shrink: 30px;
   --pad_border_width: 2px;
+  --pad_border_color: rgba(165, 165, 165, 1);
 
   --pad_top_with_shrink: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
   --pad_height_with_shrink: calc( var(--pad_height) - var(--pad_height_shrink) );
@@ -339,7 +344,6 @@ export default {
   --micro_logo_size: calc( var(--micro_diameter) / 3 );
   --micro_top: calc( (var(--pad_height_with_shrink) - var(--micro_diameter)) / 3);
   --micro_left: calc( (var(--screen_width) - var(--micro_diameter)) / 2);
-
 }
 
 .padaudio {
@@ -399,20 +403,29 @@ export default {
 
 /* Feedback panel animation css */
 
-.slide-feedback-enter-active, .slide-feedback-leave-active {
+.slide-feedback-panel-enter-active, .slide-feedback-panel-leave-active {
   transition: all .5s ease-in-out;
 }
 
-.slide-feedback-enter, .slide-feedback-leave-to {
+.slide-feedback-panel-enter, .slide-feedback-panel-leave-to {
   transform: translateY(var(--pad_height_with_shrink));
+}
+
+
+:root {
+  --btn_feedback_panel_width: 60px;
+  --btn_feedback_panel_height: 40px;
+  --btn_feedback_panel_top: calc(var(--pad_height_with_shrink) - var(--btn_feedback_panel_height));
+
+  --btn_feedback_panel_right_left: calc(var(--screen_width) - var(--btn_feedback_panel_width));
+  --btn_feedback_panel_left_left: 0px;
 }
 
 .btn-show-feedback-panel {
   position: absolute;
-  top: 370px;
-  width: 60px;
-  height: 40px;
-  border-radius: 20px;
+  top: var(--btn_feedback_panel_top);
+  width: var(--btn_feedback_panel_width);
+  height: var(--btn_feedback_panel_height);
   text-align: center;
   vertical-align: middle;
   font-size: 12px;
@@ -420,13 +433,44 @@ export default {
   outline: none; /* remove contour when clicked */
   box-shadow: none;
   border-style: solid;
-  border-width: 1px;
-  border-color: rgba(66, 65, 78, 0.35);
+  border-color: var(--pad_border_color);
+  color: rgba(0, 0, 0, 1);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.btn-show-feedback-panel:hover {
+  background-color: rgba(200, 200, 200, 1);
 }
 
 .btn-show-feedback-panel:active {
-  background-color: rgba(150, 150, 150, 1);
+  border-color: rgba(100, 100, 100, 1);
+  background-color: var(--pad_border_color);
 }
+
+.btn_feedback_panel_right {
+  border-radius: 10px 0 0 0;
+  border-width: 2px 0 0 2px;
+  left: var(--btn_feedback_panel_right_left);
+}
+
+.btn_feedback_panel_left {
+  border-radius: 0 10px 0 0;
+  border-width: 2px 2px 0 0;
+  left: var(--btn_feedback_panel_left_left);
+}
+
+.slide-feedback-btn-enter-active {
+  transition: all 1s ease-out;
+}
+
+.slide-feedback-btn-leave-active {
+  transition: all .5s ease-in-out;
+}
+
+.slide-feedback-btn-enter, .slide-feedback-btn-leave-to {
+  transform: translateY(var(--btn_feedback_panel_height));
+}
+
 
 /* soundtrack panel */
 
@@ -441,9 +485,6 @@ export default {
   cursor: default;
 }
 
-.btn-soundtracks {
-  left: 390px;
-}
 
 /* Feedback sounds css */
 
@@ -508,9 +549,7 @@ export default {
   cursor: default;
 }
 
-.btn-embedding {
-  left: 10px;
-}
+
 
 .embedding-map-container {
   width: 100%;
@@ -571,7 +610,7 @@ export default {
   top: 0;
   width: calc( var(--screen_width));
   height: var(--pad_border_width);
-  background-color: rgba(66, 65, 78, 0.5);
+  background-color: var(--pad_border_color);
   z-index: 1;
 }
 

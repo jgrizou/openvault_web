@@ -21,20 +21,23 @@
       class="padborder"
     ></div>
 
-    <button
-      class="btn-show-feedback-panel noselect btn-sketches"
-      v-show="feedback_show_btn_active"
-      v-on:click="feedback_panel_soundtracks_active = true"
-    >Show history</button>
+    <transition name="slide-feedback-btn">
+      <div v-show="feedback_show_btn_active">
 
-    <button
-      class="btn-show-feedback-panel noselect btn-embedding"
-      v-show="feedback_show_btn_active"
-      v-on:click="feedback_panel_embedding_active = true"
-    >Show map</button>
+        <button
+          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
+          v-on:click="feedback_panel_soundtracks_active = true"
+        >Show history</button>
 
+        <button
+          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
+          v-on:click="feedback_panel_embedding_active = true"
+        >Show map</button>
 
-    <transition name="slide-feedback">
+      </div>
+    </transition>
+
+    <transition name="slide-feedback-panel">
 
       <div v-show="feedback_panel_soundtracks_active">
         <div
@@ -47,14 +50,14 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel noselect btn-sketches"
+          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
           v-on:click="feedback_panel_soundtracks_active = false"
         >Hide history</button>
       </div>
 
     </transition>
 
-    <transition name="slide-feedback">
+    <transition name="slide-feedback-panel">
 
       <div v-show="feedback_panel_embedding_active">
         <div
@@ -67,7 +70,7 @@
         >
         </div>
         <button
-          class="btn-show-feedback-panel noselect btn-embedding"
+          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
           v-on:click="feedback_panel_embedding_active = false"
         >Hide map</button>
       </div>
@@ -383,10 +386,6 @@ export default {
   height: calc( var(--pad_height) - var(--pad_height_shrink) );
   background-color: rgba(240, 240, 240, 1);
   cursor: default;
-}
-
-.btn-show-feedback-panel.btn-sketches {
-  left: 390px;
 }
 
 .sketch-spacer {

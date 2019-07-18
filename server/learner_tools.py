@@ -225,8 +225,9 @@ class Learner(object):
                 # show new learner information
                 self.update_pad()
                 # pause to ask user action before updating hood to show the propagation of labels
-                if self.config['hood']['show_hood'] and self.config['hood']['show_label_propagation']:
-                    self.pause_hood()
+                if self.config['hood']['show_hood']:
+                    if self.config['hood']['show_label_propagation']:
+                        self.pause_hood()
                     self.update_hood()
             else:
                 self.update_pad()
