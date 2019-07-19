@@ -73,6 +73,9 @@ class Logger(object):
         connection_info_filename = os.path.join(self.log_folder, 'connection_info.json')
         tools.save_json(connection_info_filename, connection_info)
 
+    def log_url_info(self, url_info):
+        url_info_filename = os.path.join(self.log_folder, 'url_info.json')
+        tools.save_json(url_info_filename, url_info)
 
     def save_learner_logs_to_file(self, learner_logs):
         learner_logs_folder = os.path.join(self.log_folder, LEARNER_LOGS_FOLDERNAME)

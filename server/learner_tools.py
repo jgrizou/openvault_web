@@ -68,6 +68,12 @@ class LearnerManager(Namespace):
         user_agent = request.user_agent
         self.spawn(room_id, full_config_filename, client_ip, user_agent)
 
+
+    def on_log_url_info(self, url_info):
+        room_id = request.sid
+        if room_id in self.learners:
+            self.learners[room_id].log_url_info(url_info)
+
     def on_pad_ready(self, pad_ready_state):
         room_id = request.sid
         if room_id in self.learners:
@@ -120,6 +126,7 @@ class Learner(object):
         ## init a Logger
         self.logger = logging_tools.Logger()
         self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
+        self.request_url_info()
         ## make sure pad is loaded before starting
         self.init_pad()
         ## initialize the algortihm
@@ -137,6 +144,12 @@ class Learner(object):
         self.update_pad()
         self.update_hood()
         self.update_flash_pattern()
+
+    def request_url_info(self):
+        self.socketio.emit('get_url_info', room=self.room_id)
+
+    def log_url_info(self, url_info):
+        self.logger.log_url_info(url_info)
 
     def init_pad(self):
         self.is_pad_ready = False
@@ -252,7 +265,7 @@ class Learner(object):
     def update_flash_pattern(self):
         self.socketio.emit(
             'update_flash',
-            self.learner.get_next_flash_pattern(planning_method='even_uncertainty'),
+            self.learner.get_next_flash_pattern(planning_method='web_ui'),
             room=self.room_id)
 
     def update_learner(self, feedback_info):

@@ -97,6 +97,12 @@ export default {
         this.$socket.emit('pad_clean', pad_clean_state)
       }
     },
+    get_url_info: function () {
+      var url_info = {}
+      url_info.referrer = document.referrer
+      url_info.href = document.location.href
+      this.$socket.emit('log_url_info', url_info)
+    },
     update_code: function (code_info) {
       if (code_info.apply_pause) {
         this.$refs.digit.show_digit = false
@@ -154,16 +160,22 @@ export default {
   methods: {
     handleResize: function (event) {
 
+      console.log('#######')
+      console.log(window.location)
+      console.log(window.parent.location)
+      console.log(document.referrer)
+      console.log(document.location.href)
+
       // iframe detection
-      // if ( window.location !== window.parent.location ) {
-      //   // The page is in an iframe
-      //   console.log('IFRAME')
-      //   current_width = window.innerWidth
-      //   current_height = window.innerHeight
-      // } else {
-      //   // The page is not in an iframe
-      //   console.log('DIRECT')
-      // }
+      if ( window.location !== window.parent.location ) {
+        // The page is in an iframe
+        console.log('IFRAME')
+        console.log(document.referrer)
+      } else {
+        // The page is not in an iframe
+        console.log('DIRECT')
+        console.log(document.location.href)
+      }
 
       var current_width = document.documentElement.clientWidth
       var current_height= document.documentElement.clientHeight

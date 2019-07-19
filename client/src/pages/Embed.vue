@@ -1,7 +1,9 @@
 <template>
+
   <div class="resp-vault">
     <iframe class="resp-iframe"  src="http://127.0.0.1:1234/#/ui/level_7_visible_nocheck.json" allow="microphone"></iframe>
   </div>
+
 </template>
 
 <script>
