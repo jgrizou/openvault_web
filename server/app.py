@@ -4,12 +4,13 @@ import os
 import inspect
 HERE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
+
 # we initialize the web server
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room
 
-from tools import SERVE_FOLDER, CONFIG_FOLDER, get_configs
-app = Flask(__name__, static_folder=SERVE_FOLDER, template_folder=SERVE_FOLDER, static_url_path='')
+from tools import APP_NAME, SERVE_FOLDER, CONFIG_FOLDER, get_configs
+app = Flask(APP_NAME, static_folder=SERVE_FOLDER, template_folder=SERVE_FOLDER, static_url_path='')
 
 socketio = SocketIO(app)
 
@@ -17,6 +18,7 @@ socketio = SocketIO(app)
 from learner_tools import LearnerManager
 learner_manager = LearnerManager(socketio)
 socketio.on_namespace(learner_manager)
+
 
 # when opening the root url, we server index.html that was compiled via npm in SERVE_FOLDER
 @app.route('/')
@@ -50,7 +52,16 @@ def on_get_configs():
     emit('set_configs', get_configs())
 
 
+# if ran from gunicorn make log works
+# from https://medium.com/@trstringer/logging-flask-and-gunicorn-the-manageable-way-2e6f0b8beb2f
+if __name__ != '__main__':
+    import logging
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
 
+
+# if ran using python app.py
 if __name__ == '__main__':
     print('Flask is running in python')
 
@@ -76,4 +87,4 @@ if __name__ == '__main__':
     # eventlet.monkey_patch(time=True)
     # eventlet.spawn(background_emit)
 
-    socketio.run(app, host='0.0.0.0')
+    socketio.run(app, host='0.0.0.0', debug=False)

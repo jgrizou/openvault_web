@@ -47,7 +47,7 @@ class Logger(object):
 
     def __init__(self):
         self.log_folder = generate_unique_log_folder()
-        print('Starting Logger at {}'.format(self.log_folder))
+        tools.log_app_info('Starting Logger at {}'.format(self.log_folder))
 
     def log_new_connnection(self, client_ip, user_agent, room_id, config_filename, config):
 

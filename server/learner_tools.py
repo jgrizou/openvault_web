@@ -14,10 +14,9 @@ import eventlet
 from flask import request
 from flask_socketio import Namespace, emit
 
+import tools
 import web_tools
 import logging_tools
-from tools import CONFIG_FOLDER, read_config
-
 
 from openvault import classifier_tools
 from openvault.discrete import DiscreteLearner
@@ -59,12 +58,18 @@ class LearnerManager(Namespace):
     def on_log(self, data):
         room_id = request.sid
         if room_id in self.learners:
-            print('[{}] {}'.format(self.learners[room_id].logger.log_folder, data))
+            tools.log_app_info('[{}] {}'.format(self.learners[room_id].logger.log_folder, data))
 
     def on_spawn_learner(self, config_filename):
         room_id = request.sid
-        full_config_filename = os.path.join(CONFIG_FOLDER, config_filename)
-        client_ip = request.remote_addr
+        full_config_filename = os.path.join(tools.CONFIG_FOLDER, config_filename)
+        ## client ip
+        # nginx fix from https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python/26654607#26654607
+        if 'X-Forwarded-For' in request.headers:
+            client_ip = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
+        else:
+            client_ip = request.remote_addr
+        ## browser info
         user_agent = request.user_agent
         self.spawn(room_id, full_config_filename, client_ip, user_agent)
 
@@ -119,9 +124,9 @@ class Learner(object):
         self.user_agent = user_agent
 
     def initialize(self):
-        print('[{}] Starting learner with room_id {}'.format(self.room_id, self.config_filename))
+        tools.log_app_info('[{}] Starting learner with {}'.format(self.room_id, self.config_filename))
         ##  read config
-        self.config = read_config(self.config_filename)
+        self.config = tools.read_config(self.config_filename)
         self.code_manager = CodeManager(self.config['code'])
         ## init a Logger
         self.logger = logging_tools.Logger()
@@ -130,9 +135,9 @@ class Learner(object):
         ## make sure pad is loaded before starting
         self.init_pad()
         ## initialize the algortihm
-        print('Initializing learner...')
+        tools.log_app_info('[{}] Initializing learner...'.format(self.room_id))
         self.init_learner()
-        print('Learner initialized.')
+        tools.log_app_info('[{}] Learner initialized.'.format(self.room_id))
 
         ## make sure all element are correctly displayed
         self.classifier_info_last_solved = None
@@ -286,7 +291,7 @@ class Learner(object):
             elif 'mp3' in feedback_info:
                 mp3_file = self.logger.save_mp3_to_file(feedback_info['mp3'])
 
-                print('Received {} from user'.format(mp3_file))
+                tools.log_app_info('[{}] Received {} from user'.format(self.room_id, mp3_file))
 
                 self.audio_transformer.add_feedback_mp3(mp3_file)
                 feedback_signals, _ = self.audio_transformer.get_feedback_signals()

@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import LevelSelection from './../pages/LevelSelection'
-import SPA from './../pages/SPA'
+import UI from './../pages/UI'
 import Embed from './../pages/Embed'
 
 Vue.use(Router)
@@ -15,8 +15,8 @@ export default new Router({
     },
     {
       path: '/ui/*',
-      name: 'SPA',
-      component: SPA
+      name: 'UI',
+      component: UI
     },
     {
       path: '/embed',

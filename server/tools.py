@@ -4,12 +4,19 @@ import os
 import inspect
 HERE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
+import logging
 import fnmatch
 import json
 
 # say the server where to serve the static files
+APP_NAME = 'vault'
 SERVE_FOLDER=os.path.normpath(os.path.join(HERE_PATH, '../client/dist'))
 CONFIG_FOLDER = os.path.join(HERE_PATH, 'configs')
+
+# logging
+def log_app_info(info_msg):
+    flask_logger = logging.getLogger(APP_NAME)
+    flask_logger.info(info_msg)
 
 
 def save_json(filename, data):
