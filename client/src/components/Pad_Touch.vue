@@ -1,14 +1,22 @@
 <template>
-  <div
-    ref="padtouch"
-    class="padtouch"
-    v-on:click="on_click"
-  >
+  <div>
 
     <div
-      ref="padborder"
-      class="padborder"
-    ></div>
+      ref="padtouch"
+      class="padcontinuous padtouch"
+      v-on:click="on_click"
+    >
+      <div
+        ref="padborder-top"
+        class="padborder-top"
+      ></div>
+
+      <div
+        ref="padborder-bottom"
+        class="padborder-bottom"
+      ></div>
+
+    </div>
 
   </div>
 </template>
@@ -162,6 +170,14 @@ export default {
       // var ripple_center_X = (1 - relative_click.y) * pad_width
       // var ripple_center_Y = relative_click.x * pad_height
 
+
+      //rippleContainer
+      var rippleContainer = document.createElement("div");
+      rippleContainer.className = 'ripple-container';
+      rippleContainer.style.width   = pad_width + "px";
+      rippleContainer.style.height  = pad_height + "px";
+      pad_elem.appendChild(rippleContainer);
+
       //Ripple
       var rippleEffect = document.createElement("div");
       rippleEffect.className = 'ripple-effect';
@@ -169,14 +185,7 @@ export default {
       rippleEffect.style.top  = ripple_center_Y - start_radius+ "px";
       rippleEffect.style.width  = start_radius * 2 + "px";
       rippleEffect.style.height = start_radius * 2 + "px";
-
-      //rippleContainer
-      var rippleContainer = document.createElement("div");
-      rippleContainer.className = 'ripple-container';
       rippleContainer.appendChild(rippleEffect);
-      rippleContainer.style.width   = pad_width + "px";
-      rippleContainer.style.height  = pad_height + "px";
-      pad_elem.appendChild(rippleContainer);
 
       // timeout needed to ensure the previous is applied first
       setTimeout(function() {
@@ -184,7 +193,7 @@ export default {
            rippleEffect.style.top    = ripple_center_Y - end_radius + "px";
            rippleEffect.style.width  = end_radius * 2 + "px";
            rippleEffect.style.height = end_radius * 2 + "px";
-       }, 0);
+       }, 20);  // 0 would do but we need a bit more of a delay for firefox
 
        setTimeout(function() {
            rippleEffect.style.backgroundColor = "rgba(0, 0, 0, 0)";
@@ -205,22 +214,39 @@ export default {
 :root {
   --pad_height_shrink: 30px;
   --pad_border_width: 2px;
+  --pad_border_color: rgba(165, 165, 165, 1);
+
+  --pad_top_with_shrink: var(--pad_height_shrink);
+  --pad_height_with_shrink: calc( var(--pad_height) - var(--pad_height_shrink) );
+}
+
+.padcontinuous {
+  position: absolute;
+  top: var(--pad_height_shrink);
+  width: var(--screen_width);
+  height: var(--pad_height_with_shrink);
+  background-color: rgba(240, 240, 240, 1);
 }
 
 .padtouch {
-  position: absolute;
-  top: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
-  height: calc( var(--pad_height) - var(--pad_height_shrink) );
-  background-color: rgba(66, 65, 78, 0.1);
   cursor: crosshair;
 }
 
-.padborder {
+.padborder-top {
   position: absolute;
   top: 0;
-  width: calc( var(--screen_width));
+  width: var(--screen_width);
   height: var(--pad_border_width);
-  background-color: rgba(66, 65, 78, 0.5);
+  background-color: var(--pad_border_color);
+  z-index: 1;
+}
+
+.padborder-bottom {
+  position: absolute;
+  top: var(--pad_height_with_shrink);
+  width: var(--screen_width);
+  height: var(--pad_border_width);
+  background-color: var(--pad_border_color);
   z-index: 1;
 }
 
@@ -262,11 +288,11 @@ export default {
     left: 0;
     width: 0;
     height: 0;
-    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 50%;
     pointer-events: none;
-    z-index: 9999;
     background-color: rgba(66, 65, 78, 0.35);
+    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1) 0s;
+    z-index: 9999;
 }
 
 </style>

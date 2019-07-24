@@ -1,82 +1,93 @@
 <template>
-  <div
-    id="paddraw"
-    ref="paddraw"
-    class="paddraw"
-  >
-
-    <canvas
-      id="drawing-canvas"
-      class="drawing-canvas"
-      width="1000px"
-      height="1000px"
-      v-on:mousedown="on_mousedown"
-      v-on:mouseup="on_mouseup"
-      v-on:mousemove="on_mousemove"
-      v-on:mouseleave="on_mouseleave"
-    ></canvas>
-
+  <div>
     <div
-      ref="padborder"
-      class="padborder"
-    ></div>
+      id="paddraw"
+      ref="paddraw"
+      class="padcontinuous paddraw"
+    >
 
-    <transition name="slide-feedback-btn">
-      <div v-show="feedback_show_btn_active">
+      <canvas
+        id="drawing-canvas"
+        class="drawing-canvas"
+        width="1000px"
+        height="1000px"
+        v-on:mousedown="on_mousedown"
+        v-on:mouseup="on_mouseup"
+        v-on:mousemove="on_mousemove"
+        v-on:mouseleave="on_mouseleave"
+        v-on:touchstart="on_touchstart"
+        v-on:touchend="on_touchend"
+        v-on:touchcancel="on_touchcancel"
+        v-on:touchleave="on_touchleave"
+        v-on:touchmove="on_touchmove"
+      ></canvas>
 
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
-          v-on:click="feedback_panel_soundtracks_active = true"
-        >Show history</button>
+      <div
+        ref="padborder-top"
+        class="padborder-top"
+      ></div>
 
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
-          v-on:click="feedback_panel_embedding_active = true"
-        >Show map</button>
+      <div
+        ref="padborder-bottom"
+        class="padborder-bottom"
+      ></div>
 
-      </div>
-    </transition>
+      <transition name="slide-feedback-btn">
 
-    <transition name="slide-feedback-panel">
-
-      <div v-show="feedback_panel_soundtracks_active">
-        <div
-          ref="padborder"
-          class="padborder"
-        ></div>
-        <div
-          id="sketches-feedback-panel"
-          class="sketches-feedback-panel"
-        >
+        <div v-show="feedback_show_btn_active">
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_right"
+            v-on:click="feedback_panel_sketches_active = true"
+          >Show history</button>
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_left"
+            v-on:click="feedback_panel_embedding_active = true"
+          >Show map</button>
         </div>
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
-          v-on:click="feedback_panel_soundtracks_active = false"
-        >Hide history</button>
-      </div>
 
-    </transition>
+      </transition>
 
-    <transition name="slide-feedback-panel">
+      <transition name="slide-feedback-panel">
 
-      <div v-show="feedback_panel_embedding_active">
-        <div
-          ref="padborder"
-          class="padborder"
-        ></div>
-        <div
-          id="embedding-feedback-panel"
-          class="embedding-feedback-panel"
-        >
+        <div v-show="feedback_panel_sketches_active">
+          <div
+            ref="padborder"
+            class="padborder"
+          ></div>
+          <div
+            id="sketches-feedback-panel"
+            class="feedback-panel sketches-feedback-panel"
+          >
+          </div>
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_right"
+            v-on:click="feedback_panel_sketches_active = false"
+          >Hide history</button>
         </div>
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
-          v-on:click="feedback_panel_embedding_active = false"
-        >Hide map</button>
-      </div>
 
-    </transition>
+      </transition>
 
+      <transition name="slide-feedback-panel">
+
+        <div v-show="feedback_panel_embedding_active">
+          <div
+            ref="padborder"
+            class="padborder"
+          ></div>
+          <div
+            id="embedding-feedback-panel"
+            class="feedback-panel embedding-feedback-panel"
+          >
+          </div>
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_left"
+            v-on:click="feedback_panel_embedding_active = false"
+          >Hide map</button>
+        </div>
+
+      </transition>
+
+    </div>
   </div>
 </template>
 
@@ -104,7 +115,7 @@ export default {
       drawing_history_location: [],
       classifier_map: undefined,
       feedback_show_btn_active: false,
-      feedback_panel_soundtracks_active: false,
+      feedback_panel_sketches_active: false,
       feedback_panel_embedding_active: false
     }
   },
@@ -132,7 +143,7 @@ export default {
       this.classifier_map = undefined
 
       this.feedback_show_btn_active = false
-      this.feedback_panel_soundtracks_active = false
+      this.feedback_panel_sketches_active = false
       this.feedback_panel_embedding_active = false
     },
     update_pad_info: function (pad_info) {
@@ -155,8 +166,6 @@ export default {
       this.clear_paddraw()
       var canvas = document.getElementById('drawing-canvas');
       this.draw_trajectory_to_canvas(canvas, this.current_drawing, 20, 'rgb(200,200,200)')
-
-      console.log(pad_info)
     },
     clear_paddraw: function () {
       var canvas = document.getElementById('drawing-canvas');
@@ -195,16 +204,67 @@ export default {
       context.closePath();
     },
     get_relative_cursor_position: function (event) {
+
+      var clientX = undefined
+      var clientY = undefined
+
+      // if touch screen
+      if (event.targetTouches) {
+        clientX = event.targetTouches[0].clientX
+        clientY = event.targetTouches[0].clientY
+      } else {
+        clientX = event.clientX
+        clientY = event.clientY
+      }
+
       var pad_elem = this.$refs.paddraw
       var pad_rect = pad_elem.getBoundingClientRect()
 
       var relative_cursor_position = {}
-      relative_cursor_position.x = (event.clientX - pad_rect.x) / pad_rect.width
-      relative_cursor_position.y = (event.clientY - pad_rect.y) / pad_rect.height
+      relative_cursor_position.x = (clientX - pad_rect.x) / pad_rect.width
+      relative_cursor_position.y = (clientY - pad_rect.y) / pad_rect.height
 
       return relative_cursor_position
     },
+    on_mousedown: function (event) {
+      this.start_recording(event)
+    },
     on_mousemove: function (event) {
+      this.update_recording(event)
+    },
+    on_mouseup: function (event) {
+      this.stop_recording(event)
+    },
+    on_mouseleave: function (event) {
+      this.stop_recording(event)
+    },
+    on_touchstart: function(event){
+      this.start_recording(event)
+    },
+    on_touchend: function(event){
+      this.stop_recording(event)
+    },
+    on_touchcancel: function(event){
+      this.stop_recording(event)
+    },
+    on_touchleave: function(event){
+      this.stop_recording(event)
+    },
+    on_touchmove: function(event){
+      this.update_recording(event)
+    },
+    start_recording: function(event) {
+      // do not listen to clicks when pad is disabled
+      if (this.disabled) {
+          return
+      }
+
+      this.clear_paddraw()
+      this.current_drawing = []
+      this.last_cursor_position_on_pad = this.get_relative_cursor_position(event)
+      this.is_recording_drawing = true
+    },
+    update_recording: function(event) {
 
       if (this.is_recording_drawing) {
 
@@ -217,17 +277,7 @@ export default {
 
         this.last_cursor_position_on_pad = relative_cursor_position
       }
-    },
-    on_mousedown: function (event) {
-      // do not listen to clicks when pad is disabled
-      if (this.disabled) {
-          return
-      }
 
-      this.clear_paddraw()
-      this.current_drawing = []
-      this.last_cursor_position_on_pad = this.get_relative_cursor_position(event)
-      this.is_recording_drawing = true
     },
     stop_recording: function (event) {
       if (this.disabled) {
@@ -236,21 +286,16 @@ export default {
 
       if (this.is_recording_drawing) {
         this.is_recording_drawing = false
-        this.drawing_history.push(this.current_drawing)
 
         // only if something happened, will be empty if the user just clicks without moving
         if (this.current_drawing.length > 0) {
+          this.drawing_history.push(this.current_drawing)
+
           var draw_info = {}
           draw_info.drawing = this.current_drawing
           this.callback(draw_info)
         }
       }
-    },
-    on_mouseup: function (event) {
-      this.stop_recording()
-    },
-    on_mouseleave: function (event) {
-      this.stop_recording()
     },
     show_sketches_history: function () {
       if (this.drawing_history_color.length) {
@@ -335,7 +380,7 @@ export default {
         var point_color = undefined
         var color_name =  this.drawing_history_color[index]
         if (color_name == 'neutral') {
-          point_color = "rgba(255, 255, 255, 0)"
+          point_color = "rgba(255, 255, 255, 1)"
         } else if (color_name == 'flash') {
           point_color = getComputedStyle(document.documentElement).getPropertyValue('--on_color');
         } else if (color_name == 'noflash') {
@@ -362,10 +407,6 @@ export default {
 }
 
 .paddraw {
-  position: absolute;
-  top: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
-  height: calc( var(--pad_height) - var(--pad_height_shrink) );
-  background-color: rgba(240, 240, 240, 1);
   cursor: url(../assets/pen.svg) 10 30, crosshair;
 }
 
@@ -375,17 +416,92 @@ export default {
   height: calc( var(--pad_height) - var(--pad_height_shrink) );
 }
 
-/* feedback sketeches panel */
+/* feedback panel */
 
-.sketches-feedback-panel {
+.feedback-panel{
   position: absolute;
-  overflow:auto;
   top: 0px;
   left: 0px;
   width: var(--screen_width);
-  height: calc( var(--pad_height) - var(--pad_height_shrink) );
+  height: var(--pad_height_with_shrink);
   background-color: rgba(240, 240, 240, 1);
   cursor: default;
+}
+
+.slide-feedback-panel-enter-active, .slide-feedback-panel-leave-active {
+  transition: all .5s ease-in-out;
+}
+
+.slide-feedback-panel-enter, .slide-feedback-panel-leave-to {
+  transform: translateY(var(--pad_height_with_shrink));
+}
+
+/* Feedback panel button and animation css */
+
+:root {
+  --btn_feedback_panel_width: 60px;
+  --btn_feedback_panel_height: 40px;
+  --btn_feedback_panel_top: calc(var(--pad_height_with_shrink) - var(--btn_feedback_panel_height));
+
+  --btn_feedback_panel_right_left: calc(var(--screen_width) - var(--btn_feedback_panel_width));
+  --btn_feedback_panel_left_left: 0px;
+}
+
+.btn-show-feedback-panel {
+  position: absolute;
+  top: var(--btn_feedback_panel_top);
+  width: var(--btn_feedback_panel_width);
+  height: var(--btn_feedback_panel_height);
+  text-align: center;
+  vertical-align: middle;
+  font-size: 12px;
+  font-weight: 400;
+  outline: none; /* remove contour when clicked */
+  box-shadow: none;
+  border-style: solid;
+  border-color: var(--pad_border_color);
+  color: rgba(0, 0, 0, 1);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.btn-show-feedback-panel:hover {
+  background-color: rgba(200, 200, 200, 1);
+}
+
+.btn-show-feedback-panel:active {
+  border-color: rgba(100, 100, 100, 1);
+  background-color: var(--pad_border_color);
+}
+
+.btn_feedback_panel_right {
+  border-radius: 10px 0 0 0;
+  border-width: 2px 0 0 2px;
+  left: var(--btn_feedback_panel_right_left);
+}
+
+.btn_feedback_panel_left {
+  border-radius: 0 10px 0 0;
+  border-width: 2px 2px 0 0;
+  left: var(--btn_feedback_panel_left_left);
+}
+
+.slide-feedback-btn-enter-active {
+  transition: all 1s ease-out;
+}
+
+.slide-feedback-btn-leave-active {
+  transition: all .5s ease-in-out;
+}
+
+.slide-feedback-btn-enter, .slide-feedback-btn-leave-to {
+  transform: translateY(var(--btn_feedback_panel_height));
+}
+
+
+/* feedback sketches panel */
+
+.sketches-feedback-panel {
+  overflow:auto;
 }
 
 .sketch-spacer {
@@ -410,6 +526,23 @@ export default {
 .sketch-canvas-embedding {
   position: absolute;
 }
+
+/* embedding panel */
+
+.embedding-map-container {
+  width: 100%;
+  height: 100%;
+}
+
+.signal-locator {
+    position: absolute;
+    border-radius: 10%;
+    border-style: solid;
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, 0.85);
+    pointer-events: none;
+}
+
 
 </style>
 

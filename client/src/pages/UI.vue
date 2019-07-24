@@ -8,7 +8,6 @@
     <!-- reset panel appears only when needed -->
     <Reset ref="reset" :callback="reset"></Reset>
 
-
     <!-- level components -->
     <div v-if="pad_type == '1x2'">
       <Pad12 ref="pad" class="pad" :callback="discrete_pad_callback"></Pad12>
@@ -281,8 +280,6 @@ export default {
   --shadow_full: 12px;
   --shadow_min: 3px;
   --shadow_diff: calc( var(--shadow_full) - var(--shadow_min) );
-
-  --btn_spacing: 10px;
 }
 
 .ui {

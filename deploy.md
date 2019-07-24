@@ -152,6 +152,7 @@ npm run build
 
 // allow connection to port 5000
 $ sudo ufw allow 5000
+$ sudo ufw --force enable
 
 // remember to change the websocket port in client/src/main.js to SERVERIP:5000
 
@@ -160,6 +161,11 @@ cd /home/jgrizou/workspace/openvault_web/server
 
 // then connect to SERVERIP:5000, logs should display on your terminal
 
+// remenber to delete ufw rules once disconnect
+
+$ sudo ufw status numbered
+$ sudo ufw delete 0INDEXTODELETE
+$ sudo ufw --force enable
 
 ## supervisor config
 
@@ -167,7 +173,7 @@ sudo nano /etc/supervisor/conf.d/openvault.conf
 
 ```
 [program:openvault]
-command=/home/jgrizou/miniconda3/envs/openvault_deploy/bin/gunicorn --bind localhost:8000 --capture-output --worker-class eventlet -w 1 app:app
+command=/home/jgrizou/miniconda3/envs/openvault_deploy/bin/gunicorn --bind localhost:8000 --capture-output --log-level info --worker-class eventlet -w 1 app:app
 directory=/home/jgrizou/workspace/openvault_web/server
 user=jgrizou
 autostart=true

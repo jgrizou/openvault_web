@@ -65,22 +65,29 @@ export default {
 
 <style>
 /* global styles */
+:root {
+  --btn_side_margin: 40px;
+  --btn_top_margin: 50px;
+  --btn_spacing: 10px;
+
+  --btn_1x2_top_margin: 50px;
+}
 
 .btn-elongated {
   position: absolute;
-  top: 50px;
-  width: 195px;
-  height: 350px;
+  top: var(--btn_1x2_top_margin);
+  width: calc((var(--screen_width) - 2*var(--btn_side_margin) - var(--btn_spacing)) / 2 );
+  height: calc( var(--pad_height) - 2*var(--btn_1x2_top_margin));
   outline: none;
   border: none;
 }
 
 .btn-elongated-0 {
-  left: 40px;
+  left: var(--btn_side_margin);
 }
 
 .btn-elongated-1 {
-  right: 40px;
+  right: var(--btn_side_margin);
 }
 
 </style>

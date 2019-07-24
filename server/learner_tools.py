@@ -23,8 +23,11 @@ from openvault.discrete import DiscreteLearner
 from openvault.continuous import ContinuousLearner
 
 from audio_features.openvault_tools import AudioVaultSignal
-
 from sketch_features.openvault_tools import SketchVaultSignal
+
+# for https://github.com/lmcinnes/umap/issues/252
+import warnings
+warnings.filterwarnings('ignore')
 
 
 MEANING_TO_COLOR = {}

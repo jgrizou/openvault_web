@@ -1,82 +1,83 @@
 <template>
+  <div>
 
-  <div
-    ref="padaudio"
-    class="padaudio"
-  >
+    <div
+      ref="padaudio"
+      class="padcontinuous padaudio"
+    >
 
-    <button
-      class="btn-micro btn-micro-ready"
-      v-on:mousedown="on_mousedown"
-    ></button>
+      <button
+        class="btn-micro btn-micro-ready"
+        v-on:mousedown="on_mousedown"
+      ></button>
 
-    <button
-      class="btn-micro btn-micro-disabled"
-      v-show="disabled"
-    ></button>
+      <button
+        class="btn-micro btn-micro-disabled"
+        v-show="disabled"
+      ></button>
 
-    <button
-      id="audio-btn-micro-active"
-      class="btn-micro btn-micro-active"
-      v-show="show_button_active"
-    ></button>
+      <button
+        id="audio-btn-micro-active"
+        class="btn-micro btn-micro-active"
+        v-show="show_button_active"
+      ></button>
 
-    <transition name="slide-feedback-btn">
-      <div v-show="feedback_show_btn_active">
+      <transition name="slide-feedback-btn">
+        <div v-show="feedback_show_btn_active">
 
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
-          v-on:click="feedback_panel_soundtracks_active = true"
-        >Show history</button>
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_right"
+            v-on:click="feedback_panel_soundtracks_active = true"
+          >Show history</button>
 
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
-          v-on:click="feedback_panel_embedding_active = true"
-        >Show map</button>
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_left"
+            v-on:click="feedback_panel_embedding_active = true"
+          >Show map</button>
 
-      </div>
-    </transition>
-
-    <transition name="slide-feedback-panel">
-
-      <div v-show="feedback_panel_soundtracks_active">
-        <div
-          ref="padborder"
-          class="padborder"
-        ></div>
-        <div
-          id="soundtracks-feedback-panel"
-          class="soundtracks-feedback-panel"
-        >
         </div>
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_right"
-          v-on:click="feedback_panel_soundtracks_active = false"
-        >Hide history</button>
-      </div>
+      </transition>
 
-    </transition>
+      <transition name="slide-feedback-panel">
 
-    <transition name="slide-feedback-panel">
-
-      <div v-show="feedback_panel_embedding_active">
-        <div
-          ref="padborder"
-          class="padborder"
-        ></div>
-        <div
-          id="embedding-feedback-panel"
-          class="embedding-feedback-panel"
-        >
+        <div v-show="feedback_panel_soundtracks_active">
+          <div
+            ref="padborder"
+            class="padborder"
+          ></div>
+          <div
+            id="soundtracks-feedback-panel"
+            class="feedback-panel soundtracks-feedback-panel"
+          >
+          </div>
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_right"
+            v-on:click="feedback_panel_soundtracks_active = false"
+          >Hide history</button>
         </div>
-        <button
-          class="btn-show-feedback-panel noselect btn_feedback_panel_left"
-          v-on:click="feedback_panel_embedding_active = false"
-        >Hide map</button>
-      </div>
 
-    </transition>
+      </transition>
 
+      <transition name="slide-feedback-panel">
+
+        <div v-show="feedback_panel_embedding_active">
+          <div
+            ref="padborder"
+            class="padborder"
+          ></div>
+          <div
+            id="embedding-feedback-panel"
+            class="feedback-panel embedding-feedback-panel"
+          >
+          </div>
+          <button
+            class="btn-show-feedback-panel noselect btn_feedback_panel_left"
+            v-on:click="feedback_panel_embedding_active = false"
+          >Hide map</button>
+        </div>
+
+      </transition>
+    </div>
 
   </div>
 
@@ -333,13 +334,6 @@ export default {
 /* Recording button css */
 
 :root {
-  --pad_height_shrink: 30px;
-  --pad_border_width: 2px;
-  --pad_border_color: rgba(165, 165, 165, 1);
-
-  --pad_top_with_shrink: calc( var(--display_height) + var(--digit_height) + var(--pad_height_shrink) );
-  --pad_height_with_shrink: calc( var(--pad_height) - var(--pad_height_shrink) );
-
   --micro_diameter: 150px;
   --micro_logo_size: calc( var(--micro_diameter) / 3 );
   --micro_top: calc( (var(--pad_height_with_shrink) - var(--micro_diameter)) / 3);
@@ -347,11 +341,8 @@ export default {
 }
 
 .padaudio {
-  position: absolute;
-  top: var(--pad_top_with_shrink);
-  height: var(--pad_height_with_shrink);
+  background-color: rgba(255, 255, 255, 1);
 }
-
 
 .btn-micro {
   position: absolute;
@@ -401,93 +392,11 @@ export default {
   }
 }
 
-/* Feedback panel animation css */
-
-.slide-feedback-panel-enter-active, .slide-feedback-panel-leave-active {
-  transition: all .5s ease-in-out;
-}
-
-.slide-feedback-panel-enter, .slide-feedback-panel-leave-to {
-  transform: translateY(var(--pad_height_with_shrink));
-}
-
-
-:root {
-  --btn_feedback_panel_width: 60px;
-  --btn_feedback_panel_height: 40px;
-  --btn_feedback_panel_top: calc(var(--pad_height_with_shrink) - var(--btn_feedback_panel_height));
-
-  --btn_feedback_panel_right_left: calc(var(--screen_width) - var(--btn_feedback_panel_width));
-  --btn_feedback_panel_left_left: 0px;
-}
-
-.btn-show-feedback-panel {
-  position: absolute;
-  top: var(--btn_feedback_panel_top);
-  width: var(--btn_feedback_panel_width);
-  height: var(--btn_feedback_panel_height);
-  text-align: center;
-  vertical-align: middle;
-  font-size: 12px;
-  font-weight: 400;
-  outline: none; /* remove contour when clicked */
-  box-shadow: none;
-  border-style: solid;
-  border-color: var(--pad_border_color);
-  color: rgba(0, 0, 0, 1);
-  background-color: rgba(255, 255, 255, 1);
-}
-
-.btn-show-feedback-panel:hover {
-  background-color: rgba(200, 200, 200, 1);
-}
-
-.btn-show-feedback-panel:active {
-  border-color: rgba(100, 100, 100, 1);
-  background-color: var(--pad_border_color);
-}
-
-.btn_feedback_panel_right {
-  border-radius: 10px 0 0 0;
-  border-width: 2px 0 0 2px;
-  left: var(--btn_feedback_panel_right_left);
-}
-
-.btn_feedback_panel_left {
-  border-radius: 0 10px 0 0;
-  border-width: 2px 2px 0 0;
-  left: var(--btn_feedback_panel_left_left);
-}
-
-.slide-feedback-btn-enter-active {
-  transition: all 1s ease-out;
-}
-
-.slide-feedback-btn-leave-active {
-  transition: all .5s ease-in-out;
-}
-
-.slide-feedback-btn-enter, .slide-feedback-btn-leave-to {
-  transform: translateY(var(--btn_feedback_panel_height));
-}
-
-
 /* soundtrack panel */
 
 .soundtracks-feedback-panel {
-  position: absolute;
   overflow:auto;
-  top: 0px;
-  left: 0px;
-  width: var(--screen_width);
-  height: var(--pad_height_with_shrink);
-  background-color: rgba(240, 240, 240, 1);
-  cursor: default;
 }
-
-
-/* Feedback sounds css */
-
 
 .soundtracks-feedback-panel span.controls__current-time {
   display: none
@@ -537,26 +446,6 @@ export default {
   font-size: 20px;
 }
 
-/* embedding panel */
-
-.embedding-feedback-panel {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: var(--screen_width);
-  height: var(--pad_height_with_shrink);
-  background-color: rgba(240, 240, 240, 1);
-  cursor: default;
-}
-
-
-
-.embedding-map-container {
-  width: 100%;
-  height: 100%;
-}
-
-
 /* embedding css */
 
 .embedding-feedback-panel span.controls__current-time {
@@ -594,26 +483,6 @@ export default {
   font-weight: 600;
   font-size: 20px;
 }
-
-.signal-locator {
-    position: absolute;
-    border-radius: 10%;
-    border-style: solid;
-    border-width: 2px;
-    border-color: rgba(0, 0, 0, 0.85);
-    pointer-events: none;
-}
-
-
-.padborder {
-  position: absolute;
-  top: 0;
-  width: calc( var(--screen_width));
-  height: var(--pad_border_width);
-  background-color: var(--pad_border_color);
-  z-index: 1;
-}
-
 
 .audio-spacer {
   height: 20px;

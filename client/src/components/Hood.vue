@@ -500,6 +500,7 @@ export default {
   height: var(--hood_height);
   background-color: rgba(255, 255, 255, 1);
   border-left: var(--hyp_border_width) solid rgba(66, 65, 78, 0.5);
+  border-bottom: var(--hyp_border_width) solid rgba(66, 65, 78, 0.5);
 }
 
 .hyp {
