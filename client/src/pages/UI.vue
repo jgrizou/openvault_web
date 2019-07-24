@@ -1,9 +1,12 @@
 <template>
   <div class="ui" id="ui">
 
+    <Display ref="display" class="display"></Display>
+
     <Digit ref="digit" class="digit"></Digit>
 
-    <Display ref="display" class="display"></Display>
+    <!-- Big Reset Button -->
+    <DigitButton ref="digitbutton" :callback="reset">Restart</DigitButton>
 
     <!-- reset panel appears only when needed -->
     <Reset ref="reset" :callback="reset"></Reset>
@@ -47,6 +50,7 @@
 import Check from './../components/Check.vue'
 import Display from './../components/Display.vue'
 import Digit from './../components/Digit.vue'
+import DigitButton from './../components/Digit_Button.vue'
 import Reset from './../components/Reset.vue'
 import Pad12 from './../components/Pad_1x2.vue'
 import Pad12Random from './../components/Pad_1x2_RandomPadColor.vue'
@@ -58,7 +62,7 @@ import Hood from './../components/Hood.vue'
 
 export default {
   name: 'UI',
-  components: { Check, Display, Digit, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, Hood},
+  components: { Check, Display, Digit, DigitButton, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, Hood},
   data() {
     return {
       pad_type: undefined,
@@ -80,6 +84,7 @@ export default {
     init_pad: function (pad_info) {
       this.pad_type = pad_info.type
       this.$refs.reset.force_hide = false
+      this.$refs.digitbutton.show = false
     },
     is_pad_ready: function () {
       var pad_ready_state = this.$refs.pad != undefined
@@ -151,6 +156,9 @@ export default {
       // but to ensure the pad can no more be used, we also force the pad to stop
       this.$refs.pad.stopped = true  // yet another way to stop the pad to respond
       this.$refs.pad.awaiting_flash = false
+
+      // show a big restart button
+      this.$refs.digitbutton.show = true
     },
     check: function (check_state) {
       this.show_check_panel(check_state)
@@ -372,6 +380,7 @@ export default {
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
 }
+
 
 </style>
 

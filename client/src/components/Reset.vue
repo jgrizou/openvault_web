@@ -62,7 +62,7 @@ export default {
 /* global styles */
 
 :root {
-  --reset_height: 20px
+  --reset_height: 30px
 }
 
 .reset {

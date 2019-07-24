@@ -230,7 +230,7 @@ class Learner(object):
         if self.code_manager.is_code_decoded():
             raise Exception('Should never get there, problem on web interface side sedning a step when it should be disabled')
         else:
-            self.update_iteration(self.n_iteration + 1)
+            self.update_iteration(new_iteration_value=self.n_iteration + 1)
 
             self.update_learner(feedback_info)
             self.update_hood()

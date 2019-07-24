@@ -21,24 +21,20 @@
       </div>
     </div>
 
-    <div v-if="show_button">
-      <div class="hide_digit"></div>
-      <button
-        class="hood_pause_button noselect"
-        v-on:click="on_unpause_click">
-        Continue
-      </button>
-    </div>
+    <DigitButton ref="hoodbutton" :callback="on_unpause_click">Continue</DigitButton>
 
   </div>
 
 </template>
 
 <script>
+import DigitButton from './../components/Digit_Button.vue'
+
 const Interpolator = require('color-interpolate');
 
 export default {
   name: "Hood",
+  components: { DigitButton},
   props: {
     pad_type: {
       type: String,
@@ -49,7 +45,6 @@ export default {
   data() {
     return {
       active: false,
-      show_button: false,
       n_hypothesis: 10,
       discrete_pad_list: ['1x2', '1x2_random', '3x3'],
       continuous_pad_list: ['touch', 'draw', 'audio'],
@@ -58,15 +53,15 @@ export default {
   },
   methods: {
     apply_pause: function () {
-      this.show_button = true
+      this.$refs.hoodbutton.show = true
     },
     on_unpause_click: function () {
       this.$socket.emit('hood_pause_end')
-      this.show_button = false
+      this.$refs.hoodbutton.show = false
     },
     update_hood_info: function(hood_info) {
       this.active = true
-      this.show_button = false
+      this.$refs.hoodbutton.show = false
 
       console.log(this.pad_type)
       console.log(hood_info)
@@ -447,49 +442,6 @@ export default {
   --hood_pad_container_width: calc( var(--hood_display_width) - 2*var(--hood_pad_margin));
   --hood_pad_container_height: calc( var(--hyp_container_height) - 2*var(--hood_pad_margin));
   --hood_pad_button_margin: 2px;
-
-  --hood_pause_btn_margin_top: 15px;
-  --hood_pause_btn_margin_side: 60px;
-  --hood_pause_top: calc(var(--display_height) - var(--shadow_diff) + var(--hood_pause_btn_margin_top));
-  --hood_pause_left: var(--hood_pause_btn_margin_side);
-  --hood_pause_btn_width: calc(var(--screen_width) - 2*var(--hood_pause_btn_margin_side));
-  --hood_pause_btn_height: calc(var(--digit_height) - 2*var(--hood_pause_btn_margin_top));
-}
-
-.hide_digit {
-  position: absolute;
-  top: var(--display_height);
-  left: 0px;
-  width: var(--screen_width);
-  height: var(--digit_height);
-  outline: none; /* remove contour when clicked */
-  border: none;
-  background-color: rgba(255, 255, 255, 1);
-}
-
-.hood_pause_button {
-  position: absolute;
-  top: var(--hood_pause_top);
-  left: var(--hood_pause_left);
-  width: var(--hood_pause_btn_width);
-  height: var(--hood_pause_btn_height);
-  outline: none; /* remove contour when clicked */
-  border: none;
-  border-radius: 30px;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 50px;
-  font-weight: 600;
-  color: rgba(50, 50, 50, 1);
-  background-color: rgba(230, 230, 230, 1);
-  box-shadow: 0 var(--shadow_full) rgba(150, 150, 150, 1);
-}
-
-.hood_pause_button:active {
-  color: rgba(0, 0, 0, 1);
-  background-color: rgba(210, 210, 210, 1);
-  box-shadow: 0 var(--shadow_min) rgba(100, 100, 100, 1);
-  transform: translateY(var(--shadow_diff));
 }
 
 .hood {
