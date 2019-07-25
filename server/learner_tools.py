@@ -134,6 +134,8 @@ class Learner(object):
         ## init a Logger
         self.logger = logging_tools.Logger()
         self.logger.log_new_connnection(self.client_ip, self.user_agent, self.room_id, self.config_filename, self.config)
+        tools.log_app_info('[{}] Started Logger at {}'.format(self.room_id, self.logger.log_folder))
+        ## request url displayed on page
         self.request_url_info()
         ## make sure pad is loaded before starting
         self.init_pad()
@@ -152,6 +154,10 @@ class Learner(object):
         self.update_pad()
         self.update_hood()
         self.update_flash_pattern()
+
+
+
+
 
     def request_url_info(self):
         self.socketio.emit('get_url_info', room=self.room_id)
@@ -236,7 +242,9 @@ class Learner(object):
             self.update_hood()
 
             if self.learner.is_inconsistent():
-                self.socketio.emit('check', 'inconsistent', room=self.room_id)
+                check_info = {}
+                check_info['state'] = 'inconsistent'
+                self.socketio.emit('check', check_info, room=self.room_id)
 
             if self.learner.is_solved():
                 # get the code info
@@ -255,10 +263,12 @@ class Learner(object):
 
             if self.code_manager.is_code_decoded():
                 if self.code_manager.is_check_procedure_required():
+                    check_info = {}
                     if self.code_manager.is_code_valid():
-                        self.socketio.emit('check', 'valid', room=self.room_id)
+                        check_info['state'] = 'valid'
                     else:
-                        self.socketio.emit('check', 'invalid', room=self.room_id)
+                        check_info['state'] = 'invalid'
+                    self.socketio.emit('check', check_info, room=self.room_id)
                 else:
                     ## this is required for cleaning some UI things neatly on the client side
                     self.socketio.emit('no_check', room=self.room_id)

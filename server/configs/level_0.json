@@ -1,9 +1,9 @@
 {
-  "name": "Level 2 - Visible - No Check",
+  "name": "Level 0",
   "code": {
-    "secret_code": [0, 0, 0, 0],
+    "secret_code": [8, 0, 1, 2],
     "show_code": true,
-    "check_code": false
+    "check_code": true
   },
   "learner": {
     "type": "discrete",
@@ -15,8 +15,12 @@
     "accumulate_known_symbols_between_numbers": false
   },
   "pad": {
-    "type": "1x2_random",
+    "type": "1x2",
     "n_pad": 2,
     "show_learning_progress": false
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false
   }
 }

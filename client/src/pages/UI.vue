@@ -35,7 +35,7 @@
     </div>
 
     <!-- check panel appears only when needed -->
-    <Check ref="check" :callback="hide_check_panel"></Check>
+    <Check ref="check" :callback="reset"></Check>
 
     <!-- hood panel appear once pad_type defined -->
     <div v-if="pad_type">
@@ -150,6 +150,9 @@ export default {
     pause_hood: function() {
       this.$refs.hood.apply_pause()
     },
+    check: function (check_info) {
+      this.show_check_panel(check_info)
+    },
     no_check: function () {
       // when there is no check, we do not update the flashing update_flash_pattern and the update_code might get stuck into a setInterval
       // just to be neat we will force awaiting_flash to true to stop that setInterval to run in the background
@@ -159,9 +162,6 @@ export default {
 
       // show a big restart button
       this.$refs.digitbutton.show = true
-    },
-    check: function (check_state) {
-      this.show_check_panel(check_state)
     }
   },
   methods: {
@@ -250,10 +250,7 @@ export default {
     },
     show_check_panel: function (check_state) {
       this.$refs.reset.force_hide = true
-      this.$refs.check.start(check_state)
-    },
-    hide_check_panel: function () {
-      this.reset()
+      this.$refs.check.trigger(check_state)
     }
   }
 }

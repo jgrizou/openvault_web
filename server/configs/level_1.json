@@ -1,7 +1,7 @@
 {
   "name": "Level 1",
   "code": {
-    "secret_code": [0, 0, 0, 0],
+    "secret_code": [5, 5, 7, 7],
     "show_code": false,
     "check_code": true
   },

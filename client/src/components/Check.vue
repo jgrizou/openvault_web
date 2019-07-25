@@ -19,7 +19,7 @@
           </div>
           <div class="valid_text" v-else-if="smiley_state == 'valid'">
             <h1>CODE IS VALID !</h1>
-            <p>Vault is open. Collect your gift.</p>
+            <p>Congratulation.</p>
           </div>
           <div class="invalid_text" v-else-if="smiley_state == 'invalid'">
             <h1>WRONG CODE</h1>
@@ -34,7 +34,12 @@
         <div v-if="show_button">
           <button class="check_button" v-on:click="on_click">
             <div v-if="smiley_state == 'valid'">
-              RESTART
+              <div v-if="redirect_url == ''">
+                RESTART
+              </div>
+              <div v-else>
+                CONTINUE
+              </div>
             </div>
             <div v-else-if="smiley_state == 'invalid'">
               TRY AGAIN
@@ -64,6 +69,7 @@ export default {
   data() {
     return {
       smiley_state: '',
+      redirect_url: '',
       active: false,
       show_button: false,
       loader_audio: new Audio("/audio/drum.wav"),
@@ -77,10 +83,23 @@ export default {
       this.smiley_state = ''
       this.active = false
       this.show_button = false
-      this.callback()
+      if (this.redirect_url) {
+        this.redirect_to(this.redirect_url)
+      } else {
+        this.callback()
+      }
     },
-    start: function (check_state) {
+    redirect_to: function (url) {
+      // https://stackoverflow.com/questions/13109233/how-to-redirect-and-reload-the-right-way-in-dart
+      window.location.assign(url)
+      window.location.reload()
+    },
+    trigger: function (check_info) {
       this.active = true
+      var check_state = check_info.state
+      if (check_state.redirect_url) {
+        this.redirect_url = check_state.redirect_url
+      }
 
       var slide_timeout_ms = 500
       var loader_timeout_ms = 1300 + slide_timeout_ms

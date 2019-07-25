@@ -1,5 +1,5 @@
 {
-  "name": "Level 7 - Visible - No Check",
+  "name": "Tuto Audio",
   "code": {
     "secret_code": [0, 0, 0, 0],
     "show_code": true,
@@ -12,11 +12,12 @@
   },
   "pad": {
     "type": "audio",
-    "show_learning_progress": true
+    "show_learning_progress": true,
+    "show_classifier_map": true
   },
   "hood": {
-    "show_hood": false,
-    "show_label_propagation": false,
-    "show_classifier_maps": false
+    "show_hood": true,
+    "show_label_propagation": true,
+    "show_classifier_maps": true
   }
 }

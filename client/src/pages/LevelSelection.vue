@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="level-selector" v-for="(row, i) of configs" :key="i">
-      <button class="level-button" v-on:click="onClick(i)">{{ row.message }}</button>
+      <a :href="get_link(i)">{{ row.message }}</a>
     </div>
   </div>
 </template>
@@ -22,12 +22,24 @@ export default {
     }
   },
   methods: {
-    onClick: function (i) {
-      this.$router.push({ path: `/ui/${this.configs[i].filename}`});
+    get_link: function (i) {
+      return `#/ui/${this.configs[i].filename}`
     }
   },
   mounted() {
     this.$socket.emit('get_configs')
+
+    // to overwrite overflow-y: hidden from body and wrapper needed for disabling moble refresh by pull down
+    var all = document.getElementsByClassName('body');
+    for (var i = 0; i < all.length; i++) {
+      all[i].style.overflowY = 'auto';
+    }
+
+    var all = document.getElementsByClassName('wrapper');
+    for (var i = 0; i < all.length; i++) {
+      all[i].style.overflowY = 'auto';
+    }
+
   }
 }
 </script>
@@ -39,19 +51,6 @@ export default {
 .level-selector {
   text-align: center;
   margin-top: 10px;
-}
-
-.level-button {
-  display: inline-block;
-  width: 300px;
-  height: 40px;
-  outline: none; /* remove contour when clicked */
-  border: none;
-  background-color: rgba(150, 150, 150, 1);
-  color: black;
-  font-size: 16px;
-  text-align: center;
-  text-decoration: none;
 }
 
 </style>

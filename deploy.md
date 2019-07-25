@@ -124,6 +124,9 @@ docker pull codait/max-audio-embedding-generator
 // for full test
 docker run -it -p 5000:5000 codait/max-audio-embedding-generator
 
+// the python side will need a backend to handle codec, installing ffmpeg does the job. librosa could raise raise NoBackendError() otherwise
+sudo apt-get install ffmpeg
+
 ## flask setting
 
 // create .env in flask server folder with SERVER_KEY
@@ -188,6 +191,8 @@ killasgroup=true
 sudo supervisorctl tail openvault stdout
 sudo supervisorctl tail -f openvault stdout
 sudo supervisorctl restart openvault
+sudo supervisorctl stop openvault
+sudo supervisorctl start openvault
 
 
 systemctl status supervisor
@@ -234,3 +239,113 @@ sudo service nginx reload
 
 systemctl status nginx
 systemctl restart nginx
+
+
+## SSL certificate with lets-encrypt
+// needed for voice audio level to work
+
+https://blog.miguelgrinberg.com/post/running-your-flask
+https://letsencrypt.org/
+https://certbot.eff.org/
+
+// first you need your dns to be properly configure so your domain name points to the correct ip
+
+// certbot will communicate with let's encrypt and check we really own the website
+
+install certbot: https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx
+
+
+// use the installer for nginx
+sudo certbot certonly --nginx
+
+// This will create the certificates
+Your certificate and chain have been saved at: /etc/letsencrypt/live/openvault.jgrizou.com/fullchain.pem
+Your key file has been saved at: /etc/letsencrypt/live/openvault.jgrizou.com/privkey.pem
+
+ // enable port 443 for https
+ sudo ufw allow https
+ sudo ufw --force enable
+ sudo ufw status numbered
+
+ // change websocket endpoint in client/src/main.js to https
+ Vue.use(new VueSocketIO({
+   debug: false,
+   connection: 'https://openvault.jgrizou.com'
+ }))
+
+// test locally with sudo to access the .pem files
+// remember to kill supervisord openvault process before: sudo supervisorctl stop openvault
+
+
+sudo /home/jgrizou/miniconda3/envs/openvault_deploy/bin/gunicorn --capture-output --worker-class eventlet -w 1 --bind 0.0.0.0:5000 --certfile /etc/letsencrypt/live/openvault.jgrizou.com/fullchain.pem --keyfile /etc/letsencrypt/live/openvault.jgrizou.com/privkey.pem app:app
+
+
+// make nginx manage https in the reverse proxy
+
+
+sudo nano /etc/nginx/sites-enabled/openvault
+
+```
+server {
+
+    # listen on port 443 (https)
+    listen 443 ssl;
+    server_name openvault.jgrizou.com;
+    ssl_certificate /etc/letsencrypt/live/openvault.jgrizou.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/openvault.jgrizou.com/privkey.pem;
+
+    # write access and error logs to /var/log
+    access_log /var/log/openvault_access.log;
+    error_log /var/log/openvault_error.log;
+
+    #this where socket io will be handling the request
+    location / {
+        include proxy_params;
+        proxy_pass http://127.0.0.1:8000;
+    }
+
+    location /socket.io {
+        include proxy_params;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_pass http://127.0.1:8000/socket.io;
+    }
+
+}
+
+server {
+
+  # listen on port 80 (http)
+  listen 80;
+  server_name openvault.jgrizou.com;
+  # redirect all http to https
+  location / {
+      return 301 https://$host$request_uri;
+  }
+
+}
+```
+
+sudo service nginx reload
+
+
+
+// test gunicorn alone without supervisord, not need to https as this is internal to the server, nginx is handling the https
+
+/home/jgrizou/miniconda3/envs/openvault_deploy/bin/gunicorn --bind localhost:8000 --capture-output --log-level info --worker-class eventlet -w 1 app:app
+
+// no need to change any supervisor config simply start openvault again
+sudo supervisorctl start openvault
+
+
+# renew certificate
+
+This is automatic with certbot but you should check
+
+// make sure the certificate will be updated automatically when needed
+// check in less /etc/cron.d/certbot if certbot is being executed at regular intervals
+
+//Then run a dry run to check it is all ok
+sudo certbot renew --dry-run

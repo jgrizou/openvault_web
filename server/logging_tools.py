@@ -30,24 +30,55 @@ def generate_unique_log_folder():
     return log_folder
 
 
-def get_ip_information(ip_address):
-    api_url = 'http://ip-api.com/json/{}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,reverse,mobile,proxy,query'
+IP_API_PROVIDERS = []
+IP_API_PROVIDERS.append(('http://ip-api.com/', 'http://ip-api.com/json/{}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,reverse,mobile,proxy,query'))
+IP_API_PROVIDERS.append(('http://ipinfo.io', 'http://ipinfo.io/{}/json'))
+IP_API_PROVIDERS.append(('https://ipapi.co', 'https://ipapi.co/{}/json'))
+
+## use following command to test the response time of an log_app_info
+## curl https://ipinfo.io/24.48.0.1 -w %{time_connect}:%{time_starttransfer}:%{time_total}
+
+def request_ip_information(request_url, timeout=0.5):
 
     try:
-        response = requests.get(api_url.format(ip_address))
+        response = requests.get(request_url, timeout=timeout)
 
         if response.ok:
-            return json.loads(response.content)
+            return response.json()
         else:
+            tools.log_app_info('Response status {} in IP API call: {}'.format(response.status_code, request_url))
             return {} # empty dict signify api call did not work properly
-    except:
+
+    except Exception as e:
+        tools.log_app_info('Error {} in IP API call: {}'.format(e, request_url))
         return {} # empty dict signify api call did not work properly
+
+
+def get_ip_information(ip_address):
+
+    for api_provider, blank_request in IP_API_PROVIDERS:
+
+        request_url = blank_request.format(ip_address)
+        api_info = request_ip_information(request_url)
+
+        if api_info:
+            tools.log_app_info('IP API success from {}'.format(api_provider))
+
+            ip_information = {}
+            ip_information['api_provider'] = api_provider
+            ip_information['api_info'] = api_info
+            return ip_information
+
+        else:
+            tools.log_app_info('IP API request failed for {}'.format(request_url))
+
+    tools.log_app_info('All IP API call failed!')
+    return {}
 
 class Logger(object):
 
     def __init__(self):
         self.log_folder = generate_unique_log_folder()
-        tools.log_app_info('Starting Logger at {}'.format(self.log_folder))
 
     def log_new_connnection(self, client_ip, user_agent, room_id, config_filename, config):
 

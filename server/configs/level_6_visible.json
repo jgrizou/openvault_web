@@ -1,7 +1,7 @@
 {
   "name": "Level 6 - Visible",
   "code": {
-    "secret_code": [0, 0, 0, 0],
+    "secret_code": [8, 6, 6, 4],
     "show_code": true,
     "check_code": true
   },
@@ -12,6 +12,12 @@
   },
   "pad": {
     "type": "draw",
-    "show_learning_progress": false
+    "show_learning_progress": false,
+    "show_classifier_map": false
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false,
+    "show_classifier_maps": false
   }
 }

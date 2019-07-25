@@ -1,5 +1,5 @@
 {
-  "name": "Level 6 - Visible - No Check - Hood",
+  "name": "Demo Touch with Map",
   "code": {
     "secret_code": [0, 0, 0, 0],
     "show_code": true,
@@ -11,13 +11,13 @@
     "accumulate_info_between_numbers": true
   },
   "pad": {
-    "type": "draw",
+    "type": "touch",
     "show_learning_progress": true,
     "show_classifier_map": true
   },
   "hood": {
-    "show_hood": true,
-    "show_label_propagation": true,
-    "show_classifier_maps": true
+    "show_hood": false,
+    "show_label_propagation": false,
+    "show_classifier_maps": false
   }
 }

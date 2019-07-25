@@ -1,5 +1,5 @@
 {
-  "name": "Level 3 - Visible - No Check",
+  "name": "Demo 1x2",
   "code": {
     "secret_code": [0, 0, 0, 0],
     "show_code": true,
@@ -8,13 +8,16 @@
   "learner": {
     "type": "discrete",
     "n_hypothesis": 10,
-    "known_symbols": {},
-    "accumulate_known_symbols_between_numbers": true
+    "known_symbols": {
+      "0": false,
+      "1": true
+    },
+    "accumulate_known_symbols_between_numbers": false
   },
   "pad": {
-    "type": "3x3",
-    "n_pad": 9,
-    "show_learning_progress": true
+    "type": "1x2",
+    "n_pad": 2,
+    "show_learning_progress": false
   },
   "hood": {
     "show_hood": false,

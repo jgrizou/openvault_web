@@ -1,7 +1,7 @@
 {
   "name": "Level 5",
   "code": {
-    "secret_code": [0, 0, 0, 0],
+    "secret_code": [2, 0, 1, 4],
     "show_code": false,
     "check_code": true
   },
@@ -12,6 +12,12 @@
   },
   "pad": {
     "type": "touch",
-    "show_learning_progress": false
+    "show_learning_progress": false,
+    "show_classifier_map": false
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false,
+    "show_classifier_maps": false
   }
 }

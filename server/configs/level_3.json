@@ -1,7 +1,7 @@
 {
   "name": "Level 3",
   "code": {
-    "secret_code": [0, 0, 0, 0],
+    "secret_code": [4, 1, 7, 0],
     "show_code": false,
     "check_code": true
   },
@@ -15,5 +15,9 @@
     "type": "3x3",
     "n_pad": 9,
     "show_learning_progress": true
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false
   }
 }

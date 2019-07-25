@@ -1,7 +1,7 @@
 {
   "name": "Level 2",
   "code": {
-    "secret_code": [0, 0, 0, 0],
+    "secret_code": [1, 2, 3, 4],
     "show_code": false,
     "check_code": true
   },
@@ -18,5 +18,9 @@
     "type": "1x2_random",
     "n_pad": 2,
     "show_learning_progress": false
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false
   }
 }

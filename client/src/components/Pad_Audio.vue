@@ -143,18 +143,32 @@ export default {
       var audioFeedbackPanel = document.getElementById("soundtracks-feedback-panel");
       audioFeedbackPanel.innerHTML = ''
 
+      // ask permission for audio recording if not granted yet
+      this.bootstrap_audio()
+    },
+    bootstrap_audio: function () {
       // just starting and stopping a recording to initiate the MicRecorder
       // otherwise the first recorded sound is a bit truncated and permission request is ruinning the experience
-      this.recorder.start().then(() => {
-        this.recorder.stop().getMp3().then(([buffer, blob]) => {
+      try {
+        this.recorder.start().then(() => {
+          this.recorder.stop().getMp3().then(([buffer, blob]) => {
+          }).catch((e) => {
+            this.raise_audio_permission_alert(e)
+          });
         }).catch((e) => {
-          alert('Sound recording not allowed or disfunctioning, you need to activate it to try the audio version');
-          console.error(e);
+          this.raise_audio_permission_alert(e)
         });
-      }).catch((e) => {
-        alert('Sound recording not allowed or disfunctioning, you need to activate it to try this audio version');
-        console.error(e);
-      });
+      } catch(e){
+        this.raise_web_audio_api_alert(e)
+      }
+    },
+    raise_audio_permission_alert: function (error) {
+      alert('Audio recording is not allowed by the user or disfunctioning.');
+      console.error(error);
+    },
+    raise_web_audio_api_alert: function (error) {
+      alert("Sorry, but the Web Audio API is not supported by your browser. Please, consider using Google Chrome or Mozilla Firefox for this demo.");
+      console.error(error);
     },
     update_pad_info: function (pad_info) {
       console.log(pad_info)
@@ -295,33 +309,39 @@ export default {
     },
     start_recording: function () {
       //start recording
-      this.recorder.start().then(() => {
-      }).catch((e) => {
-        alert('Voice recording is not working.');
-        console.error(e);
-      });
+      try {
+        this.recorder.start().then(() => {
+        }).catch((e) => {
+          this.raise_audio_permission_alert(e)
+        });
+      } catch(e){
+        this.raise_web_audio_api_alert(e)
+      }
     },
     stop_recording: function () {
       // stop recording
-      this.recorder.stop().getMp3().then(([buffer, blob]) => {
-        // create mp3 file and push date to it
-        const file = new File(buffer, 'user_recording.mp3', {
-          type: blob.type,
-          lastModified: Date.now()
+      try {
+        this.recorder.stop().getMp3().then(([buffer, blob]) => {
+          // create mp3 file and push date to it
+          const file = new File(buffer, 'user_recording.mp3', {
+            type: blob.type,
+            lastModified: Date.now()
+          });
+          // save it in history
+          this.audio_history_file.push(file)
+          this.audio_history_fileurl.push(URL.createObjectURL(file))
+
+          // send back to server
+          var audio_info = {}
+          audio_info.mp3 = file
+          this.callback(audio_info)
+
+        }).catch((e) => {
+          this.raise_audio_permission_alert(e)
         });
-        // save it in history
-        this.audio_history_file.push(file)
-        this.audio_history_fileurl.push(URL.createObjectURL(file))
-
-        // send back to server
-        var audio_info = {}
-        audio_info.mp3 = file
-        this.callback(audio_info)
-
-      }).catch((e) => {
-        alert('We could not retrieve your voice recording.');
-        console.error(e);
-      });
+      } catch(e){
+        this.raise_web_audio_api_alert(e)
+      }
     }
   }
 }
