@@ -266,6 +266,8 @@ class Learner(object):
                     check_info = {}
                     if self.code_manager.is_code_valid():
                         check_info['state'] = 'valid'
+                        check_info['redirect_url'] = self.code_manager.get_redirect_url()
+                        check_info['redirect_button_text'] = self.code_manager.get_redirect_button_text()
                     else:
                         check_info['state'] = 'invalid'
                     self.socketio.emit('check', check_info, room=self.room_id)
@@ -525,6 +527,18 @@ class CodeManager(object):
 
     def is_check_procedure_required(self):
         return self.config['check_code']
+
+    def get_redirect_url(self):
+        if 'redirect_url' in self.config:
+            return self.config['redirect_url']
+        else:
+            return ''
+
+    def get_redirect_button_text(self):
+        if 'redirect_button_text' in self.config:
+            return self.config['redirect_button_text']
+        else:
+            return ''
 
     def add_new_digit(self, digit):
         self.decoded_code[self.ongoing_digit_index] = digit

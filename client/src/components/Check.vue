@@ -18,8 +18,8 @@
             <h1>ANALYSING CODE ...</h1>
           </div>
           <div class="valid_text" v-else-if="smiley_state == 'valid'">
-            <h1>CODE IS VALID !</h1>
-            <p>Congratulation.</p>
+            <h1>CODE IS VALID</h1>
+            <p>Congratulation !</p>
           </div>
           <div class="invalid_text" v-else-if="smiley_state == 'invalid'">
             <h1>WRONG CODE</h1>
@@ -38,7 +38,7 @@
                 RESTART
               </div>
               <div v-else>
-                CONTINUE
+                {{ redirect_button_text }}
               </div>
             </div>
             <div v-else-if="smiley_state == 'invalid'">
@@ -70,6 +70,7 @@ export default {
     return {
       smiley_state: '',
       redirect_url: '',
+      redirect_button_text: 'CONTINUE',
       active: false,
       show_button: false,
       loader_audio: new Audio("/audio/drum.wav"),
@@ -97,8 +98,11 @@ export default {
     trigger: function (check_info) {
       this.active = true
       var check_state = check_info.state
-      if (check_state.redirect_url) {
-        this.redirect_url = check_state.redirect_url
+      if (check_info.redirect_url) {
+        this.redirect_url = check_info.redirect_url
+      }
+      if (check_info.redirect_button_text) {
+        this.redirect_button_text = check_info.redirect_button_text
       }
 
       var slide_timeout_ms = 500
