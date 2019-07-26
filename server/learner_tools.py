@@ -9,6 +9,7 @@ import sys
 openvault_path = os.path.join(HERE_PATH, '..', '..')
 sys.path.append(openvault_path)
 
+import time
 
 import eventlet
 from flask import request
@@ -308,18 +309,39 @@ class Learner(object):
 
                 tools.log_app_info('[{}] Received {} from user'.format(self.room_id, mp3_file))
 
+                # measuring file processing time
+                start_time = time.time()
+
+                # process and embed user feedback
                 self.audio_transformer.add_feedback_mp3(mp3_file)
                 feedback_signals, _ = self.audio_transformer.get_feedback_signals()
 
+                # display file processing time
+                elapsed_time = time.time() - start_time
+                tools.log_app_info('[{}] {} processed in {} seconds'.format(self.room_id, mp3_file, elapsed_time))
+
+                # update learner
                 self.learner.signal_history = feedback_signals[:-1]
                 self.learner.update(displayed_flash_patterns, feedback_signals[-1])
 
             elif 'drawing' in feedback_info:
+
                 drawing_file = self.logger.save_drawing_to_file(feedback_info['drawing'])
 
+                tools.log_app_info('[{}] Received {} from user'.format(self.room_id, drawing_file))
+
+                # measuring file processing time
+                start_time = time.time()
+
+                # process and embed user feedback
                 self.sketch_transformer.add_feedback_sketch(drawing_file)
                 feedback_signals, _ = self.sketch_transformer.get_feedback_signals()
 
+                # display file processing time
+                elapsed_time = time.time() - start_time
+                tools.log_app_info('[{}] {} processed in {} seconds'.format(self.room_id, drawing_file, elapsed_time))
+
+                # update learner
                 self.learner.signal_history = feedback_signals[:-1]
                 self.learner.update(displayed_flash_patterns, feedback_signals[-1])
 

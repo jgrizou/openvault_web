@@ -352,7 +352,7 @@ export default {
       embeddingFeedbackPanel.innerHTML = ''
 
       if (this.classifier_map) {
-          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" draggable="false" alt=""/>'
+          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '" class="map-container noselect" draggable="false" ondragstart="return false;" alt=""/>'
           // as the mapping is changing all the time due to umap, we only plot it for one step
           this.classifier_map = undefined
       }
@@ -527,11 +527,6 @@ export default {
 }
 
 /* embedding panel */
-
-.embedding-map-container {
-  width: 100%;
-  height: 100%;
-}
 
 .signal-locator {
     position: absolute;

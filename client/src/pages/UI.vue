@@ -185,12 +185,13 @@ export default {
     },
     loading_watchdog: function () {
       if (this.$refs.loader) {
-        var server_timeout_ms = 20 * 1000
+        var server_timeout_s = 20
+        var server_timeout_ms = server_timeout_s * 1000
         var current_waiting_time_ms = this.$refs.loader.get_loading_duration_ms()
 
         if (current_waiting_time_ms > server_timeout_ms) {
           this.stop_loading_watchdog()
-          alert('Server not responding after 20 seconds. Try reloading the page.')
+          alert('Server not responding after ' + server_timeout_s + ' seconds. Try reloading the page.')
           this.$refs.loader.reset_loading_timer()
           this.start_loading_watchdog()
         }

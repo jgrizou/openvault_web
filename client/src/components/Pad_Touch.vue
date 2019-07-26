@@ -117,7 +117,7 @@ export default {
       historyContainer.style.height  = pad_height + "px";
 
       if (this.classifier_map) {
-          historyContainer.innerHTML = '<img src="' + this.classifier_map + '") class="map-container" alt=""/>'
+          historyContainer.innerHTML = '<img src="' + this.classifier_map + '" class="map-container noselect" draggable="false" ondragstart="return false;" alt=""/>'
       }
 
       // add points one by one

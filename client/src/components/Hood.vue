@@ -274,7 +274,7 @@ export default {
 
       if (this.hood_info.hypothesis_classifier_maps) {
         if (this.hood_info.hypothesis_classifier_maps[i]) {
-            historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '") class="map-container" draggable="false" alt=""/>'
+            historyContainer.innerHTML = '<img src="' + this.hood_info.hypothesis_classifier_maps[i] + '" class="map-container noselect" draggable="false" ondragstart="return false;" alt=""/>'
         }
       }
 

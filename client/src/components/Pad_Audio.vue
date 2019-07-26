@@ -149,18 +149,15 @@ export default {
     bootstrap_audio: function () {
       // just starting and stopping a recording to initiate the MicRecorder
       // otherwise the first recorded sound is a bit truncated and permission request is ruinning the experience
-      try {
-        this.recorder.start().then(() => {
-          this.recorder.stop().getMp3().then(([buffer, blob]) => {
-          }).catch((e) => {
-            this.raise_audio_permission_alert(e)
-          });
-        }).catch((e) => {
-          this.raise_audio_permission_alert(e)
-        });
-      } catch(e){
-        this.raise_web_audio_api_alert(e)
-      }
+
+      // awaiting that the sound is recorded to re-enable the pad
+      this.awaiting_self = true
+      this.start_recording()
+
+      setTimeout( () => {
+        this.void_stop_recording()
+        this.awaiting_self = false
+      }, 1000)
     },
     raise_audio_permission_alert: function (error) {
       alert('Audio recording is not allowed by the user or disfunctioning.');
@@ -203,7 +200,7 @@ export default {
       embeddingFeedbackPanel.innerHTML = ''
 
       if (this.classifier_map) {
-          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '") class="embedding-map-container" draggable="false" alt=""/>'
+          embeddingFeedbackPanel.innerHTML = '<img src="' + this.classifier_map + '" class="map-container noselect" draggable="false" ondragstart="return false;" alt=""/>'
           // as the mapping is changing all the time due to umap, we only plot it for one step
           this.classifier_map = undefined
       }
@@ -282,7 +279,7 @@ export default {
         audioFeedbackPanel.appendChild(audioPlayer)
 
         // initiate audio player instance
-        var audio_player = new GreenAudioPlayer('.' + audioPlayer.className, { stopOthersOnPlay: true });
+        var audio_player = new GreenAudioPlayer('.' + audioPlayer.className, { stopOthersOnPlay: false });
       })
 
     },
@@ -310,6 +307,18 @@ export default {
       //start recording
       try {
         this.recorder.start().then(() => {
+        }).catch((e) => {
+          this.raise_audio_permission_alert(e)
+        });
+      } catch(e){
+        this.raise_web_audio_api_alert(e)
+      }
+    },
+    void_stop_recording: function () {
+      try {
+        this.recorder.stop().getMp3().then(([buffer, blob]) => {
+          console.log(buffer)
+          console.log(blob)
         }).catch((e) => {
           this.raise_audio_permission_alert(e)
         });
