@@ -5,6 +5,9 @@
 
     <Digit ref="digit" class="digit"></Digit>
 
+    <!-- Loader Animation for user feedback -->
+    <Loader ref="loader"></Loader>
+
     <!-- Big Reset Button -->
     <DigitButton ref="digitbutton" :callback="reset">Restart</DigitButton>
 
@@ -59,18 +62,22 @@ import PadTouch from './../components/Pad_Touch.vue'
 import PadDraw from './../components/Pad_Draw.vue'
 import PadAudio from './../components/Pad_Audio.vue'
 import Hood from './../components/Hood.vue'
+import Loader from './../components/Loader.vue'
 
 export default {
   name: 'UI',
-  components: { Check, Display, Digit, DigitButton, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, Hood},
+  components: { Check, Display, Digit, DigitButton, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, Hood, Loader},
   data() {
     return {
-      pad_type: undefined,
       app_width: 480, // hardcoded value for screen_width
-      app_height: 800 // hardcoded value for screen_height
+      app_height: 800, // hardcoded value for screen_height
+      pad_type: undefined,
+      loading_watchdog_interval: undefined
     };
   },
   mounted: function () {
+    // start checking loader is not on for too long
+    this.start_loading_watchdog()
     // ask server for a new learner
     this.spawn_learner()
     // setup responsiveness
@@ -135,6 +142,7 @@ export default {
     update_flash: function (flash) {
       this.$refs.digit.flash = flash
       this.$refs.pad.awaiting_flash = false // enable the pad button
+      this.$refs.loader.hide() // deactivate loading animation
     },
     update_pad: function (pad_info) {
       this.$refs.pad.update_pad_info(pad_info)
@@ -151,7 +159,9 @@ export default {
       this.$refs.hood.apply_pause()
     },
     check: function (check_info) {
-      this.show_check_panel(check_info)
+      this.$refs.reset.force_hide = true
+      this.$refs.loader.hide() // deactivate loading animation
+      this.$refs.check.trigger(check_info)
     },
     no_check: function () {
       // when there is no check, we do not update the flashing update_flash_pattern and the update_code might get stuck into a setInterval
@@ -161,10 +171,30 @@ export default {
       this.$refs.pad.awaiting_flash = false
 
       // show a big restart button
-      this.$refs.digitbutton.show = true
+      this.$refs.loader.hide() // deactivate loading animation
+      this.$refs.digitbutton.show = true // show restart button
     }
   },
   methods: {
+    start_loading_watchdog: function () {
+      this.loading_watchdog_interval = setInterval( () => this.loading_watchdog(), 1000)
+    },
+    stop_loading_watchdog: function () {
+      clearInterval(this.loading_watchdog_interval)
+    },
+    loading_watchdog: function () {
+      if (this.$refs.loader) {
+        var server_timeout_ms = 20 * 1000
+        var current_waiting_time_ms = this.$refs.loader.get_loading_duration_ms()
+
+        if (current_waiting_time_ms > server_timeout_ms) {
+          this.stop_loading_watchdog()
+          alert('Server not responding after 20 seconds. Try reloading the page.')
+          this.$refs.loader.reset_loading_timer()
+          this.start_loading_watchdog()
+        }
+      }
+    },
     handleResize: function (event) {
 
       // console.log('#######')
@@ -203,12 +233,14 @@ export default {
       this.$socket.emit('spawn_learner', this.$route.params.pathMatch)
     },
     reset: function () {
-      this.$refs.reset.force_hide = true
+      this.$refs.loader.show_no_delay() // activate loading animation
+      this.$refs.reset.force_hide = true // hide reset panel
       this.$socket.emit('reset')
     },
     disable_pad_while_waiting_from_server_update: function () {
       this.$refs.pad.awaiting_flash = true // disable the pad button
       this.$refs.pad.awaiting_pad = true // disable the pad button
+      this.$refs.loader.show_with_delay() // activate loading animation
     },
     discrete_pad_callback: function (click_info) {
       this.disable_pad_while_waiting_from_server_update()
@@ -247,10 +279,6 @@ export default {
       feedback_info.mp3 = audio_info.mp3
       feedback_info.flash = this.$refs.digit.flash
       this.$socket.emit('feedback_info', feedback_info)
-    },
-    show_check_panel: function (check_state) {
-      this.$refs.reset.force_hide = true
-      this.$refs.check.trigger(check_state)
     }
   }
 }

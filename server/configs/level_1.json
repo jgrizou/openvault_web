@@ -4,7 +4,7 @@
     "secret_code": [5, 5, 7, 7],
     "show_code": false,
     "check_code": true,
-    "redirect_url": "https://openvault.jgrizou.com/#/ui/level_2_visible.json",
+    "redirect_url": "https://openvault.jgrizou.com/#/ui/level_2.json",
     "redirect_button_text": "TO LEVEL 2"
   },
   "learner": {
