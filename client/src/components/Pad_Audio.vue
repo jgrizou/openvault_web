@@ -147,17 +147,16 @@ export default {
       this.bootstrap_audio()
     },
     bootstrap_audio: function () {
-      // just starting and stopping a recording to initiate the MicRecorder
-      // otherwise the first recorded sound is a bit truncated and permission request is ruinning the experience
+      // just starting a short recording to initiate the MicRecorder
+      // otherwise the first user recorded sound is a bit truncated and permission request is ruinning the experience
 
-      // awaiting that the sound is recorded to re-enable the pad
       this.awaiting_self = true
       this.start_recording()
 
       setTimeout( () => {
-        this.void_stop_recording()
+        this.void_stop_recording()  // void stop means we do not keep the data
         this.awaiting_self = false
-      }, 1000)
+      }, 1000) // we record for 1 second
     },
     raise_audio_permission_alert: function (error) {
       alert('Audio recording is not allowed by the user or disfunctioning.');
@@ -317,8 +316,7 @@ export default {
     void_stop_recording: function () {
       try {
         this.recorder.stop().getMp3().then(([buffer, blob]) => {
-          console.log(buffer)
-          console.log(blob)
+          // we do nothing with the data -> void
         }).catch((e) => {
           this.raise_audio_permission_alert(e)
         });
