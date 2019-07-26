@@ -78,8 +78,6 @@ export default {
   top: var(--btn_1x2_top_margin);
   width: calc((var(--screen_width) - 2*var(--btn_side_margin) - var(--btn_spacing)) / 2 );
   height: calc( var(--pad_height) - 2*var(--btn_1x2_top_margin));
-  outline: none;
-  border: none;
 }
 
 .btn-elongated-0 {

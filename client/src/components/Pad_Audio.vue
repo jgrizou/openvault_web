@@ -171,7 +171,6 @@ export default {
       console.error(error);
     },
     update_pad_info: function (pad_info) {
-      console.log(pad_info)
       if (pad_info.signal_color) {
           this.audio_history_color = pad_info.signal_color
       }
@@ -375,8 +374,6 @@ export default {
   background-position: center center;
   background-size: var(--micro_logo_size);
   border-radius: calc(var(--micro_diameter) / 2);
-  outline: none;
-  border: none;
 }
 
 .btn-micro-ready {

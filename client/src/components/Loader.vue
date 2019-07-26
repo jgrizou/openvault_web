@@ -77,8 +77,6 @@ export default {
   left: 0px;
   width: var(--screen_width);
   height: var(--digit_height);
-  outline: none;
-  border: none;
   background-color: rgba(255, 255, 255, 0.5);
 }
 

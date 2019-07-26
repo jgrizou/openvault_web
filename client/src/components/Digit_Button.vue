@@ -59,8 +59,6 @@ export default {
   left: var(--digit_overlay_left);
   width: var(--digit_overlay_btn_width);
   height: var(--digit_overlay_btn_height);
-  outline: none; /* remove contour when clicked */
-  border: none;
   border-radius: 30px;
   text-align: center;
   vertical-align: middle;
@@ -84,8 +82,6 @@ export default {
   left: 0px;
   width: var(--screen_width);
   height: var(--digit_height);
-  outline: none;
-  border: none;
   background-color: rgba(255, 255, 255, 1);
 }
 

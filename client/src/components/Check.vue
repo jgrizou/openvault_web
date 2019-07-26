@@ -207,22 +207,26 @@ export default {
 
 .smiley_loader {
   background-color: var(--loader_color);
-  -webkit-mask-box-image: url("./../assets/smileys/loader.gif");
+  mask-image: url("./../assets/smileys/loader.gif");
+  mask-size: cover;
 }
 
 .smiley_valid {
   background-color: var(--valid_color);
-  -webkit-mask-box-image: url("./../assets/smileys/valid.png");
+  mask-image: url("./../assets/smileys/valid.png");
+  mask-size: cover;
 }
 
 .smiley_invalid {
   background-color: var(--invalid_color);
-  -webkit-mask-box-image: url("./../assets/smileys/invalid.png");
+  mask-image: url("./../assets/smileys/invalid.png");
+  mask-size: cover;
 }
 
 .smiley_inconsistent {
   background-color: var(--inconsistent_color);
-  -webkit-mask-box-image: url("./../assets/smileys/inconsistent.png");
+  mask-image: url("./../assets/smileys/inconsistent.png");
+  mask-size: cover;
 }
 
 .check_text h1 {
@@ -277,8 +281,6 @@ export default {
   left: 140px;
   width: 200px;
   height: 70px;
-  outline: none; /* remove contour when clicked */
-  border: none;
   text-align: center;
   vertical-align: middle;
   font-size: 30px;

@@ -58,7 +58,6 @@ export default {
       this.callback(click_info)
     },
     update_pad_info: function (pad_info) {
-      console.log(pad_info)
       if (pad_info.button_color) {
           this.button_color = pad_info.button_color
       }
@@ -82,8 +81,6 @@ export default {
   position: absolute;
   width: var(--btn_3x3_width);
   height: var(--btn_3x3_height);
-  outline: none; /* remove contour when clicked */
-  border: none;
 }
 
 .btn-square-0 {

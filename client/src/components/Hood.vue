@@ -63,8 +63,6 @@ export default {
       this.active = true
       this.$refs.hoodbutton.show = false
 
-      console.log(this.pad_type)
-      console.log(hood_info)
       this.hood_info = hood_info
       this.update_hood_text()
       this.update_hood_display()
@@ -627,8 +625,6 @@ export default {
 
 
 .valid_hyp {
-  filter: blur(0px);
-  -webkit-filter: blur(0px);
   background-color: var(--green_color_background);
   transform: scale(var(--green_scale));
   transform-origin: 50% 50%;
@@ -636,8 +632,6 @@ export default {
 }
 
 .equally_valid_hyp {
-  filter: blur(0px);
-  -webkit-filter: blur(0px);
   background-color: var(--orange_color_background);
   transform: scale(var(--orange_scale));
   transform-origin: 50% 50%;
@@ -645,8 +639,6 @@ export default {
 }
 
 .invalid_hyp {
-  filter: blur(0px);
-  -webkit-filter: blur(0px);
   background-color: var(--red_color_background);
   transform: scale(var(--red_scale));
   transform-origin: 50% 50%;
@@ -654,8 +646,6 @@ export default {
 }
 
 .default_hyp {
-  filter: blur(0px);
-  -webkit-filter: blur(0px);
   transform-origin: 50% 50%;
   z-index: 0;
 }

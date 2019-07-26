@@ -5,9 +5,6 @@
 
     <Digit ref="digit" class="digit"></Digit>
 
-    <!-- Loader Animation for user feedback -->
-    <Loader ref="loader"></Loader>
-
     <!-- Big Reset Button -->
     <DigitButton ref="digitbutton" :callback="reset">Restart</DigitButton>
 
@@ -44,6 +41,9 @@
     <div v-if="pad_type">
       <Hood ref="hood" :pad_type="pad_type"></Hood>
     </div>
+
+    <!-- Loader Animation for user feedback on top of everything-->
+    <Loader ref="loader"></Loader>
 
   </div>
 </template>
@@ -156,6 +156,7 @@ export default {
       this.$refs.hood.update_hood_info(hood_info)
     },
     pause_hood: function() {
+      this.$refs.loader.hide() // deactivate loading animation
       this.$refs.hood.apply_pause()
     },
     check: function (check_info) {
@@ -315,6 +316,28 @@ export default {
   --shadow_diff: calc( var(--shadow_full) - var(--shadow_min) );
 }
 
+/* fix for firefox mobile, see https://stackoverflow.com/questions/71074/how-to-remove-firefoxs-dotted-outline-on-buttons-as-well-as-links */
+button::-moz-focus-inner {
+  border: 0;
+}
+
+/* no outline or borders by default on buttons */
+button {
+  outline: none;
+  border: none;
+}
+
+/* used to force specific element not to be draggable for neat UI*/
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
 .ui {
   position: fixed;
   left: 0px;
@@ -356,12 +379,10 @@ export default {
 
 .btn {
   border-radius: 15px;
-  /* cursor: url(./assets/hand.svg) 10 10, pointer; */
 }
 
 .btn:active {
   transform: translateY(var(--shadow_diff));
-  /* cursor: url(./assets/hand_click.svg) 10 10, pointer; */
 }
 
 .fullscreen {
@@ -395,17 +416,6 @@ export default {
   height: var(--pad_height);
   background-color: rgba(255, 255, 255, 1);
 }
-
-.noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome and Opera */
-}
-
 
 </style>
 

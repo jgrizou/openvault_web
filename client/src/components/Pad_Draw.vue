@@ -456,7 +456,6 @@ export default {
   vertical-align: middle;
   font-size: 12px;
   font-weight: 400;
-  outline: none; /* remove contour when clicked */
   box-shadow: none;
   border-style: solid;
   border-color: var(--pad_border_color);

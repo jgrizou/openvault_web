@@ -83,8 +83,6 @@ export default {
   right: 5px;
   width: 60px;
   height: calc(var(--reset_height) - 4px);
-  outline: none; /* remove contour when clicked */
-  border: none;
   border-radius: 4px;
   color: rgba(255, 255, 255, 1);
   background-color: rgba(100, 100, 100, 1);
