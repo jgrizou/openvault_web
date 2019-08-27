@@ -93,7 +93,6 @@ export default {
     redirect_to: function (url) {
       // https://stackoverflow.com/questions/13109233/how-to-redirect-and-reload-the-right-way-in-dart
       window.location.assign(url)
-      window.location.reload()
     },
     trigger: function (check_info) {
       this.active = true
