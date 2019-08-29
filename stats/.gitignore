@@ -4,3 +4,4 @@ credentials
 csv
 db
 logs
+cron_logs.txt
