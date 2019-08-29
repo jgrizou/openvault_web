@@ -1,9 +1,11 @@
 {
-  "name": "Level 1 - Visible",
+  "name": "DIY Demo",
   "code": {
-    "secret_code": [5, 5, 7, 7],
-    "show_code": true,
-    "check_code": true
+    "secret_code": [0, 0, 0, 0],
+    "show_code": false,
+    "check_code": true,
+    "redirect_url": "https://jgrizou.com",
+    "redirect_button_text": "TO YOUR PAGE"
   },
   "learner": {
     "type": "discrete",

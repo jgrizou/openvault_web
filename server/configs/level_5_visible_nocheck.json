@@ -1,9 +1,9 @@
 {
-  "name": "Level 5 - Visible",
+  "name": "arXiv & IJCAI legacy touch demo",
   "code": {
-    "secret_code": [8, 6, 6, 4],
+    "secret_code": [0, 0, 0, 0],
     "show_code": true,
-    "check_code": true
+    "check_code": false
   },
   "learner": {
     "type": "continuous",
@@ -11,8 +11,8 @@
     "accumulate_info_between_numbers": true
   },
   "pad": {
-    "type": "draw",
-    "show_learning_progress": false,
+    "type": "touch",
+    "show_learning_progress": true,
     "show_classifier_map": false
   },
   "hood": {

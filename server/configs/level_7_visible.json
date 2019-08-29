@@ -1,7 +1,7 @@
 {
   "name": "Level 7 - Visible",
   "code": {
-    "secret_code": [6, 7, 3, 5],
+    "secret_code": [2, 0, 1, 4],
     "show_code": true,
     "check_code": true
   },
@@ -11,7 +11,7 @@
     "accumulate_info_between_numbers": true
   },
   "pad": {
-    "type": "audio",
+    "type": "touch",
     "show_learning_progress": false,
     "show_classifier_map": false
   },
