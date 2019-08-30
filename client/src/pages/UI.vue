@@ -191,7 +191,8 @@ export default {
 
         if (current_waiting_time_ms > server_timeout_ms) {
           this.stop_loading_watchdog()
-          alert('Server not responding after ' + server_timeout_s + ' seconds. Try reloading the page.')
+          this.$refs.loader.message = 'Server not responding. Try reloading the page.'
+          // alert('Server not responding after ' + server_timeout_s + ' seconds. Try reloading the page.')
           this.$refs.loader.reset_loading_timer()
           this.start_loading_watchdog()
         }

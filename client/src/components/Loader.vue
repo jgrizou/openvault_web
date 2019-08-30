@@ -17,6 +17,11 @@
       </div>
     </transition>
 
+
+    <div v-if="message" class="loader-message">
+      {{ message }}
+    </div>
+
   </div>
 </template>
 
@@ -28,7 +33,8 @@ export default {
     return {
       delayed_show: false,
       immediate_show: false,
-      last_loading_onset_time: undefined
+      last_loading_onset_time: undefined,
+      message: ''
     }
   },
   mounted () {
@@ -36,16 +42,19 @@ export default {
   },
   methods: {
     show_no_delay: function () {
+      this.message = ''
       this.delayed_show = false
       this.immediate_show = true
       this.reset_loading_timer()
     },
     show_with_delay: function () {
+      this.message = ''
       this.delayed_show = true
       this.immediate_show = false
       this.reset_loading_timer()
     },
     hide: function () {
+      this.message = ''
       this.delayed_show = false
       this.immediate_show = false
     },
@@ -70,6 +79,28 @@ export default {
 <style>
 /* global styles */
 
+:root {
+  --loader_message_width: 50px;
+}
+
+
+.loader-message {
+  position: absolute;
+  top: calc( var(--display_height) + (var(--digit_height) - var(--loader_message_width)) / 2);
+  left: 0px;
+  width: var(--screen_width);
+  height: var(--loader_message_width);
+  text-align: center;
+  vertical-align: middle;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: var(--loader_message_width);
+  background-color: rgba(240, 240, 240, 1);
+  border-style: solid;
+  border-width: 2px;
+  border-color: rgba(100, 100, 100, 1);
+}
+
 
 .loader {
   position: absolute;
@@ -79,7 +110,6 @@ export default {
   height: var(--digit_height);
   background-color: rgba(255, 255, 255, 0.5);
 }
-
 
 .loader-delayed-enter-active {
   transition: opacity 1.5s cubic-bezier(0.95, 0.05, 0.795, 0.035);
