@@ -51,6 +51,8 @@ export default {
       this.paused = false
       this.awaiting_flash = false
       this.awaiting_pad = false
+
+      this.button_color = ['neutral', 'neutral', 'neutral', 'neutral', 'neutral', 'neutral', 'neutral', 'neutral', 'neutral']
     },
     on_click: function (button_name, event) {
       var click_info = {}

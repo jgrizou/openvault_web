@@ -400,11 +400,18 @@ class Learner(object):
             if learner_config['type'] == 'discrete':
                 known_symbols = learner_config['known_symbols']
 
-                button_color = ['neutral' for _ in range(pad_config['n_pad'])]
-                for button_number, button_meaning in known_symbols.items():
-                    button_color[int(button_number)] = MEANING_TO_COLOR[button_meaning]
+                if pad_config['type'] == 'keyboard':
+                    symbol_color = {}
+                    for symbol_name, symbol_meaning in known_symbols.items():
+                        symbol_color[symbol_name] = MEANING_TO_COLOR[symbol_meaning]
+                    update_pad_info['symbol_color'] = symbol_color
 
-                update_pad_info['button_color'] = button_color
+                else:
+                    button_color = ['neutral' for _ in range(pad_config['n_pad'])]
+                    for button_number, button_meaning in known_symbols.items():
+                        button_color[int(button_number)] = MEANING_TO_COLOR[button_meaning]
+
+                    update_pad_info['button_color'] = button_color
 
             elif learner_config['type'] == 'continuous':
 

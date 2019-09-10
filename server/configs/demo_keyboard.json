@@ -1,0 +1,22 @@
+{
+  "name": "Demo Keyboard",
+  "code": {
+    "secret_code": [0, 0, 0, 0],
+    "show_code": true,
+    "check_code": false
+  },
+  "learner": {
+    "type": "discrete",
+    "n_hypothesis": 10,
+    "known_symbols": {},
+    "accumulate_known_symbols_between_numbers": true
+  },
+  "pad": {
+    "type": "keyboard",
+    "show_learning_progress": true
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false
+  }
+}

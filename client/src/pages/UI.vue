@@ -30,6 +30,9 @@
     <div v-else-if="pad_type == 'audio'">
       <PadAudio ref="pad" class="pad" :callback="audio_pad_callback"></PadAudio>
     </div>
+    <div v-else-if="pad_type == 'keyboard'">
+      <PadKeyboard ref="pad" class="pad" :callback="keyboard_pad_callback"></PadKeyboard>
+    </div>
     <div v-else>
       <!-- <div class="pad">Pad {{ pad_type }} not implemented</div> -->
     </div>
@@ -61,12 +64,13 @@ import Pad33 from './../components/Pad_3x3.vue'
 import PadTouch from './../components/Pad_Touch.vue'
 import PadDraw from './../components/Pad_Draw.vue'
 import PadAudio from './../components/Pad_Audio.vue'
+import PadKeyboard from './../components/Pad_Keyboard.vue'
 import Hood from './../components/Hood.vue'
 import Loader from './../components/Loader.vue'
 
 export default {
   name: 'UI',
-  components: { Check, Display, Digit, DigitButton, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, Hood, Loader},
+  components: { Check, Display, Digit, DigitButton, Reset, Pad12, Pad12Random, Pad33, PadTouch, PadDraw, PadAudio, PadKeyboard, Hood, Loader},
   data() {
     return {
       app_width: 480, // hardcoded value for screen_width
@@ -280,6 +284,14 @@ export default {
 
       var feedback_info = {}
       feedback_info.mp3 = audio_info.mp3
+      feedback_info.flash = this.$refs.digit.flash
+      this.$socket.emit('feedback_info', feedback_info)
+    },
+    keyboard_pad_callback: function (keyboard_info) {
+      this.disable_pad_while_waiting_from_server_update()
+
+      var feedback_info = {}
+      feedback_info.symbol = keyboard_info.key
       feedback_info.flash = this.$refs.digit.flash
       this.$socket.emit('feedback_info', feedback_info)
     }
