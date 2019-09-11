@@ -202,30 +202,29 @@ export default {
   left: calc( (var(--screen_width) - var(--smiley_width)) / 2 );
   width: var(--smiley_width);
   height: var(--smiley_width);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
 }
 
 .smiley_loader {
   background-color: var(--loader_color);
   mask-image: url("./../assets/smileys/loader.gif");
-  mask-size: cover;
 }
 
 .smiley_valid {
   background-color: var(--valid_color);
   mask-image: url("./../assets/smileys/valid.png");
-  mask-size: cover;
 }
 
 .smiley_invalid {
   background-color: var(--invalid_color);
   mask-image: url("./../assets/smileys/invalid.png");
-  mask-size: cover;
 }
 
 .smiley_inconsistent {
   background-color: var(--inconsistent_color);
   mask-image: url("./../assets/smileys/inconsistent.png");
-  mask-size: cover;
 }
 
 .check_text h1 {

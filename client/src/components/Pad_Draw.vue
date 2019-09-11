@@ -165,14 +165,14 @@ export default {
       // this should listen to this.disabled really
       this.clear_paddraw()
       var canvas = document.getElementById('drawing-canvas');
-      this.draw_trajectory_to_canvas(canvas, this.current_drawing, 20, 'rgb(200,200,200)')
+      this.draw_trajectory_to_canvas(canvas, this.current_drawing, 20, 'rgba(200, 200, 200, 1)')
     },
     clear_paddraw: function () {
       var canvas = document.getElementById('drawing-canvas');
       var context = canvas.getContext("2d");
       context.clearRect(0, 0, canvas.width, canvas.height);
     },
-    draw_trajectory_to_canvas: function(canvas, trajectory, linewidth=20, color='#000000') {
+    draw_trajectory_to_canvas: function(canvas, trajectory, linewidth=20, color='rgba(0, 0, 0, 1)') {
 
       var i;
       for (i = 0; i < trajectory.length - 1; i++) {
@@ -337,7 +337,7 @@ export default {
         context.fillText(String(index).padStart(2, '0'), 2, 34);
 
 
-        this.draw_trajectory_to_canvas(sketchCanvas, drawing, 8, '#000000')
+        this.draw_trajectory_to_canvas(sketchCanvas, drawing, 8, 'rgba(0, 0, 0, 1)')
 
         sketchesFeedbackPanel.appendChild(sketchCanvas)
       })
@@ -388,7 +388,7 @@ export default {
         }
         sketchCanvas.style.backgroundColor = point_color
 
-        this.draw_trajectory_to_canvas(sketchCanvas, drawing, 4, '#000000')
+        this.draw_trajectory_to_canvas(sketchCanvas, drawing, 4, 'rgba(0, 0, 0, 1)')
 
         embeddingFeedbackPanel.appendChild(sketchCanvas)
 
