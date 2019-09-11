@@ -2,14 +2,12 @@
   <div>
 
     <div
-      ref="padkeyboard"
-      class="keyboard keyflash"
+      class="keyboard keyboard-disabled"
       v-show="disabled">
     </div>
 
     <div
-      ref="padkeyboard"
-      class="keyboard"
+      class="keyboard keyboard-ready"
       v-show="!disabled">
     </div>
 
@@ -27,22 +25,34 @@ export default {
     }
   },
   mounted() {
-    window.addEventListener('keypress', (event) => {
-      this.key_history.push(event.key)
-      this.key_history_color.push('neutral')
+    window.addEventListener('keydown', (event) => {
+
+      //disabled if not received updated info from server or if key not been released
+      if (this.disabled) {
+        return
+      }
+
+      // see https://www.fxsitecompat.dev/en-CA/docs/2018/keydown-and-keyup-events-are-now-fired-during-ime-composition/
+      if (event.isComposing) {
+        return;
+      }
+
+      this.awaiting_keyup = true
+      this.last_key_pressed = event.key
 
       var keyboard_info = {}
-      keyboard_info.key = event.key
+      keyboard_info.key = this.last_key_pressed
       this.callback(keyboard_info)
 
-      console.log(event)
-      console.log(event.key)
-      console.log(this.key_history)
-      console.log(this.key_history_color)
+      this.key_history.push(this.last_key_pressed)
+      this.key_history_color.push('neutral')
+    })
 
-      var pad_elem = this.$refs.padkeyboard
-      pad_elem.classList.add("keyflash");
-      setTimeout(function(){ pad_elem.classList.remove("keyflash"); }, 500);
+    window.addEventListener('keyup', (event) => {
+      // if same key that was pressed and sent is released then we can get back to accepting new keypressed
+      if (event.key == this.last_key_pressed) {
+        this.awaiting_keyup = false
+      }
     })
   },
   data() {
@@ -51,14 +61,16 @@ export default {
       paused: false,
       awaiting_flash: false,
       awaiting_pad: false,
-
+      awaiting_keyup: false,
+      last_key_pressed: undefined,
       key_history: [],
       key_history_color: [],
+      symbol_color: undefined,
     }
   },
   computed: {
     disabled: function () {
-      return this.stopped || this.paused || this.awaiting_flash || this.awaiting_pad
+      return this.stopped || this.paused || this.awaiting_flash || this.awaiting_pad || this.awaiting_keyup
     },
     is_clean: function () {
       return true
@@ -70,9 +82,15 @@ export default {
       this.paused = false
       this.awaiting_flash = false
       this.awaiting_pad = false
+      this.awaiting_keyup = false
+      this.last_key_pressed = undefined
+      this.key_history = []
+      this.key_history_color = []
+      this.symbol_color = undefined
     },
     update_pad_info: function (pad_info) {
-      console.log(pad_info)
+      // storing the information of which key is which color/meaning
+      this.symbol_color = pad_info['symbol_color']
     }
   }
 }
@@ -87,19 +105,23 @@ export default {
 }
 
 .keyboard {
-  position: relative;
+  position: absolute;
   width: 100%;
   height: 100%;
-  background-color: var(--invalid_color);
   mask-image: url("./../assets/keyboard.png");
   mask-size: contain;
   mask-repeat: no-repeat;
   mask-position: center;
 }
 
-.keyflash {
-  background-color: var(--valid_color);
+.keyboard-ready {
+  background-color: rgba(200, 200, 200, 1);
 }
+
+.keyboard-disabled {
+  background-color: rgba(0, 0, 0, 1);
+}
+
 
 </style>
 

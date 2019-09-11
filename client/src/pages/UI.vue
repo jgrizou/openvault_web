@@ -167,12 +167,18 @@ export default {
       this.$refs.reset.force_hide = true
       this.$refs.loader.hide() // deactivate loading animation
       this.$refs.check.trigger(check_info)
+
+      // when check panel is shown, we do not update the flashing update_flash_pattern so the update_code function might get stuck into a setInterval
+      // to ensure the pad can no more be used, we also force the pad to stop
+      this.$refs.pad.stopped = true  // yet another way to stop the pad to respond
+      // just to be neat we will force awaiting_flash to true to stop that setInterval in update_code to run in the background
+      this.$refs.pad.awaiting_flash = false
     },
     no_check: function () {
-      // when there is no check, we do not update the flashing update_flash_pattern and the update_code might get stuck into a setInterval
-      // just to be neat we will force awaiting_flash to true to stop that setInterval to run in the background
-      // but to ensure the pad can no more be used, we also force the pad to stop
+      // when there is no check, we do not update the flashing update_flash_pattern so the update_code function might get stuck into a setInterval
+      // to ensure the pad can no more be used, we also force the pad to stop
       this.$refs.pad.stopped = true  // yet another way to stop the pad to respond
+      // just to be neat we will force awaiting_flash to true to stop that setInterval in update_code to run in the background
       this.$refs.pad.awaiting_flash = false
 
       // show a big restart button
