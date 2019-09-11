@@ -13,6 +13,7 @@
       </input>
       <button
         class="show_keyboard"
+        v-show="!keyboard_active"
         v-on:click="show_keyboard">
         Click to show keyboard
       </button>
@@ -106,6 +107,7 @@ export default {
       awaiting_pad: false,
       awaiting_keyup: false,
       last_key_pressed: undefined,
+      keyboard_active: false,
       key_history: [],
       key_history_color: [],
       symbol_color: undefined,
@@ -130,6 +132,7 @@ export default {
       this.awaiting_pad = false
       this.awaiting_keyup = false
       this.last_key_pressed = undefined
+      this.keyboard_active = false
       this.check_focus_timer = undefined
       this.key_history = []
       this.key_history_color = []
@@ -157,8 +160,10 @@ export default {
       var previous_app_height = this.$parent.app_height
 
       if (document.activeElement === input_elem) {
+        this.keyboard_active = true
         this.$parent.app_height = 400
       } else {
+        this.keyboard_active = false
         this.$parent.app_height = 800
       }
 
@@ -218,8 +223,8 @@ export default {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -100%);
-  /* width: 60px; */
+  transform: translate(-50%, -50%);
+  width: 50%;
   /* height: 50px; */
   text-align: center;
   vertical-align: middle;
