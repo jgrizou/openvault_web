@@ -1,29 +1,15 @@
 <template>
-  <div>
-
-    <div class="select-config">
-
-      <select id="configs">
-        <option v-for="(row, i) of configs" :key="i" :value ="get_link(i)">{{ row.message }}
-        </option>
-      </select>
-
-      <button
-        class="btn-config"
-        v-on:click="on_submit">
-          Open
-      </button>
-
-    </div>
-
-
-  </div>
+  <iframe
+    class="iframe-fullpage"
+    src="https://jgrizou.com/projects/vault/quickaccess/"
+  >
+  </iframe>
 </template>
 
 
 <script>
 export default {
-  name: 'LevelSelection',
+  name: 'LandingPage',
   components: {},
   data() {
     return {
@@ -71,15 +57,18 @@ export default {
 <style>
 /* global styles */
 
-.select-config {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.btn-config {
-  color: black;
-  border: 2px solid rgba(150, 150, 150, 1);
-  background-color: rgba(200, 200, 200, 1);
+.iframe-fullpage{
+  position: fixed;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  width: 100%;
+  border: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  z-index: 999999;
+  height: 100%;
 }
 
 </style>
