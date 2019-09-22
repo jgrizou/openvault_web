@@ -64,6 +64,10 @@ def get_referer_url(item):
         return UNKNOWN_REFERENCE
 
 
+def get_config_type(config_filename):
+    return config_filename.split('_')[0]
+
+
 if __name__ == '__main__':
 
     db = tinydb.TinyDB(TRACKING_DB_FILENAME)
@@ -81,6 +85,7 @@ if __name__ == '__main__':
         data['user_browser'] = item['user_browser']
         data['pad_type'] = item['config']['pad']['type']
         data['config_filename'] = os.path.split(item['config_filename'])[1]
+        data['config_type'] = get_config_type(data['config_filename'])
 
         location_info = get_location_info(item['client_ip_info'])
         data.update(location_info)
