@@ -1,0 +1,23 @@
+{
+  "name": "Level 11",
+  "code": {
+    "secret_code": [8, 5, 9, 3],
+    "show_code": false,
+    "check_code": true
+  },
+  "learner": {
+    "type": "continuous",
+    "n_hypothesis": 10,
+    "accumulate_info_between_numbers": false
+  },
+  "pad": {
+    "type": "touch",
+    "show_learning_progress": false,
+    "show_classifier_map": false
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false,
+    "show_classifier_maps": false
+  }
+}

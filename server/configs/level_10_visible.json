@@ -1,15 +1,15 @@
 {
-  "name": "Demo Keyboard",
+  "name": "Level 10 - Visible",
   "code": {
-    "secret_code": [0, 0, 0, 0],
+    "secret_code": [6, 1, 2, 6],
     "show_code": true,
-    "check_code": false
+    "check_code": true
   },
   "learner": {
     "type": "discrete",
     "n_hypothesis": 10,
     "known_symbols": {},
-    "accumulate_known_symbols_between_numbers": true
+    "accumulate_known_symbols_between_numbers": false
   },
   "pad": {
     "type": "keyboard",

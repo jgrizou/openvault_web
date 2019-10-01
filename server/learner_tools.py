@@ -373,6 +373,7 @@ class Learner(object):
             else:
                 # spawn a new learner from scratch
                 self.init_learner()
+                self.clean_pad()
         else:
             raise Exception('Learner of type {} not handled'. format(learner_config['type']))
 

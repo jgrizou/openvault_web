@@ -1,9 +1,9 @@
 {
-  "name": "Demo Keyboard",
+  "name": "Level 8",
   "code": {
-    "secret_code": [0, 0, 0, 0],
-    "show_code": true,
-    "check_code": false
+    "secret_code": [5, 2, 1, 0],
+    "show_code": false,
+    "check_code": true
   },
   "learner": {
     "type": "discrete",
