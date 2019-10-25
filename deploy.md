@@ -1,3 +1,12 @@
+# after an update of repo (git pull on server)
+
+cd client
+npm run build
+
+sudo supervisorctl restart openvault
+sudo service nginx reload
+
+
 # mostly from flask-mega-turorial
 
 // first ssh in as a root user
