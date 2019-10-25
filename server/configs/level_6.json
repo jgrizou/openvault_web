@@ -19,5 +19,9 @@
     "show_hood": false,
     "show_label_propagation": false,
     "show_classifier_maps": false
+  },
+  "timeout": {
+    "timeout_in_seconds": 20,
+    "reload_on_timeout": false
   }
 }

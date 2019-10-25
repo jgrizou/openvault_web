@@ -76,7 +76,9 @@ export default {
       app_width: 480, // hardcoded value for screen_width
       app_height: 800, // hardcoded value for screen_height
       pad_type: undefined,
-      loading_watchdog_interval: undefined
+      loading_watchdog_interval: undefined,
+      timeout_in_seconds: 10, // by default wait 10 seconds to call a timeout
+      reload_on_timeout: true  // by default reload the page on timeout
     };
   },
   mounted: function () {
@@ -92,6 +94,10 @@ export default {
     window.removeEventListener('resize', this.handleResize)
   },
   sockets: {
+    init_timeout: function (timeout_info) {
+      this.timeout_in_seconds = timeout_info.timeout_in_seconds
+      this.reload_on_timeout = timeout_info.reload_on_timeout
+    },
     init_pad: function (pad_info) {
       this.pad_type = pad_info.type
       this.$refs.reset.force_hide = false
@@ -195,18 +201,27 @@ export default {
     },
     loading_watchdog: function () {
       if (this.$refs.loader) {
-        var server_timeout_s = 20
-        var server_timeout_ms = server_timeout_s * 1000
+        var server_timeout_ms = this.timeout_in_seconds * 1000
         var current_waiting_time_ms = this.$refs.loader.get_loading_duration_ms()
 
         if (current_waiting_time_ms > server_timeout_ms) {
           this.stop_loading_watchdog()
-          this.$refs.loader.message = 'Server not responding. Try reloading the page.'
-          // alert('Server not responding after ' + server_timeout_s + ' seconds. Try reloading the page.')
+
+          if (this.reload_on_timeout) {
+            this.reload()
+          } else {
+            this.$refs.loader.message = 'Server not responding. Try reloading the page.'
+          }
+
           this.$refs.loader.reset_loading_timer()
           this.start_loading_watchdog()
         }
       }
+    },
+    reload: function () {
+      // see https://stackoverflow.com/questions/41301099/do-we-have-router-reload-in-vue-router
+      // this.$router.go()  // reload from the vue router
+      window.location.reload(true)  // reload from the browser
     },
     handleResize: function (event) {
 

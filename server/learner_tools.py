@@ -140,6 +140,8 @@ class Learner(object):
         self.request_url_info()
         ## make sure pad is loaded before starting
         self.init_pad()
+        ## init timeout configuration
+        self.init_timeout()
         ## initialize the algortihm
         tools.log_app_info('[{}] Initializing learner...'.format(self.room_id))
         self.init_learner()
@@ -155,9 +157,6 @@ class Learner(object):
         self.update_pad()
         self.update_hood()
         self.update_flash_pattern()
-
-
-
 
 
     def request_url_info(self):
@@ -190,6 +189,12 @@ class Learner(object):
 
     def ask_pad_clean(self):
         self.socketio.emit('is_pad_clean', room=self.room_id)
+
+    def init_timeout(self):
+        # optional timeout in config
+        if 'timeout' in self.config:
+            timeout_config = self.config['timeout']
+            self.socketio.emit('init_timeout', timeout_config, room=self.room_id)
 
     def init_learner(self):
         pad_config = self.config['pad']

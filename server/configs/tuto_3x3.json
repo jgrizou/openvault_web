@@ -19,5 +19,9 @@
   "hood": {
     "show_hood": true,
     "show_label_propagation": true
+  },
+  "timeout": {
+    "timeout_in_seconds": 10,
+    "reload_on_timeout": false
   }
 }

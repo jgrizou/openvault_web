@@ -52,7 +52,7 @@ export default {
   mounted() {
     this.$socket.emit('get_configs')
 
-    // to overwrite overflow-y: hidden from body and wrapper needed for disabling moble refresh by pull down
+    // to overwrite overflow-y: hidden from body and wrapper needed for disabling mobile refresh by pull down
     var all = document.getElementsByClassName('body');
     for (var i = 0; i < all.length; i++) {
       all[i].style.overflowY = 'auto';

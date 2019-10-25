@@ -80,6 +80,7 @@ export default {
 /* global styles */
 
 :root {
+  --loader_message_margin: 10px;
   --loader_message_width: 50px;
 }
 
@@ -87,8 +88,8 @@ export default {
 .loader-message {
   position: absolute;
   top: calc( var(--display_height) + (var(--digit_height) - var(--loader_message_width)) / 2);
-  left: 0px;
-  width: var(--screen_width);
+  left: var(--loader_message_margin);
+  width: calc(var(--screen_width) - 2*var(--loader_message_margin));
   height: var(--loader_message_width);
   text-align: center;
   vertical-align: middle;
