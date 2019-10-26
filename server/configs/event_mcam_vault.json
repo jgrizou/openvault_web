@@ -1,0 +1,27 @@
+{
+  "name": "Event McaM Vault",
+  "code": {
+    "secret_code": [0, 6, 8, 9],
+    "show_code": false,
+    "check_code": true
+  },
+  "learner": {
+    "type": "discrete",
+    "n_hypothesis": 10,
+    "known_symbols": {},
+    "accumulate_known_symbols_between_numbers": true
+  },
+  "pad": {
+    "type": "3x3",
+    "n_pad": 9,
+    "show_learning_progress": true
+  },
+  "hood": {
+    "show_hood": false,
+    "show_label_propagation": false
+  },
+  "timeout": {
+    "timeout_in_seconds": 10,
+    "reload_on_timeout": true
+  }
+}
