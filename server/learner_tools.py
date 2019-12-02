@@ -108,7 +108,12 @@ class LearnerManager(Namespace):
         room_id = request.sid
         if room_id in self.learners:
             config_filename = self.learners[room_id].config_filename
-            client_ip = request.remote_addr
+            ## client ip
+            # nginx fix from https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python/26654607#26654607
+            if 'X-Forwarded-For' in request.headers:
+                client_ip = request.headers.getlist("X-Forwarded-For")[0].rpartition(' ')[-1]
+            else:
+                client_ip = request.remote_addr
             user_agent = request.user_agent
             self.spawn(room_id, config_filename, client_ip, user_agent)
 
@@ -116,6 +121,7 @@ class LearnerManager(Namespace):
         room_id = request.sid
         if room_id in self.learners:
             self.learners[room_id].step(feedback_info)
+
 
 
 class Learner(object):

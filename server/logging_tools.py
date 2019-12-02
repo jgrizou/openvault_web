@@ -38,7 +38,7 @@ IP_API_PROVIDERS.append(('https://ipapi.co', 'https://ipapi.co/{}/json'))
 ## use following command to test the response time of an log_app_info
 ## curl https://ipinfo.io/24.48.0.1 -w %{time_connect}:%{time_starttransfer}:%{time_total}
 
-def request_ip_information(request_url, timeout=0.5):
+def request_ip_information(request_url, timeout):
 
     try:
         response = requests.get(request_url, timeout=timeout)
@@ -54,12 +54,12 @@ def request_ip_information(request_url, timeout=0.5):
         return {} # empty dict signify api call did not work properly
 
 
-def get_ip_information(ip_address):
+def get_ip_information(ip_address, timeout=0.5):
 
     for api_provider, blank_request in IP_API_PROVIDERS:
 
         request_url = blank_request.format(ip_address)
-        api_info = request_ip_information(request_url)
+        api_info = request_ip_information(request_url, timeout=timeout)
 
         if api_info:
             tools.log_app_info('IP API success from {}'.format(api_provider))

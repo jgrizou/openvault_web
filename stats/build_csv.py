@@ -20,7 +20,7 @@ tools.ensure_dir(CSV_FOLDERNAME)
 CSV_FILENAME = os.path.join(CSV_FOLDERNAME, 'tracking_data.csv')
 
 UNKNOWN_REFERENCE = ''
-
+LOCALHOST_MARKER = 'LOCALHOST'
 
 def get_location_info(client_ip_info):
 
@@ -31,24 +31,41 @@ def get_location_info(client_ip_info):
     for field_name in field_list:
         location_info[field_name] = UNKNOWN_REFERENCE
 
-    api_provider = item['client_ip_info']['api_provider']
-    api_info = item['client_ip_info']['api_info']
+    if 'api_provider' in client_ip_info:
+        api_provider = client_ip_info['api_provider']
+    else:
+        return location_info
+
+    if 'api_info' in client_ip_info:
+        api_info = client_ip_info['api_info']
+    else:
+        return location_info
 
     if api_provider == 'http://ip-api.com/':
         location_info['ip'] = api_info['query']
-        if api_info['status'] == 'success':
+
+        if location_info['ip'] != '127.0.0.1':
             location_info['country'] = api_info['countryCode']
             location_info['region'] = api_info['regionName']
             location_info['city'] = api_info['city']
             location_info['geo'] = '{},{}'.format(api_info['lat'], api_info['lon'])
+        else:
+            location_info['country'] = LOCALHOST_MARKER
+            location_info['region'] = LOCALHOST_MARKER
+            location_info['city'] = LOCALHOST_MARKER
 
     elif api_provider == 'http://ipinfo.io':
         location_info['ip'] = api_info['ip']
-        if api_info['ip'] != '127.0.0.1':
+
+        if location_info['ip'] != '127.0.0.1':
             location_info['country'] = api_info['country']
             location_info['region'] = api_info['region']
             location_info['city'] = api_info['city']
             location_info['geo'] = api_info['loc']
+        else:
+            location_info['country'] = LOCALHOST_MARKER
+            location_info['region'] = LOCALHOST_MARKER
+            location_info['city'] = LOCALHOST_MARKER
 
     return location_info
 
@@ -66,6 +83,7 @@ def get_referer_url(item):
 
 def get_config_type(config_filename):
     return config_filename.split('_')[0]
+
 
 
 if __name__ == '__main__':
