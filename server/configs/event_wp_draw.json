@@ -1,0 +1,28 @@
+{
+    "name": "Event Word Processor - Draw",
+    "code": {
+      "secret_code": [0, 0, 0, 0],
+      "show_code": true,
+      "check_code": false
+    },
+    "learner": {
+      "type": "continuous",
+      "n_hypothesis": 10,
+      "accumulate_info_between_numbers": true
+    },
+    "pad": {
+      "type": "draw",
+      "show_learning_progress": true,
+      "show_classifier_map": true
+    },
+    "hood": {
+      "show_hood": true,
+      "show_label_propagation": true,
+      "show_classifier_maps": true
+    },
+    "timeout": {
+      "timeout_in_seconds": 20,
+      "reload_on_timeout": true
+    }
+  }
+  

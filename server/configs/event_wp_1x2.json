@@ -1,0 +1,31 @@
+{
+    "name": "Event Word Processor - 1x2",
+    "code": {
+      "secret_code": [0, 0, 0, 0],
+      "show_code": true,
+      "check_code": false
+    },
+    "learner": {
+      "type": "discrete",
+      "n_hypothesis": 10,
+      "known_symbols": {
+        "0": false,
+        "1": true
+      },
+      "accumulate_known_symbols_between_numbers": false
+    },
+    "pad": {
+      "type": "1x2",
+      "n_pad": 2,
+      "show_learning_progress": false
+    },
+    "hood": {
+      "show_hood": true,
+      "show_label_propagation": true
+    },
+    "timeout": {
+      "timeout_in_seconds": 10,
+      "reload_on_timeout": true
+    }
+  }
+  

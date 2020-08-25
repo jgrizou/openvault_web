@@ -1,0 +1,28 @@
+{
+    "name": "Event Word Processor - 3x3",
+    "code": {
+      "secret_code": [0, 0, 0, 0],
+      "show_code": true,
+      "check_code": false
+    },
+    "learner": {
+      "type": "discrete",
+      "n_hypothesis": 10,
+      "known_symbols": {},
+      "accumulate_known_symbols_between_numbers": true
+    },
+    "pad": {
+      "type": "3x3",
+      "n_pad": 9,
+      "show_learning_progress": true
+    },
+    "hood": {
+      "show_hood": true,
+      "show_label_propagation": true
+    },
+    "timeout": {
+      "timeout_in_seconds": 10,
+      "reload_on_timeout": true
+    }
+  }
+  
