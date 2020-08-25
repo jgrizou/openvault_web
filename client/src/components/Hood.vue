@@ -40,6 +40,10 @@ export default {
       type: String,
       required: true,
       default: undefined
+    },
+    on_unpause_callback: {
+      type: Function,
+      required: true
     }
   },
   data() {
@@ -56,6 +60,7 @@ export default {
       this.$refs.hoodbutton.show = true
     },
     on_unpause_click: function () {
+      this.on_unpause_callback()
       this.$socket.emit('hood_pause_end')
       this.$refs.hoodbutton.show = false
     },

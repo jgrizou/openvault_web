@@ -42,7 +42,7 @@
 
     <!-- hood panel appear once pad_type defined -->
     <div v-if="pad_type">
-      <Hood ref="hood" :pad_type="pad_type"></Hood>
+      <Hood ref="hood" :pad_type="pad_type" :on_unpause_callback="unpause_hood"></Hood>
     </div>
 
     <!-- Loader Animation for user feedback on top of everything-->
@@ -315,6 +315,11 @@ export default {
       feedback_info.symbol = keyboard_info.key
       feedback_info.flash = this.$refs.digit.flash
       this.$socket.emit('feedback_info', feedback_info)
+    },
+    unpause_hood: function () {
+      // user clicked on continue in hood, so we restart the loader 
+      // this is to make sure that if a loss of connection happened, the auto-reload will work here
+      this.$refs.loader.show_with_delay()
     }
   }
 }
